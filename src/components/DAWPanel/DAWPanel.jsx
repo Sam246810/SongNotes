@@ -893,42 +893,45 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
                 />
               </div>
 
-              {/* Voice latency trim */}
+              {/* Combined latency trim — voice + piano in one control, with recalibrate */}
               <div className={styles.latencyTrimContainer}>
-                <span className={styles.latencyTrimLabel} title="Voice/mic recording latency trim">🎤 Trim</span>
-                <input
-                  type="range"
-                  min="-10" max="40" step="1"
-                  value={latencyTrimMs}
-                  onChange={e => setLatencyTrimMs(parseInt(e.target.value, 10))}
-                  className={styles.latencyTrimSlider}
-                  title={`Voice latency trim: ${latencyTrimMs}ms`}
-                />
-                <span className={styles.latencyTrimValue}>{latencyTrimMs}ms</span>
+                <span className={styles.latencyTrimLabel}>Trim</span>
+                <div className={styles.trimStack}>
+                  <div className={styles.trimMiniRow}>
+                    <span className={styles.trimMiniIcon} title="Voice/mic recording latency trim">🎤</span>
+                    <input
+                      type="range"
+                      min="-10" max="40" step="1"
+                      value={latencyTrimMs}
+                      onChange={e => setLatencyTrimMs(parseInt(e.target.value, 10))}
+                      className={styles.latencyTrimSlider}
+                      title={`Voice latency trim: ${latencyTrimMs}ms`}
+                      id="scratchpad-voice-trim-slider"
+                    />
+                    <span className={styles.latencyTrimValue}>{latencyTrimMs}ms</span>
+                  </div>
+                  <div className={styles.trimMiniRow}>
+                    <span className={styles.trimMiniIcon} title="Piano recording latency trim (lower = piano later)">🎹</span>
+                    <input
+                      type="range"
+                      min="-50" max="40" step="1"
+                      value={pianoTrimMs}
+                      onChange={e => setPianoTrimMs(parseInt(e.target.value, 10))}
+                      className={styles.latencyTrimSlider}
+                      title={`Piano latency trim: ${pianoTrimMs}ms (lower = piano later)`}
+                      id="scratchpad-piano-trim-slider"
+                    />
+                    <span className={styles.latencyTrimValue}>{pianoTrimMs}ms</span>
+                  </div>
+                </div>
                 <button
                   className={styles.helpBtn}
                   onClick={() => setShowLatencyHelper(true)}
-                  title="Re-run the latency calibration helper"
+                  title="Recalibrate voice & piano latency"
                   id="scratchpad-calibrate-latency-btn"
                 >
                   🎯
                 </button>
-              </div>
-
-              {/* Piano latency trim — nudge piano takes to line up with vocals.
-                  Lower = piano later (it usually sits ahead of the mic). */}
-              <div className={styles.latencyTrimContainer}>
-                <span className={styles.latencyTrimLabel} title="Piano recording latency trim">🎹 Trim</span>
-                <input
-                  type="range"
-                  min="-50" max="40" step="1"
-                  value={pianoTrimMs}
-                  onChange={e => setPianoTrimMs(parseInt(e.target.value, 10))}
-                  className={styles.latencyTrimSlider}
-                  title={`Piano latency trim: ${pianoTrimMs}ms (lower = piano later)`}
-                  id="scratchpad-piano-trim-slider"
-                />
-                <span className={styles.latencyTrimValue}>{pianoTrimMs}ms</span>
               </div>
             </div>
           </div>
@@ -1166,12 +1169,15 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
         </div>
       )}
 
-      {/* Latency Trim Helper — first-run (or manually re-opened) calibration popup */}
+      {/* Latency Trim Helper — first-run (or manually re-opened) calibration popup
+          that walks the user through calibrating both voice and piano. */}
       {showLatencyHelper && (
         <LatencyTrimHelper
           initialTrimMs={latencyTrimMs}
-          onSave={(ms) => {
-            setLatencyTrimMs(ms);
+          initialPianoTrimMs={pianoTrimMs}
+          onSave={({ trimMs, pianoTrimMs: pTrim }) => {
+            setLatencyTrimMs(trimMs);
+            setPianoTrimMs(pTrim);
             setShowLatencyHelper(false);
           }}
           onClose={() => setShowLatencyHelper(false)}

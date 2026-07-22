@@ -534,6 +534,25 @@
   border-radius: 4px;
 }
 
+/* Combined voice + piano trim: two compact rows stacked in one control */
+.trimStack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.trimMiniRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.trimMiniIcon {
+  font-size: 10px;
+  width: 14px;
+  text-align: center;
+}
+
 .latencyTrimLabel {
   color: #777;
   font-size: 9px;
