@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import styles from './DAWPanel.module.css';
 import { getSharedAudioContext } from '../../utils/audioContext';
 import { audioBufferToWav, audioBufferToMp3, mixTracksToMasterBuffer, downloadAudioBlob, sanitizeAudioFilename } from '../../utils/audioExport';
-import { getStoredLatencyTrimMs, setStoredLatencyTrimMs, hasSeenLatencyTrimHelper } from '../../utils/latencyTrimSettings';
+import { getStoredLatencyTrimMs, setStoredLatencyTrimMs, getStoredPianoTrimMs, setStoredPianoTrimMs, hasSeenLatencyTrimHelper } from '../../utils/latencyTrimSettings';
 import {
   LOW_LATENCY_MIC_CONSTRAINTS,
   RECORD_PREROLL_SEC,
@@ -160,12 +160,19 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
 
   // Latency trim (ms) — OS-detected default, user-adjustable, persisted globally across songs
   const [latencyTrimMs, setLatencyTrimMs] = useState(() => getStoredLatencyTrimMs(getDefaultPipelineOverheadMs()));
+  // Extra trim applied to piano takes only (they have no ADC input latency, so they
+  // tend to land ahead of vocals). Persisted globally like the voice trim.
+  const [pianoTrimMs, setPianoTrimMs] = useState(() => getStoredPianoTrimMs(0));
   const [showLatencyHelper, setShowLatencyHelper] = useState(false);
 
-  // Persist trim changes globally so every song shares the same calibrated value
+  // Persist trim changes globally so every song shares the same calibrated values
   useEffect(() => {
     setStoredLatencyTrimMs(latencyTrimMs);
   }, [latencyTrimMs]);
+
+  useEffect(() => {
+    setStoredPianoTrimMs(pianoTrimMs);
+  }, [pianoTrimMs]);
 
   // Launch the calibration helper the very first time the Scratchpad is opened —
   // never again afterwards, since the trim setting is global from then on.
@@ -621,6 +628,7 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
         transportStartTime,
         latencies,
         userTrimMs: latencyTrimMs,
+        pianoTrimMs,
         inputType: armedInputType,
       });
       if (audioBuffer) {
@@ -885,16 +893,16 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
                 />
               </div>
 
-              {/* Latency Trim */}
+              {/* Voice latency trim */}
               <div className={styles.latencyTrimContainer}>
-                <span className={styles.latencyTrimLabel}>Trim</span>
+                <span className={styles.latencyTrimLabel} title="Voice/mic recording latency trim">🎤 Trim</span>
                 <input
                   type="range"
                   min="-10" max="40" step="1"
                   value={latencyTrimMs}
                   onChange={e => setLatencyTrimMs(parseInt(e.target.value, 10))}
                   className={styles.latencyTrimSlider}
-                  title={`Latency trim: ${latencyTrimMs}ms`}
+                  title={`Voice latency trim: ${latencyTrimMs}ms`}
                 />
                 <span className={styles.latencyTrimValue}>{latencyTrimMs}ms</span>
                 <button
@@ -905,6 +913,22 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
                 >
                   🎯
                 </button>
+              </div>
+
+              {/* Piano latency trim — nudge piano takes to line up with vocals.
+                  Lower = piano later (it usually sits ahead of the mic). */}
+              <div className={styles.latencyTrimContainer}>
+                <span className={styles.latencyTrimLabel} title="Piano recording latency trim">🎹 Trim</span>
+                <input
+                  type="range"
+                  min="-50" max="40" step="1"
+                  value={pianoTrimMs}
+                  onChange={e => setPianoTrimMs(parseInt(e.target.value, 10))}
+                  className={styles.latencyTrimSlider}
+                  title={`Piano latency trim: ${pianoTrimMs}ms (lower = piano later)`}
+                  id="scratchpad-piano-trim-slider"
+                />
+                <span className={styles.latencyTrimValue}>{pianoTrimMs}ms</span>
               </div>
             </div>
           </div>

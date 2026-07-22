@@ -13,30 +13,35 @@ import {
 import {
   compensationSeconds,
   headSkipSamples,
-  detectOnsets,
-  estimateLatencyFromOnsets,
-  measuredLatencyToTrimMs,
 } from '../../audio/latency';
 
 const BPM = 80;
 const BEAT_DUR = 60 / BPM;
 const BEATS = 8;
+const COUNT_IN = 4; // preparatory beats before the "say Do" beats
+const TOTAL_BEATS = COUNT_IN + BEATS;
 const TAIL_SEC = 0.5;
 
-/** Schedule a fixed click track from startTime; returns the scheduled ctx times + the
- *  beat-highlight timeouts. */
+/**
+ * Schedule a click track: COUNT_IN softer preparatory beats, then BEATS accented
+ * recording beats. onBeat(i) fires per beat with the raw index (0..TOTAL_BEATS-1).
+ * Returns the recording-beat ctx times + the beat-highlight timeouts.
+ */
 function scheduleClickTrack(ctx, startTime, destination, onBeat) {
-  const clickTimes = [];
+  const recordClickTimes = [];
   const timeouts = [];
-  for (let i = 0; i < BEATS; i++) {
+  for (let i = 0; i < TOTAL_BEATS; i++) {
     const t = startTime + i * BEAT_DUR;
-    clickTimes.push(t);
+    const isCountIn = i < COUNT_IN;
+    const recBeat = i - COUNT_IN; // 0..BEATS-1 once recording starts
+    if (!isCountIn) recordClickTimes.push(t);
+
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(destination);
-    osc.frequency.setValueAtTime(i === 0 ? 1000 : 700, t);
-    gain.gain.setValueAtTime(0.5, t);
+    osc.frequency.setValueAtTime(isCountIn ? 500 : (recBeat === 0 ? 1000 : 700), t);
+    gain.gain.setValueAtTime(isCountIn ? 0.3 : 0.5, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
     osc.start(t);
     osc.stop(t + 0.06);
@@ -44,16 +49,16 @@ function scheduleClickTrack(ctx, startTime, destination, onBeat) {
     const delayMs = Math.max(0, (t - ctx.currentTime) * 1000);
     timeouts.push(setTimeout(() => onBeat(i), delayMs));
   }
-  return { clickTimes, timeouts };
+  return { recordClickTimes, timeouts };
 }
 
 export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
   const [phase, setPhase] = useState('intro'); // intro | recording | recorded | playing
   const [beatIndex, setBeatIndex] = useState(-1);
+  const [countIn, setCountIn] = useState(null); // countdown number during the count-in
   const [trimMs, setTrimMs] = useState(initialTrimMs);
   const [hasRecording, setHasRecording] = useState(false);
   const [micError, setMicError] = useState(false);
-  const [autoResult, setAutoResult] = useState(null); // { measuredMs, appliedMs } | { failed: true }
 
   const recorderRef = useRef(null);
   const sinkRef = useRef(null);
@@ -81,10 +86,21 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
 
   useEffect(() => teardown, []);
 
+  // Per-beat UI update: count down during the count-in, then highlight recording beats.
+  const handleBeat = (i) => {
+    if (i < COUNT_IN) {
+      setCountIn(COUNT_IN - i);
+      setBeatIndex(-1);
+    } else {
+      setCountIn(null);
+      setBeatIndex(i - COUNT_IN);
+    }
+  };
+
   const handleRecord = async () => {
     clearScheduled();
     setMicError(false);
-    setAutoResult(null);
+    setCountIn(null);
     const ctx = getSharedAudioContext();
     if (ctx.state === 'suspended') await ctx.resume().catch(() => {});
 
@@ -129,10 +145,10 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
     const startTime = ctx.currentTime + RECORD_PREROLL_SEC;
     setPhase('recording');
     setBeatIndex(-1);
-    const { clickTimes, timeouts } = scheduleClickTrack(ctx, startTime, clickGain, setBeatIndex);
+    const { recordClickTimes, timeouts } = scheduleClickTrack(ctx, startTime, clickGain, handleBeat);
     timeoutsRef.current = timeouts;
 
-    const stopDelayMs = (startTime - ctx.currentTime) * 1000 + (BEATS * BEAT_DUR + TAIL_SEC) * 1000;
+    const stopDelayMs = (startTime - ctx.currentTime) * 1000 + (TOTAL_BEATS * BEAT_DUR + TAIL_SEC) * 1000;
     timeoutsRef.current.push(setTimeout(async () => {
       let result = null;
       try {
@@ -147,13 +163,14 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
           startFrame: result.startFrame,
           sampleRate: result.sampleRate,
           transportStartTime: startTime,
-          clickTimes,
+          clickTimes: recordClickTimes,
           latencies,
         };
         setHasRecording(true);
       }
       setPhase('recorded');
       setBeatIndex(-1);
+      setCountIn(null);
     }, stopDelayMs));
   };
 
@@ -193,29 +210,11 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
 
     setPhase('playing');
     setBeatIndex(-1);
-    const { timeouts } = scheduleClickTrack(ctx, startTime, clickGain, setBeatIndex);
+    const { timeouts } = scheduleClickTrack(ctx, startTime, clickGain, handleBeat);
     timeoutsRef.current = timeouts;
 
-    const totalMs = (startTime - ctx.currentTime) * 1000 + (BEATS * BEAT_DUR + TAIL_SEC) * 1000;
-    timeoutsRef.current.push(setTimeout(() => { setPhase('recorded'); setBeatIndex(-1); }, totalMs));
-  };
-
-  // Objective calibration: find the recorded click-bleed onsets and compare them to
-  // when the clicks were scheduled to measure the real round-trip latency.
-  const handleAutoDetect = () => {
-    const take = takeRef.current;
-    if (!take) return;
-    const recordStartSec = take.startFrame / take.sampleRate;
-    const scheduledRel = take.clickTimes.map((t) => t - recordStartSec);
-    const onsets = detectOnsets(take.micPcm, take.sampleRate);
-    const measured = estimateLatencyFromOnsets(onsets, scheduledRel);
-    if (measured === null) {
-      setAutoResult({ failed: true });
-      return;
-    }
-    const applied = measuredLatencyToTrimMs(measured, take.latencies);
-    setTrimMs(applied);
-    setAutoResult({ measuredMs: Math.round(measured * 1000), appliedMs: applied });
+    const totalMs = (startTime - ctx.currentTime) * 1000 + (TOTAL_BEATS * BEAT_DUR + TAIL_SEC) * 1000;
+    timeoutsRef.current.push(setTimeout(() => { setPhase('recorded'); setBeatIndex(-1); setCountIn(null); }, totalMs));
   };
 
   const handleSave = () => {
@@ -245,8 +244,8 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
             Let's fix that once — it applies to every song from now on, not just this one.
           </p>
           <ol className={styles.stepsList}>
-            <li>Click <strong>Record</strong> — a click plays at 80 BPM.</li>
-            <li>Say <strong>&ldquo;Do&rdquo;</strong> right on each of the {BEATS} clicks.</li>
+            <li>Click <strong>Record</strong> — you get a <strong>{COUNT_IN}-beat count-in</strong> at 80 BPM to get ready.</li>
+            <li>After the count-in, say <strong>&ldquo;Do&rdquo;</strong> right on each of the {BEATS} clicks.</li>
             <li>Click <strong>Play Back</strong> — you should hear your own &ldquo;Do&rdquo; landing right on the click.</li>
             <li>If it sounds early or late, nudge the <strong>Trim</strong> slider and play back again.</li>
           </ol>
@@ -254,19 +253,21 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
           <div className={styles.trimHint}>
             <div>⬆️ &ldquo;Do&rdquo; lands <strong>after</strong> the click (late) → <strong>increase</strong> Trim.</div>
             <div>⬇️ &ldquo;Do&rdquo; lands <strong>before</strong> the click (early) → <strong>decrease</strong> Trim.</div>
-            <div className={styles.trimHintTip}>
-              💡 On <strong>speakers</strong> (not headphones)? Use <strong>Auto-detect</strong> to measure it exactly.
-            </div>
           </div>
 
           <div className={styles.beatRow}>
-            {Array.from({ length: BEATS }).map((_, i) => (
-              <span key={i} className={`${styles.beatDot} ${i === beatIndex ? styles.beatDotActive : ''}`} />
-            ))}
+            {countIn !== null ? (
+              <span className={styles.countInNumber}>Get ready… {countIn}</span>
+            ) : (
+              Array.from({ length: BEATS }).map((_, i) => (
+                <span key={i} className={`${styles.beatDot} ${i === beatIndex ? styles.beatDotActive : ''}`} />
+              ))
+            )}
           </div>
 
           <div className={styles.statusText}>
-            {phase === 'recording' && `🔴 Say "Do" on the click… (${Math.max(1, beatIndex + 1)}/${BEATS})`}
+            {phase === 'recording' && countIn !== null && '🎧 Count-in — get ready to sing "Do"…'}
+            {phase === 'recording' && countIn === null && `🔴 Say "Do" on the click… (${Math.max(1, beatIndex + 1)}/${BEATS})`}
             {phase === 'playing' && '▶ Listening — does "Do" land on the click?'}
             {phase === 'recorded' && 'Recorded! Play it back, or record again.'}
             {phase === 'intro' && ' '}
@@ -274,17 +275,6 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
 
           {micError && (
             <div className={styles.errorText}>Microphone access is required to calibrate latency.</div>
-          )}
-
-          {autoResult && autoResult.failed && (
-            <div className={styles.errorText}>
-              Couldn&rsquo;t detect the click in your recording. Use speakers (not headphones) and record again, or calibrate by ear.
-            </div>
-          )}
-          {autoResult && !autoResult.failed && (
-            <div className={styles.autoResult}>
-              ✅ Measured round-trip ≈ {autoResult.measuredMs}ms → Trim set to {autoResult.appliedMs}ms.
-            </div>
           )}
 
           <div className={styles.trimRow}>
@@ -307,8 +297,8 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
             <button className={styles.playBtn} onClick={handlePlayback} disabled={!hasRecording || busy} id="latency-helper-playback-btn">
               ▶ Play Back
             </button>
-            <button className={styles.autoBtn} onClick={handleAutoDetect} disabled={!hasRecording || busy} id="latency-helper-auto-btn" title="Measure latency from the recorded click (use speakers)">
-              🎯 Auto-detect
+            <button className={styles.autoBtn} disabled id="latency-helper-auto-btn" title="Coming soon — automatically measure your latency from the recorded click">
+              🎯 Auto-detect · soon
             </button>
           </div>
 

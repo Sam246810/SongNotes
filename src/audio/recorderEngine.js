@@ -137,7 +137,8 @@ export const RECORDER_PIANO_INPUT = 1;
  * @param {number} p.sampleRate
  * @param {number} p.transportStartTime  ctx time of the transport downbeat
  * @param {{base:number,output:number,input:number}} p.latencies
- * @param {number} p.userTrimMs
+ * @param {number} p.userTrimMs    extra trim for mic takes (ms)
+ * @param {number} [p.pianoTrimMs] extra trim for piano takes (ms); defaults to userTrimMs
  * @param {'mic'|'piano'|'both'} p.inputType
  * @returns {AudioBuffer|null}
  */
@@ -150,11 +151,13 @@ export function buildTrackBuffer({
   transportStartTime,
   latencies,
   userTrimMs,
+  pianoTrimMs,
   inputType,
 }) {
   const sliceFor = (pcm, source) => {
     if (!pcm || pcm.length === 0) return new Float32Array(0);
-    const compensationSec = compensationSeconds(latencies, source, userTrimMs);
+    const trimMs = source === 'piano' ? (pianoTrimMs ?? userTrimMs) : userTrimMs;
+    const compensationSec = compensationSeconds(latencies, source, trimMs);
     const skip = headSkipSamples({ transportStartTime, recordStartFrame: startFrame, sampleRate, compensationSec });
     // Safety: never trim more than 40% of the take (protects against a wildly wrong
     // latency figure eating a whole short recording).

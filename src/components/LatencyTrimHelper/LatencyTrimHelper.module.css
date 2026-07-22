@@ -131,6 +131,13 @@
   transform: scale(1.25);
 }
 
+.countInNumber {
+  font-size: 15px;
+  font-weight: 700;
+  color: #a5a5f5;
+  letter-spacing: 0.02em;
+}
+
 .statusText {
   min-height: 16px;
   font-size: 12px;
