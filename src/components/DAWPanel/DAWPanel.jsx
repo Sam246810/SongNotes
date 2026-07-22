@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import styles from './DAWPanel.module.css';
 import { getSharedAudioContext } from '../../utils/audioContext';
 import { audioBufferToWav, audioBufferToMp3, mixTracksToMasterBuffer, downloadAudioBlob, sanitizeAudioFilename } from '../../utils/audioExport';
+import { getStoredLatencyTrimMs, setStoredLatencyTrimMs, hasSeenLatencyTrimHelper } from '../../utils/latencyTrimSettings';
 import PianoPanel from '../PianoPanel/PianoPanel';
+import LatencyTrimHelper from '../LatencyTrimHelper/LatencyTrimHelper';
 
 /**
  * WaveformCanvas Component — Renders peak waveform shapes for audio buffers
@@ -208,8 +210,22 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
   const [panelWidth, setPanelWidth] = useState(480);
   const [isResizing, setIsResizing] = useState(false);
 
-  // Latency trim (ms) — OS-detected default, user-adjustable
-  const [latencyTrimMs, setLatencyTrimMs] = useState(getDefaultPipelineOverheadMs);
+  // Latency trim (ms) — OS-detected default, user-adjustable, persisted globally across songs
+  const [latencyTrimMs, setLatencyTrimMs] = useState(() => getStoredLatencyTrimMs(getDefaultPipelineOverheadMs()));
+  const [showLatencyHelper, setShowLatencyHelper] = useState(false);
+
+  // Persist trim changes globally so every song shares the same calibrated value
+  useEffect(() => {
+    setStoredLatencyTrimMs(latencyTrimMs);
+  }, [latencyTrimMs]);
+
+  // Launch the calibration helper the very first time the Scratchpad is opened —
+  // never again afterwards, since the trim setting is global from then on.
+  useEffect(() => {
+    if (!hasSeenLatencyTrimHelper()) {
+      setShowLatencyHelper(true);
+    }
+  }, []);
 
   // Resizable Track Heights state (trackId -> height in px)
   const [trackHeights, setTrackHeights] = useState({});
@@ -947,6 +963,14 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
                   title={`Latency trim: ${latencyTrimMs}ms`}
                 />
                 <span className={styles.latencyTrimValue}>{latencyTrimMs}ms</span>
+                <button
+                  className={styles.helpBtn}
+                  onClick={() => setShowLatencyHelper(true)}
+                  title="Re-run the latency calibration helper"
+                  id="scratchpad-calibrate-latency-btn"
+                >
+                  🎯
+                </button>
               </div>
             </div>
           </div>
@@ -1182,6 +1206,18 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
             </div>
           </div>
         </div>
+      )}
+
+      {/* Latency Trim Helper — first-run (or manually re-opened) calibration popup */}
+      {showLatencyHelper && (
+        <LatencyTrimHelper
+          initialTrimMs={latencyTrimMs}
+          onSave={(ms) => {
+            setLatencyTrimMs(ms);
+            setShowLatencyHelper(false);
+          }}
+          onClose={() => setShowLatencyHelper(false)}
+        />
       )}
     </div>
   );
