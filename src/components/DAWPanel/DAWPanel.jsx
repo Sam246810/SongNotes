@@ -770,8 +770,9 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
               className={styles.helpBtn}
               onClick={() => setShowHelpModal(true)}
               title="How Scratchpad Works"
+              id="scratchpad-help-btn"
             >
-              ❓
+              💡 Help
             </button>
           </div>
 
