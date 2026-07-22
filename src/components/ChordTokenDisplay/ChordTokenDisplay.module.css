@@ -1,0 +1,72 @@
+.display {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  padding: 2px 12px;
+  min-height: 24px;
+  cursor: text;
+  /* Match chord input font exactly */
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.display.locked {
+  cursor: default;
+}
+
+.space {
+  /* Only used for actual whitespace-run tokens */
+  white-space: pre;
+  /* visible: whitespace needs to take up space but not look like anything */
+  color: transparent;
+}
+
+
+/* Unrecognized word tokens — visible but dimmed, hoverable */
+.unknown {
+  color: var(--text-muted);
+  border-radius: 3px;
+  padding: 0 1px;
+  white-space: pre;
+  cursor: default;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  text-decoration: underline dotted var(--text-muted);
+}
+
+.unknown:hover {
+  background: rgba(74, 82, 112, 0.2);
+  color: var(--text-secondary);
+}
+
+.chord {
+  color: var(--chord-color);
+  position: relative;
+  border-radius: 3px;
+  padding: 0 1px;
+  cursor: default;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  white-space: pre;
+}
+
+.chord:hover {
+  background: rgba(167, 139, 250, 0.15);
+  color: #c4b5fd;
+}
+
+.placeholder {
+  display: block;
+  min-height: 24px;
+}
+
+/* === Portal popup anchor === */
+.popupAnchor {
+  position: fixed;
+  z-index: 999;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  animation: fadeIn 0.12s ease;
+}

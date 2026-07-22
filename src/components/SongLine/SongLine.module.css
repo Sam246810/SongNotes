@@ -1,0 +1,100 @@
+.songLine {
+  position: relative;
+  padding: 0;
+  border-left: 3px solid transparent;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  animation: fadeIn 0.15s ease;
+}
+
+.songLine.active {
+  border-left-color: var(--accent);
+  background: rgba(217, 119, 6, 0.05); /* highlighter yellow-amber glow */
+}
+
+.songLine.locked {
+  border-left-color: var(--warning);
+  background: var(--locked-bg);
+}
+
+.trackRow {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  border-bottom: 1px solid var(--paper-line);
+  transition: border-color var(--transition-normal);
+}
+
+.trackChord,
+.trackLyric {
+  flex: 1;
+  position: relative;
+}
+
+.inputChord,
+.inputLyric {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 2px 12px;
+  color: var(--text-primary);
+  transition: color var(--transition-fast);
+  caret-color: var(--accent);
+}
+
+.inputChord {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--chord-color);
+  letter-spacing: 0.04em;
+}
+
+/* Two-mode chord track helpers */
+.inputHidden {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.inputVisible {
+  position: relative;
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.inputChord::placeholder {
+  color: rgba(180, 83, 9, 0.22);
+}
+
+.inputLyric {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--lyric-color);
+  letter-spacing: 0.01em;
+}
+
+.inputLyric::placeholder {
+  color: #a09080;
+}
+
+.inputChord[readonly],
+.inputLyric[readonly] {
+  cursor: default;
+  user-select: text;
+}
+
+.emptyHint {
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 0 12px;
+  opacity: 0.5;
+  pointer-events: none;
+}

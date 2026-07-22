@@ -1,0 +1,51 @@
+.appLayout {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Vertical Sidebar Toggle Handle */
+.sidebarToggleHandle {
+  position: absolute;
+  left: 279px; /* Sit right on the 280px sidebar boundary line */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 56px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-left: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  color: var(--text-secondary);
+  cursor: pointer;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  transition: left 0.15s ease, background var(--transition-fast), color var(--transition-fast);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+  outline: none;
+}
+
+.sidebarToggleHandle:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.sidebarToggleHandle.closed {
+  left: 0;
+  border-left: 1px solid var(--border-default);
+}
+
