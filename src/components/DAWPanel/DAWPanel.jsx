@@ -3,6 +3,16 @@ import styles from './DAWPanel.module.css';
 import { getSharedAudioContext } from '../../utils/audioContext';
 import { audioBufferToWav, audioBufferToMp3, mixTracksToMasterBuffer, downloadAudioBlob, sanitizeAudioFilename } from '../../utils/audioExport';
 import { getStoredLatencyTrimMs, setStoredLatencyTrimMs, hasSeenLatencyTrimHelper } from '../../utils/latencyTrimSettings';
+import {
+  LOW_LATENCY_MIC_CONSTRAINTS,
+  RECORD_PREROLL_SEC,
+  ensureRecorderLoaded,
+  createRecorder,
+  RECORDER_MIC_INPUT,
+  RECORDER_PIANO_INPUT,
+  buildTrackBuffer,
+  measureLatencies,
+} from '../../audio/recorderEngine';
 import PianoPanel from '../PianoPanel/PianoPanel';
 import LatencyTrimHelper from '../LatencyTrimHelper/LatencyTrimHelper';
 
@@ -71,68 +81,6 @@ function WaveformCanvas({ audioBuffer, width, height, isRecording }) {
   }, [audioBuffer, width, height, isRecording]);
 
   return <canvas ref={canvasRef} width={Math.max(10, Math.floor(width))} height={height} className={styles.clipCanvas} />;
-}
-
-/**
- * OpenDAW Wasm-Powered AudioWorklet Processor
- * Uses WebAssembly.Memory as a pre-allocated ring buffer on the audio thread.
- * ZERO postMessage during recording — samples accumulate in Wasm linear memory
- * at near-native CPU speed with no GC pressure. Single bulk transfer on stop.
- */
-const wasmWorkletCode = `
-class WasmPCMProcessor extends AudioWorkletProcessor {
-  constructor() {
-    super();
-    // 256 Wasm pages = 16MB = ~87 seconds of mono float32 at 48kHz
-    this.wasmMemory = new WebAssembly.Memory({ initial: 256 });
-    this.ringBuffer = new Float32Array(this.wasmMemory.buffer);
-    this.writePos = 0;
-    this.active = true;
-
-    this.port.onmessage = (msg) => {
-      if (msg.data === 'flush') {
-        // Recording stopped — bulk-transfer all accumulated PCM data
-        const totalSamples = this.writePos;
-        if (totalSamples > 0) {
-          const out = new Float32Array(totalSamples);
-          out.set(this.ringBuffer.subarray(0, totalSamples));
-          this.port.postMessage(
-            { type: 'pcm-data', buffer: out.buffer, samples: totalSamples },
-            [out.buffer]
-          );
-        } else {
-          this.port.postMessage({ type: 'pcm-data', buffer: null, samples: 0 });
-        }
-        this.writePos = 0;
-        this.active = false;
-      }
-    };
-  }
-
-  process(inputs) {
-    if (!this.active) return true;
-    const ch = inputs[0] && inputs[0][0];
-    if (ch) {
-      const len = ch.length;
-      if (this.writePos + len <= this.ringBuffer.length) {
-        this.ringBuffer.set(ch, this.writePos);
-        this.writePos += len;
-      }
-    }
-    return true;
-  }
-}
-registerProcessor('wasm-pcm-processor', WasmPCMProcessor);
-`;
-
-let _wasmWorkletLoaded = false;
-async function ensureWasmWorkletLoaded(ctx) {
-  if (_wasmWorkletLoaded) return;
-  const blob = new Blob([wasmWorkletCode], { type: 'application/javascript' });
-  const url = URL.createObjectURL(blob);
-  await ctx.audioWorklet.addModule(url);
-  URL.revokeObjectURL(url);
-  _wasmWorkletLoaded = true;
 }
 
 /**
@@ -271,9 +219,12 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
   const audioCtxRef = useRef(null);
   const masterGainRef = useRef(null);
   const trackSourcesRef = useRef({}); // trackId -> { source, gainNode }
-  const wasmWorkletRef = useRef(null);
-  const pcmBusGainRef = useRef(null);
+  const recorderRef = useRef(null); // { node, stop } from the shared recorder engine
+  const recorderSinkRef = useRef(null); // zero-gain sink keeping the worklet pulled
   const micStreamRef = useRef(null);
+  const micTrackRef = useRef(null); // live MediaStreamTrack for latency readout
+  const latenciesRef = useRef({ base: 0, output: 0, input: 0 });
+  const transportStartTimeRef = useRef(0); // ctx time of the transport downbeat (T0)
   const playheadRafRef = useRef(null);
   const startTimeRef = useRef(0);
 
@@ -432,7 +383,12 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
   useEffect(() => {
     if (isMetroOn && (isPlaying || isRecording)) {
       initAudio();
-      nextNoteTimeRef.current = audioCtxRef.current.currentTime + 0.05;
+      // Align the downbeat to the transport start (T0). While recording, T0 sits a
+      // pre-roll ahead so the first click coincides exactly with sample-accurate
+      // capture; otherwise fall back to a small scheduling lead.
+      const now = audioCtxRef.current.currentTime;
+      const t0 = transportStartTimeRef.current;
+      nextNoteTimeRef.current = (t0 && t0 > now) ? t0 : now + 0.05;
       currentBeatRef.current = 0;
       metroTimerRef.current = setInterval(() => metroScheduler(), 25);
     } else {
@@ -459,16 +415,25 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
   useEffect(() => {
     return () => {
       stopPlayback();
-      if (wasmWorkletRef.current) {
-        try {
-          if (pcmBusGainRef.current) pcmBusGainRef.current.disconnect();
-          wasmWorkletRef.current.disconnect();
-        } catch (e) {}
-      }
+      teardownRecordingGraph();
       if (metroTimerRef.current) clearInterval(metroTimerRef.current);
       cancelAnimationFrame(playheadRafRef.current);
     };
   }, []);
+
+  // Tear down the mic/piano/worklet recording graph (safe to call repeatedly).
+  const teardownRecordingGraph = () => {
+    try { if (recorderRef.current) recorderRef.current.node.disconnect(); } catch (e) {}
+    recorderRef.current = null;
+    try { if (recorderSinkRef.current) recorderSinkRef.current.disconnect(); } catch (e) {}
+    recorderSinkRef.current = null;
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach(t => t.stop());
+      micStreamRef.current = null;
+    }
+    micTrackRef.current = null;
+    window.__dawPianoDestination = null;
+  };
 
   const stopPlayback = () => {
     Object.values(trackSourcesRef.current).forEach(ts => {
@@ -479,6 +444,7 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
       } catch (e) {}
     });
     trackSourcesRef.current = {};
+    transportStartTimeRef.current = 0;
     cancelAnimationFrame(playheadRafRef.current);
     setIsPlaying(false);
     setIsRecording(false);
@@ -488,14 +454,19 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
   const startPlayback = (recordMode = false) => {
     initAudio();
     stopPlayback(); // stop any existing
-    
+
     setIsPlaying(true);
     setIsRecording(recordMode);
-    
-    // Start immediately — no artificial pre-roll delay
+
+    // While recording, the transport downbeat (T0) sits a pre-roll ahead so the
+    // recorder worklet is already capturing before it — this is what makes the
+    // recorded take's position on the timeline sample-accurate. Plain playback
+    // starts immediately.
     const now = audioCtxRef.current.currentTime;
-    startTimeRef.current = now;
-    if (recordMode) setRecordingStartTime(now);
+    const startAt = recordMode ? now + RECORD_PREROLL_SEC : now;
+    startTimeRef.current = startAt;
+    transportStartTimeRef.current = startAt;
+    if (recordMode) setRecordingStartTime(startAt);
 
     const anySolo = tracks.some(t => t.isSoloed);
 
@@ -503,7 +474,7 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
       if (track.audioBuffer && !(recordMode && track.isArmed)) {
         const source = audioCtxRef.current.createBufferSource();
         source.buffer = track.audioBuffer;
-        
+
         const gainNode = audioCtxRef.current.createGain();
         let effectiveVol = track.volume;
         if (track.isMuted) effectiveVol = 0;
@@ -512,14 +483,15 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
 
         source.connect(gainNode);
         gainNode.connect(masterGainRef.current);
-        source.start(now);
+        source.start(startAt);
 
         trackSourcesRef.current[track.id] = { source, gainNode };
       }
     });
 
     const updatePlayhead = () => {
-      const current = audioCtxRef.current.currentTime - startTimeRef.current;
+      // Clamp so the playhead sits at 0 during the pre-roll rather than going negative.
+      const current = Math.max(0, audioCtxRef.current.currentTime - startTimeRef.current);
       setPlayhead(current);
       playheadRafRef.current = requestAnimationFrame(updatePlayhead);
     };
@@ -548,153 +520,115 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
     }
 
     const ctx = audioCtxRef.current;
-    
-    // Create piano destination for routing piano notes
+    const inputType = armedTrack.inputType || 'both';
+
+    // Piano notes are routed here (recorder input 1) via PianoPanel's __dawPianoDestination.
     const dawPianoDest = ctx.createGain();
     window.__dawPianoDestination = dawPianoDest;
 
-    // Create pristine mono PCM bus
-    const pcmBusGain = ctx.createGain();
-    pcmBusGainRef.current = pcmBusGain;
-
-    const inputType = armedTrack.inputType || 'both';
-    let hasAudioInput = false;
-    let micInputLatency = 0;
-
-    // Connect piano if inputType is 'piano' or 'both'
-    if (inputType === 'piano' || inputType === 'both') {
-      dawPianoDest.connect(pcmBusGain);
-      hasAudioInput = true;
+    try {
+      await ensureRecorderLoaded(ctx);
+    } catch (err) {
+      console.error("Failed to load recorder worklet:", err);
+      alert("Failed to start recording.");
+      window.__dawPianoDestination = null;
+      return;
     }
 
-    // Connect mic if inputType is 'mic' or 'both'
+    const recorder = createRecorder(ctx);
+    recorderRef.current = recorder;
+
+    // Silent sink: keeps the browser continuously pulling the recorder worklet even
+    // when the only connected source is the intermittent piano bus. Emits no audio.
+    const sink = ctx.createGain();
+    sink.gain.value = 0;
+    recorder.node.connect(sink);
+    sink.connect(masterGainRef.current);
+    recorderSinkRef.current = sink;
+
+    let hasAudioInput = false;
+    micTrackRef.current = null;
+
+    // Mic → recorder input 0
     if (inputType === 'mic' || inputType === 'both') {
       try {
-        // Disable WebRTC DSP filters (echo cancellation, noise suppression, auto gain)
-        // to bypass Chrome/Edge's default 100ms WebRTC DSP queue delay for 0ms input latency
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: false,
-            latency: 0,
-            channelCount: 1
-          }
-        });
+        const stream = await navigator.mediaDevices.getUserMedia(LOW_LATENCY_MIC_CONSTRAINTS);
         micStreamRef.current = stream;
         const micSource = ctx.createMediaStreamSource(stream);
-        micSource.connect(pcmBusGain);
-        // Capture mic track's own input latency (ADC buffer delay)
-        const micTrack = stream.getAudioTracks()[0];
-        const trackSettings = micTrack ? micTrack.getSettings() : {};
-        micInputLatency = trackSettings.latency || 0;
+        micSource.connect(recorder.node, 0, RECORDER_MIC_INPUT);
+        micTrackRef.current = stream.getAudioTracks()[0] || null;
         hasAudioInput = true;
       } catch (err) {
         console.warn("Microphone access unavailable or denied:", err);
         if (inputType === 'mic') {
           alert("Microphone access is required for Microphone track recording.");
-          window.__dawPianoDestination = null;
+          teardownRecordingGraph();
           return;
         }
       }
     }
 
+    // Piano → recorder input 1
+    if (inputType === 'piano' || inputType === 'both') {
+      dawPianoDest.connect(recorder.node, 0, RECORDER_PIANO_INPUT);
+      hasAudioInput = true;
+    }
+
     if (!hasAudioInput) {
       alert("No audio source available for recording.");
+      teardownRecordingGraph();
       return;
     }
 
-    // If mic didn't report its own latency, mirror outputLatency as estimate
-    // (input and output hardware paths are symmetric on most sound cards)
-    if (micInputLatency === 0) {
-      micInputLatency = ctx.outputLatency || 0;
-    }
+    // Snapshot the live latency figures for this take (used for per-source compensation).
+    latenciesRef.current = measureLatencies(ctx, micTrackRef.current);
 
-    try {
-      // Wasm-Powered AudioWorklet Engine
-      // WebAssembly.Memory ring buffer — zero postMessage during recording,
-      // zero GC, near-native memcpy speed, single bulk transfer on stop
-      await ensureWasmWorkletLoaded(ctx);
-
-      const workletNode = new AudioWorkletNode(ctx, 'wasm-pcm-processor', {
-        numberOfInputs: 1,
-        numberOfOutputs: 0,
-        channelCount: 1
-      });
-      wasmWorkletRef.current = workletNode;
-
-      // Set up one-time data retrieval handler for when recording stops
-      workletNode.port.onmessage = (e) => {
-        if (e.data && e.data.type === 'pcm-data' && e.data.buffer) {
-          const pcmData = new Float32Array(e.data.buffer);
-          const totalSamples = e.data.samples;
-          if (totalSamples > 0 && audioCtxRef.current) {
-            const c = audioCtxRef.current;
-
-            // Full round-trip latency compensation:
-            // micInputLatency  = ADC hardware buffer (mic → AudioContext)
-            // baseLatency      = AudioContext render quantum processing delay
-            // outputLatency    = DAC hardware buffer (AudioContext → speakers)
-            // latencyTrimMs    = OS-detected + user-adjustable pipeline overhead
-            const pipelineOverhead = latencyTrimMs / 1000;
-            const rtLatencySec = micInputLatency + (c.baseLatency || 0) + (c.outputLatency || 0) + pipelineOverhead;
-            const compSamples = Math.min(
-              Math.floor(rtLatencySec * c.sampleRate),
-              Math.floor(totalSamples * 0.2) // safety cap: never trim >20%
-            );
-
-            console.log(
-              `[DAW] RT latency compensation: ${(rtLatencySec * 1000).toFixed(1)}ms ` +
-              `(input=${(micInputLatency * 1000).toFixed(1)}ms + base=${((c.baseLatency || 0) * 1000).toFixed(1)}ms + output=${((c.outputLatency || 0) * 1000).toFixed(1)}ms) ` +
-              `→ ${compSamples} samples trimmed from ${totalSamples} total`
-            );
-
-            const finalLength = totalSamples - compSamples;
-            const audioBuffer = c.createBuffer(1, Math.max(1, finalLength), c.sampleRate);
-            audioBuffer.getChannelData(0).set(pcmData.subarray(compSamples));
-
-            setTracks(prev => prev.map(t => {
-              if (t.isArmed) {
-                return { ...t, audioBuffer, duration: audioBuffer.duration };
-              }
-              return t;
-            }));
-          }
-        }
-      };
-
-      // Start playback/metronome FIRST, then connect mic bus to worklet
-      // This ensures sample accumulation begins at the exact same moment
-      // the metronome timeline starts — no dead samples from async setup drift
-      startPlayback(true);
-      pcmBusGain.connect(workletNode);
-    } catch (err) {
-      console.error("Failed to start Wasm AudioWorklet Processor:", err);
-      alert("Failed to start recording.");
-    }
+    // The recorder is already capturing (pre-roll). Start the transport at
+    // T0 = now + RECORD_PREROLL_SEC; the worklet reports the exact frame it began so
+    // buildTrackBuffer() can align the take to T0 with sample accuracy.
+    startPlayback(true);
   };
 
-  const handleStop = () => {
-    const worklet = wasmWorkletRef.current;
-    if (worklet) {
-      // Tell the Wasm worklet to flush its ring buffer
-      worklet.port.postMessage('flush');
+  const handleStop = async () => {
+    const recorder = recorderRef.current;
+    const armedInputType = (tracks.find(t => t.isArmed)?.inputType) || 'both';
+    const transportStartTime = transportStartTimeRef.current;
+    const latencies = latenciesRef.current;
 
-      // Disconnect audio graph
-      try {
-        if (pcmBusGainRef.current) pcmBusGainRef.current.disconnect();
-      } catch (e) {}
-      // Don't disconnect worklet yet — it needs to send data back
-      wasmWorkletRef.current = null;
-      pcmBusGainRef.current = null;
-
-      if (micStreamRef.current) {
-        micStreamRef.current.getTracks().forEach(t => t.stop());
-        micStreamRef.current = null;
-      }
-      window.__dawPianoDestination = null;
-    }
     stopPlayback();
+
+    if (!recorder) {
+      teardownRecordingGraph();
+      return;
+    }
+
+    // Flush the worklet ring buffers and build the aligned take.
+    let result = null;
+    try {
+      result = await recorder.stop();
+    } catch (e) {
+      console.error("Recorder flush failed:", e);
+    }
+    teardownRecordingGraph();
+
+    if (result && result.samples > 0 && audioCtxRef.current) {
+      const audioBuffer = buildTrackBuffer({
+        ctx: audioCtxRef.current,
+        micPcm: result.micPcm,
+        pianoPcm: result.pianoPcm,
+        startFrame: result.startFrame,
+        sampleRate: result.sampleRate,
+        transportStartTime,
+        latencies,
+        userTrimMs: latencyTrimMs,
+        inputType: armedInputType,
+      });
+      if (audioBuffer) {
+        setTracks(prev => prev.map(t => (
+          t.isArmed ? { ...t, audioBuffer, duration: audioBuffer.duration } : t
+        )));
+      }
+    }
   };
 
   const toggleTrackProperty = (trackId, prop) => {

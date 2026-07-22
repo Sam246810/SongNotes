@@ -227,6 +227,40 @@
   color: #ef4444;
 }
 
+.autoBtn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid #6366f1;
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5a5f5;
+  transition: all 0.15s;
+}
+
+.autoBtn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.28);
+}
+
+.autoBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.autoResult {
+  font-size: 12px;
+  font-weight: 600;
+  color: #34d399;
+  text-align: center;
+}
+
+.trimHintTip {
+  margin-top: 2px;
+  color: #9a9ab0;
+}
+
 .footerRow {
   display: flex;
   justify-content: space-between;

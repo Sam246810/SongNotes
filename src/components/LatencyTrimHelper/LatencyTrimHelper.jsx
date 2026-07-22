@@ -2,71 +2,35 @@ import { useEffect, useRef, useState } from 'react';
 import styles from './LatencyTrimHelper.module.css';
 import { getSharedAudioContext } from '../../utils/audioContext';
 import { setStoredLatencyTrimMs, markLatencyTrimHelperSeen } from '../../utils/latencyTrimSettings';
+import {
+  LOW_LATENCY_MIC_CONSTRAINTS,
+  RECORD_PREROLL_SEC,
+  ensureRecorderLoaded,
+  createRecorder,
+  RECORDER_MIC_INPUT,
+  measureLatencies,
+} from '../../audio/recorderEngine';
+import {
+  compensationSeconds,
+  headSkipSamples,
+  detectOnsets,
+  estimateLatencyFromOnsets,
+  measuredLatencyToTrimMs,
+} from '../../audio/latency';
 
 const BPM = 80;
 const BEAT_DUR = 60 / BPM;
 const BEATS = 8;
+const TAIL_SEC = 0.5;
 
-/**
- * Minimal Wasm-backed PCM capture, scoped to this component so it never
- * collides with (or has to coordinate with) DAWPanel's own recording engine.
- */
-const helperWorkletCode = `
-class LatencyHelperPcmProcessor extends AudioWorkletProcessor {
-  constructor() {
-    super();
-    this.wasmMemory = new WebAssembly.Memory({ initial: 64 }); // ~21s mono @48kHz
-    this.ringBuffer = new Float32Array(this.wasmMemory.buffer);
-    this.writePos = 0;
-    this.active = true;
-
-    this.port.onmessage = (msg) => {
-      if (msg.data === 'flush') {
-        const totalSamples = this.writePos;
-        if (totalSamples > 0) {
-          const out = new Float32Array(totalSamples);
-          out.set(this.ringBuffer.subarray(0, totalSamples));
-          this.port.postMessage({ type: 'pcm-data', buffer: out.buffer, samples: totalSamples }, [out.buffer]);
-        } else {
-          this.port.postMessage({ type: 'pcm-data', buffer: null, samples: 0 });
-        }
-        this.writePos = 0;
-        this.active = false;
-      }
-    };
-  }
-
-  process(inputs) {
-    if (!this.active) return true;
-    const ch = inputs[0] && inputs[0][0];
-    if (ch) {
-      const len = ch.length;
-      if (this.writePos + len <= this.ringBuffer.length) {
-        this.ringBuffer.set(ch, this.writePos);
-        this.writePos += len;
-      }
-    }
-    return true;
-  }
-}
-registerProcessor('latency-helper-pcm-processor', LatencyHelperPcmProcessor);
-`;
-
-let _helperWorkletLoaded = false;
-async function ensureHelperWorkletLoaded(ctx) {
-  if (_helperWorkletLoaded) return;
-  const blob = new Blob([helperWorkletCode], { type: 'application/javascript' });
-  const url = URL.createObjectURL(blob);
-  await ctx.audioWorklet.addModule(url);
-  URL.revokeObjectURL(url);
-  _helperWorkletLoaded = true;
-}
-
-/** Schedules a fixed-length click track and returns its beat-highlight timeouts. */
+/** Schedule a fixed click track from startTime; returns the scheduled ctx times + the
+ *  beat-highlight timeouts. */
 function scheduleClickTrack(ctx, startTime, destination, onBeat) {
+  const clickTimes = [];
   const timeouts = [];
   for (let i = 0; i < BEATS; i++) {
     const t = startTime + i * BEAT_DUR;
+    clickTimes.push(t);
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -80,7 +44,7 @@ function scheduleClickTrack(ctx, startTime, destination, onBeat) {
     const delayMs = Math.max(0, (t - ctx.currentTime) * 1000);
     timeouts.push(setTimeout(() => onBeat(i), delayMs));
   }
-  return timeouts;
+  return { clickTimes, timeouts };
 }
 
 export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
@@ -89,121 +53,128 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
   const [trimMs, setTrimMs] = useState(initialTrimMs);
   const [hasRecording, setHasRecording] = useState(false);
   const [micError, setMicError] = useState(false);
+  const [autoResult, setAutoResult] = useState(null); // { measuredMs, appliedMs } | { failed: true }
 
-  const workletRef = useRef(null);
+  const recorderRef = useRef(null);
+  const sinkRef = useRef(null);
   const micStreamRef = useRef(null);
-  const rawBufferRef = useRef(null); // { data: Float32Array, sampleRate }
-  const micInputLatencyRef = useRef(0);
   const timeoutsRef = useRef([]);
+  // Captured take: raw mic PCM + the frame it began + the click schedule + latencies.
+  const takeRef = useRef(null);
 
   const clearScheduled = () => {
     timeoutsRef.current.forEach(clearTimeout);
     timeoutsRef.current = [];
   };
 
-  useEffect(() => {
-    return () => {
-      clearScheduled();
-      if (micStreamRef.current) {
-        micStreamRef.current.getTracks().forEach((t) => t.stop());
-      }
-      if (workletRef.current) {
-        try { workletRef.current.disconnect(); } catch (e) {}
-      }
-    };
-  }, []);
+  const teardown = () => {
+    clearScheduled();
+    try { if (recorderRef.current) recorderRef.current.node.disconnect(); } catch { /* noop */ }
+    recorderRef.current = null;
+    try { if (sinkRef.current) sinkRef.current.disconnect(); } catch { /* noop */ }
+    sinkRef.current = null;
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
+    }
+  };
 
-  const finishRecording = () => {
-    const worklet = workletRef.current;
-    if (!worklet) return;
-    worklet.port.onmessage = (e) => {
-      if (e.data && e.data.type === 'pcm-data' && e.data.buffer) {
-        rawBufferRef.current = {
-          data: new Float32Array(e.data.buffer),
-          sampleRate: getSharedAudioContext().sampleRate,
+  useEffect(() => teardown, []);
+
+  const handleRecord = async () => {
+    clearScheduled();
+    setMicError(false);
+    setAutoResult(null);
+    const ctx = getSharedAudioContext();
+    if (ctx.state === 'suspended') await ctx.resume().catch(() => {});
+
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(LOW_LATENCY_MIC_CONSTRAINTS);
+    } catch {
+      setMicError(true);
+      return;
+    }
+    micStreamRef.current = stream;
+    const micTrack = stream.getAudioTracks()[0] || null;
+    const latencies = measureLatencies(ctx, micTrack);
+
+    try {
+      await ensureRecorderLoaded(ctx);
+    } catch (err) {
+      console.error('Failed to load recorder worklet:', err);
+      setMicError(true);
+      teardown();
+      return;
+    }
+
+    const recorder = createRecorder(ctx);
+    recorderRef.current = recorder;
+
+    // Silent sink keeps the recorder worklet pulled continuously.
+    const sink = ctx.createGain();
+    sink.gain.value = 0;
+    recorder.node.connect(sink);
+    sink.connect(ctx.destination);
+    sinkRef.current = sink;
+
+    const micSource = ctx.createMediaStreamSource(stream);
+    micSource.connect(recorder.node, 0, RECORDER_MIC_INPUT);
+
+    // Audible click through the speakers.
+    const clickGain = ctx.createGain();
+    clickGain.gain.value = 0.6;
+    clickGain.connect(ctx.destination);
+
+    const startTime = ctx.currentTime + RECORD_PREROLL_SEC;
+    setPhase('recording');
+    setBeatIndex(-1);
+    const { clickTimes, timeouts } = scheduleClickTrack(ctx, startTime, clickGain, setBeatIndex);
+    timeoutsRef.current = timeouts;
+
+    const stopDelayMs = (startTime - ctx.currentTime) * 1000 + (BEATS * BEAT_DUR + TAIL_SEC) * 1000;
+    timeoutsRef.current.push(setTimeout(async () => {
+      let result = null;
+      try {
+        result = await recorder.stop();
+      } catch (e) {
+        console.error('Recorder flush failed:', e);
+      }
+      teardown();
+      if (result && result.samples > 0) {
+        takeRef.current = {
+          micPcm: result.micPcm,
+          startFrame: result.startFrame,
+          sampleRate: result.sampleRate,
+          transportStartTime: startTime,
+          clickTimes,
+          latencies,
         };
         setHasRecording(true);
       }
       setPhase('recorded');
       setBeatIndex(-1);
-    };
-    worklet.port.postMessage('flush');
-
-    if (micStreamRef.current) {
-      micStreamRef.current.getTracks().forEach((t) => t.stop());
-      micStreamRef.current = null;
-    }
-    try { worklet.disconnect(); } catch (e) {}
-    workletRef.current = null;
-  };
-
-  const handleRecord = async () => {
-    clearScheduled();
-    setMicError(false);
-    const ctx = getSharedAudioContext();
-    if (ctx.state === 'suspended') {
-      await ctx.resume().catch(() => {});
-    }
-
-    let stream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, latency: 0, channelCount: 1 },
-      });
-    } catch (err) {
-      setMicError(true);
-      return;
-    }
-    micStreamRef.current = stream;
-    const micTrack = stream.getAudioTracks()[0];
-    const trackSettings = micTrack ? micTrack.getSettings() : {};
-    micInputLatencyRef.current = trackSettings.latency || ctx.outputLatency || 0;
-
-    try {
-      await ensureHelperWorkletLoaded(ctx);
-      const workletNode = new AudioWorkletNode(ctx, 'latency-helper-pcm-processor', {
-        numberOfInputs: 1,
-        numberOfOutputs: 0,
-        channelCount: 1,
-      });
-      workletRef.current = workletNode;
-
-      const micSource = ctx.createMediaStreamSource(stream);
-      micSource.connect(workletNode);
-
-      const clickGain = ctx.createGain();
-      clickGain.gain.value = 0.6;
-      clickGain.connect(ctx.destination);
-
-      const startTime = ctx.currentTime + 0.15;
-      setPhase('recording');
-      setBeatIndex(-1);
-      timeoutsRef.current = scheduleClickTrack(ctx, startTime, clickGain, setBeatIndex);
-
-      const stopDelayMs = (startTime - ctx.currentTime) * 1000 + (BEATS * BEAT_DUR + 0.5) * 1000;
-      timeoutsRef.current.push(setTimeout(finishRecording, stopDelayMs));
-    } catch (err) {
-      console.error('Failed to start latency calibration recording:', err);
-      setMicError(true);
-      if (micStreamRef.current) {
-        micStreamRef.current.getTracks().forEach((t) => t.stop());
-        micStreamRef.current = null;
-      }
-    }
+    }, stopDelayMs));
   };
 
   const handlePlayback = () => {
-    const raw = rawBufferRef.current;
-    if (!raw) return;
+    const take = takeRef.current;
+    if (!take) return;
     clearScheduled();
 
     const ctx = getSharedAudioContext();
-    const rtLatencySec = micInputLatencyRef.current + (ctx.baseLatency || 0) + (ctx.outputLatency || 0) + trimMs / 1000;
-    const compSamples = Math.max(0, Math.min(Math.round(rtLatencySec * raw.sampleRate), raw.data.length - 1));
-    const finalLength = raw.data.length - compSamples;
+    const compensationSec = compensationSeconds(take.latencies, 'mic', trimMs);
+    const skip = headSkipSamples({
+      transportStartTime: take.transportStartTime,
+      recordStartFrame: take.startFrame,
+      sampleRate: take.sampleRate,
+      compensationSec,
+    });
+    const safeSkip = Math.min(skip, Math.max(0, take.micPcm.length - 1));
+    const aligned = take.micPcm.subarray(safeSkip);
 
-    const buffer = ctx.createBuffer(1, Math.max(1, finalLength), raw.sampleRate);
-    buffer.getChannelData(0).set(raw.data.subarray(compSamples));
+    const buffer = ctx.createBuffer(1, Math.max(1, aligned.length), take.sampleRate);
+    buffer.getChannelData(0).set(aligned);
 
     const voiceGain = ctx.createGain();
     voiceGain.gain.value = 1;
@@ -222,10 +193,29 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
 
     setPhase('playing');
     setBeatIndex(-1);
-    timeoutsRef.current = scheduleClickTrack(ctx, startTime, clickGain, setBeatIndex);
+    const { timeouts } = scheduleClickTrack(ctx, startTime, clickGain, setBeatIndex);
+    timeoutsRef.current = timeouts;
 
-    const totalMs = (startTime - ctx.currentTime) * 1000 + (BEATS * BEAT_DUR + 0.5) * 1000;
+    const totalMs = (startTime - ctx.currentTime) * 1000 + (BEATS * BEAT_DUR + TAIL_SEC) * 1000;
     timeoutsRef.current.push(setTimeout(() => { setPhase('recorded'); setBeatIndex(-1); }, totalMs));
+  };
+
+  // Objective calibration: find the recorded click-bleed onsets and compare them to
+  // when the clicks were scheduled to measure the real round-trip latency.
+  const handleAutoDetect = () => {
+    const take = takeRef.current;
+    if (!take) return;
+    const recordStartSec = take.startFrame / take.sampleRate;
+    const scheduledRel = take.clickTimes.map((t) => t - recordStartSec);
+    const onsets = detectOnsets(take.micPcm, take.sampleRate);
+    const measured = estimateLatencyFromOnsets(onsets, scheduledRel);
+    if (measured === null) {
+      setAutoResult({ failed: true });
+      return;
+    }
+    const applied = measuredLatencyToTrimMs(measured, take.latencies);
+    setTrimMs(applied);
+    setAutoResult({ measuredMs: Math.round(measured * 1000), appliedMs: applied });
   };
 
   const handleSave = () => {
@@ -264,6 +254,9 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
           <div className={styles.trimHint}>
             <div>⬆️ &ldquo;Do&rdquo; lands <strong>after</strong> the click (late) → <strong>increase</strong> Trim.</div>
             <div>⬇️ &ldquo;Do&rdquo; lands <strong>before</strong> the click (early) → <strong>decrease</strong> Trim.</div>
+            <div className={styles.trimHintTip}>
+              💡 On <strong>speakers</strong> (not headphones)? Use <strong>Auto-detect</strong> to measure it exactly.
+            </div>
           </div>
 
           <div className={styles.beatRow}>
@@ -276,11 +269,22 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
             {phase === 'recording' && `🔴 Say "Do" on the click… (${Math.max(1, beatIndex + 1)}/${BEATS})`}
             {phase === 'playing' && '▶ Listening — does "Do" land on the click?'}
             {phase === 'recorded' && 'Recorded! Play it back, or record again.'}
-            {phase === 'intro' && ' '}
+            {phase === 'intro' && ' '}
           </div>
 
           {micError && (
             <div className={styles.errorText}>Microphone access is required to calibrate latency.</div>
+          )}
+
+          {autoResult && autoResult.failed && (
+            <div className={styles.errorText}>
+              Couldn&rsquo;t detect the click in your recording. Use speakers (not headphones) and record again, or calibrate by ear.
+            </div>
+          )}
+          {autoResult && !autoResult.failed && (
+            <div className={styles.autoResult}>
+              ✅ Measured round-trip ≈ {autoResult.measuredMs}ms → Trim set to {autoResult.appliedMs}ms.
+            </div>
           )}
 
           <div className={styles.trimRow}>
@@ -302,6 +306,9 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
             </button>
             <button className={styles.playBtn} onClick={handlePlayback} disabled={!hasRecording || busy} id="latency-helper-playback-btn">
               ▶ Play Back
+            </button>
+            <button className={styles.autoBtn} onClick={handleAutoDetect} disabled={!hasRecording || busy} id="latency-helper-auto-btn" title="Measure latency from the recorded click (use speakers)">
+              🎯 Auto-detect
             </button>
           </div>
 
