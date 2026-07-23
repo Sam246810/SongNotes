@@ -3,24 +3,21 @@ import { generateContentKey, wrapContentKey, unwrapContentKey } from './envelope
 
 /**
  * Account-level key envelope: a single random Data Encryption Key (DEK) per user,
- * wrapped TWICE — once by a passphrase-derived key, once by a recovery-code-derived
+ * wrapped TWICE — once by an account-password-derived key, once by a recovery-code-derived
  * key — so either secret independently unlocks it. This whole envelope is what gets
  * stored server-side in `user_keys.envelope`; the DEK itself never is.
- *
- * Lazily created: only the first time a user chooses to encrypt a song, never at
- * signup, so users who never encrypt anything never see a passphrase prompt.
  */
 
 /**
- * @param {string} passphrase
- * @param {string} recoveryCode
- * @returns {Promise<{dek: CryptoKey, envelope: object}>}
+ * @param {string} accountPassword
+ * @param {string} [recoveryCode]
+ * @returns {Promise<{dek: CryptoKey, envelope: object, recoveryCode: string}>}
  */
-export async function createAccountKeys(passphrase, recoveryCode) {
+export async function createAccountKeys(accountPassword, recoveryCode = generateRecoveryCode()) {
   const dek = await generateContentKey();
 
   const passSalt = generateSalt();
-  const passKek = await deriveKEK(passphrase, passSalt);
+  const passKek = await deriveKEK(accountPassword, passSalt);
   const wrappedByPassphrase = await wrapContentKey(passKek, dek);
 
   const recoverySalt = generateSalt();
@@ -33,7 +30,7 @@ export async function createAccountKeys(passphrase, recoveryCode) {
     recovery: { kdf: serializeKdfParams(recoverySalt), wrapped: wrappedByRecovery },
   };
 
-  return { dek, envelope };
+  return { dek, envelope, recoveryCode };
 }
 
 /** A high-entropy, easy-to-transcribe recovery code (unambiguous alphabet, grouped). */
@@ -48,13 +45,16 @@ export function generateRecoveryCode() {
   return code;
 }
 
-/** @returns {Promise<CryptoKey>} the DEK, or throws if the passphrase is wrong. */
-export async function unlockWithPassphrase(envelope, passphrase) {
+/** @returns {Promise<CryptoKey>} the DEK, or throws if the account password is wrong. */
+export async function unlockWithPassphrase(envelope, accountPassword) {
   const { kdf, wrapped } = envelope.passphrase;
   const { salt } = deserializeKdfParams(kdf);
-  const kek = await deriveKEK(passphrase, salt, kdf);
+  const kek = await deriveKEK(accountPassword, salt, kdf);
   return unwrapContentKey(kek, wrapped);
 }
+
+/** Alias for unlockWithPassphrase */
+export const unlockWithAccountPassword = unlockWithPassphrase;
 
 /** @returns {Promise<CryptoKey>} the DEK, or throws if the recovery code is wrong. */
 export async function unlockWithRecoveryCode(envelope, recoveryCode) {
@@ -64,10 +64,10 @@ export async function unlockWithRecoveryCode(envelope, recoveryCode) {
   return unwrapContentKey(kek, wrapped);
 }
 
-/** After recovering the DEK via the recovery code, set a new passphrase for it. */
-export async function rewrapWithNewPassphrase(envelope, dek, newPassphrase) {
+/** After recovering the DEK via the recovery code, set a new account password for it. */
+export async function rewrapWithNewPassphrase(envelope, dek, newAccountPassword) {
   const passSalt = generateSalt();
-  const passKek = await deriveKEK(newPassphrase, passSalt);
+  const passKek = await deriveKEK(newAccountPassword, passSalt);
   const wrappedByPassphrase = await wrapContentKey(passKek, dek);
   return {
     ...envelope,

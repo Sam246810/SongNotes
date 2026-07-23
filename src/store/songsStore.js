@@ -42,6 +42,7 @@ const useSongsStore = create((set, get) => ({
   setRepo: (repo) => set({ repo, status: 'idle', songs: [], activeSongId: null }),
 
   hydrate: async () => {
+    if (get().status === 'hydrating') return;
     set({ status: 'hydrating', error: null });
     try {
       await get().repo.init();
@@ -89,46 +90,49 @@ const useSongsStore = create((set, get) => ({
 
   setActiveSong: (id) => set({ activeSongId: id }),
 
-  toggleReadOnly: (id) => {
-    let updatedSong = null;
-    set((state) => {
-      const songs = state.songs.map((s) => {
-        if (s.id !== id) return s;
-        updatedSong = { ...s, isReadOnly: !s.isReadOnly, updatedAt: new Date().toISOString() };
-        return updatedSong;
-      });
-      return { songs };
-    });
-    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
-  },
-
-  /**
-   * Password-protect a song with real client-side encryption (distinct from the
-   * plain isReadOnly toggle above). Requires an account with the DEK unlocked — the
-   * repo must implement lockSong (only CloudSongsRepository does).
-   */
   lockSong: async (id, password) => {
     const repo = get().repo;
-    if (typeof repo.lockSong !== 'function') {
-      throw new Error('Password-protecting songs requires an account.');
-    }
     const lockedSong = await repo.lockSong(id, password);
     set((state) => ({ songs: state.songs.map((s) => (s.id === id ? lockedSong : s)) }));
     return lockedSong;
   },
 
-  /**
-   * Unlock a password-protected song for this session (verifies the password, caches
-   * its content key in memory, and returns the real decrypted content into the store).
-   */
   unlockSong: async (id, password) => {
     const repo = get().repo;
-    if (typeof repo.unlockSongWithPassword !== 'function') {
-      throw new Error('This song cannot be unlocked in the current mode.');
-    }
     const unlockedSong = await repo.unlockSongWithPassword(id, password);
     set((state) => ({ songs: state.songs.map((s) => (s.id === id ? unlockedSong : s)) }));
     return unlockedSong;
+  },
+
+  unlockSongWithRecoveryCode: async (id, recoveryCode) => {
+    const repo = get().repo;
+    if (typeof repo.unlockSongWithRecoveryCode !== 'function') {
+      throw new Error('Recovery code unlock is not available in guest mode.');
+    }
+    const unlockedSong = await repo.unlockSongWithRecoveryCode(id, recoveryCode);
+    set((state) => ({ songs: state.songs.map((s) => (s.id === id ? unlockedSong : s)) }));
+    return unlockedSong;
+  },
+
+  relockSong: (id) => {
+    const repo = get().repo;
+    if (typeof repo.relockSong === 'function') {
+      repo.relockSong(id);
+    }
+    set((state) => ({
+      songs: state.songs.map((s) => {
+        if (s.id !== id) return s;
+        return {
+          id: s.id,
+          title: '🔒 Password-protected song',
+          lines: [],
+          isLocked: true,
+          isUndecryptedPlaceholder: true,
+          createdAt: s.createdAt || s.created_at,
+          updatedAt: s.updatedAt || s.updated_at,
+        };
+      }),
+    }));
   },
 
   // --- Line-level actions ---

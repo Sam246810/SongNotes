@@ -22,16 +22,18 @@ export default function Dashboard() {
   function handleNew() {
     if (!configured) {
       // No accounts available at all in this deployment — encryption isn't possible,
-      // so skip straight to today's behavior.
-      addSong('Untitled Song');
+      // so skip straight to today's behavior but ask for title first.
+      const name = window.prompt("Enter song name:", "Untitled Song");
+      if (name === null) return;
+      addSong(name.trim() || 'Untitled Song');
       return;
     }
     setShowEncryptChoice(true);
   }
 
-  function handleEncryptChoiceDone({ encrypted }) {
+  function handleEncryptChoiceDone({ encrypted, title }) {
     setShowEncryptChoice(false);
-    addSong('Untitled Song', { encrypted });
+    addSong(title || 'Untitled Song', { encrypted });
   }
 
   function handleOpen(id) {
@@ -111,9 +113,9 @@ export default function Dashboard() {
                 <div className={styles.itemLeft}>
                   <span
                     className={styles.itemIcon}
-                    title={song.isLocked ? 'Password-protected' : song.isReadOnly ? 'Read-only' : song.encrypted ? 'Encrypted' : undefined}
+                    title={song.isLocked ? (song.isUndecryptedPlaceholder ? 'Password-protected (locked)' : 'Password-protected (unlocked)') : song.encrypted ? 'Encrypted' : undefined}
                   >
-                    {song.isLocked ? '🔒' : song.isReadOnly ? '🔏' : song.encrypted ? '🔐' : '♪'}
+                    {song.isLocked ? (song.isUndecryptedPlaceholder ? '🔒' : '🔓') : song.encrypted ? '🔐' : '♪'}
                   </span>
                   <div className={styles.itemMeta}>
                     <span className={styles.itemTitle}>{song.title}</span>

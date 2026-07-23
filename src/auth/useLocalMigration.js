@@ -8,6 +8,9 @@ import { getLegacyLocalSongs, hasMigrated, markMigrated, migrateLocalSongsToClou
  * Offers to import a guest's pre-existing local songs into their account, once,
  * the first time they're signed in with the cloud repo hydrated. Declining still
  * marks it done — this is a one-time offer per account, not a nag on every login.
+ *
+ * Security: Only offers migration if those local songs were created/edited
+ * in the active guest session (using transient sessionStorage guest id).
  */
 export default function useLocalMigration() {
   const { user } = useAuth();
@@ -29,7 +32,16 @@ export default function useLocalMigration() {
       setShow(false);
       return;
     }
-    const songs = getLegacyLocalSongs();
+
+    // Only offer to migrate if there is an active guest session ID in this tab
+    const activeGuestId = sessionStorage.getItem('__songnotes_guest_session_id');
+    if (!activeGuestId) {
+      markMigrated(user.id);
+      setShow(false);
+      return;
+    }
+
+    const songs = getLegacyLocalSongs().filter((s) => s.guestSessionId === activeGuestId);
     if (songs.length === 0) {
       markMigrated(user.id); // nothing to ever offer for this account
       setShow(false);

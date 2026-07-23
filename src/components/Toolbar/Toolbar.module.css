@@ -204,3 +204,84 @@
   color: var(--accent-hover);
 }
 
+.guestLockWarning {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--danger-dim);
+  border: 1px solid var(--locked-border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.warningIcon {
+  font-size: 16px;
+  margin-bottom: 2px;
+}
+
+.guestWarningActions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.warningDownloadBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  transition: opacity var(--transition-fast);
+}
+
+.warningDownloadBtn:hover {
+  opacity: 0.9;
+}
+
+.warningSignupBtn {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  transition: all var(--transition-fast);
+}
+
+.warningSignupBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.warningLoginBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  transition: opacity var(--transition-fast);
+}
+
+.warningLoginBtn:hover {
+  opacity: 0.9;
+}
+

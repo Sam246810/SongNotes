@@ -9,7 +9,10 @@ import styles from './Editor.module.css';
 /** Shown instead of the editor for a password-locked song not yet unlocked this session. */
 function SongPasswordGate({ song }) {
   const unlockSong = useSongsStore((s) => s.unlockSong);
+  const unlockSongWithRecoveryCode = useSongsStore((s) => s.unlockSongWithRecoveryCode);
+  const [mode, setMode] = useState('password'); // 'password' | 'recovery'
   const [password, setPassword] = useState('');
+  const [recoveryCode, setRecoveryCode] = useState('');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -18,9 +21,13 @@ function SongPasswordGate({ song }) {
     setError(null);
     setSubmitting(true);
     try {
-      await unlockSong(song.id, password);
+      if (mode === 'password') {
+        await unlockSong(song.id, password);
+      } else {
+        await unlockSongWithRecoveryCode(song.id, recoveryCode.trim());
+      }
     } catch (err) {
-      setError(err.message || 'Wrong password.');
+      setError(err.message || 'Failed to unlock song.');
     } finally {
       setSubmitting(false);
     }
@@ -29,22 +36,46 @@ function SongPasswordGate({ song }) {
   return (
     <div className={styles.emptyState}>
       <div className={styles.emptyIcon}>🔒</div>
-      <p>This song is password-protected.</p>
+      <p>{mode === 'password' ? 'This song is password-protected.' : 'Unlock with Recovery Code'}</p>
       <form className={styles.unlockForm} onSubmit={handleSubmit}>
-        <input
-          type="password"
-          className={styles.unlockInput}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Song password"
-          autoFocus
-          required
-        />
+        {mode === 'password' ? (
+          <input
+            type="password"
+            className={styles.unlockInput}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Song password"
+            autoFocus
+            required
+            autoComplete="new-password"
+          />
+        ) : (
+          <input
+            type="text"
+            className={styles.unlockInput}
+            value={recoveryCode}
+            onChange={(e) => setRecoveryCode(e.target.value)}
+            placeholder="Recovery Code (XXXXX-XXXXX...)"
+            autoFocus
+            required
+          />
+        )}
         <button type="submit" className={styles.unlockBtn} disabled={submitting} id="song-password-unlock-btn">
           {submitting ? 'Unlocking…' : 'Unlock'}
         </button>
       </form>
       {error && <p className={styles.unlockError}>{error}</p>}
+
+      <button
+        type="button"
+        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer', marginTop: '12px', textDecoration: 'underline' }}
+        onClick={() => {
+          setMode(mode === 'password' ? 'recovery' : 'password');
+          setError(null);
+        }}
+      >
+        {mode === 'password' ? 'Forgot song password? Use recovery code' : '← Back to song password'}
+      </button>
     </div>
   );
 }
@@ -179,7 +210,7 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
   }
 
   return (
-    <div className={`${styles.editorWrapper} ${song.isReadOnly ? styles.lockedMode : ''}`}>
+    <div className={styles.editorWrapper}>
       <Toolbar
         song={song}
         sidebarOpen={sidebarOpen}
@@ -198,7 +229,7 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
                 <SongLine
                   key={line.id}
                   line={line}
-                  locked={song.isReadOnly}
+                  locked={false}
                   isActive={isActive}
                   focusTarget={isFocusTarget}
                   focusCaretIndex={focusCaretIndex}
@@ -223,11 +254,6 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
           />
         )}
       </div>
-      {song.isReadOnly && (
-        <div className={styles.lockedBanner}>
-          <span>🔒 Document is read-only — unlock from the toolbar to edit</span>
-        </div>
-      )}
     </div>
   );
 }

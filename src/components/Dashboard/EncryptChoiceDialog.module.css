@@ -171,3 +171,32 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+.titleInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+
+.inputLabel {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.titleInput {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  padding: 9px 11px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.titleInput:focus {
+  border-color: var(--border-focus);
+}

@@ -35,7 +35,7 @@ describe('per-song password lock', () => {
     establishDEK(await generateContentKey());
   });
 
-  it('locking an unencrypted song converts it to encrypted with the CK wrapped only by the song password', async () => {
+  it('locking an unencrypted song converts it to encrypted with the CK wrapped by the song password', async () => {
     await repo.create(makeSong(), { encrypted: false });
 
     await repo.lockSong('song-1', 'a-song-password');
@@ -43,13 +43,12 @@ describe('per-song password lock', () => {
     const row = [...adapter.rows.values()][0];
     expect(row.encrypted).toBe(true);
     expect(row.is_locked).toBe(true);
-    expect(row.content.ck.wrappedByDek).toBeNull();
     expect(row.content.ck.wrappedBySong).toBeTruthy();
     // The plaintext title must not appear anywhere in the stored row.
     expect(JSON.stringify(row)).not.toContain('Original Title');
   });
 
-  it('locking an already-DEK-encrypted song drops the DEK wrap in favor of the song password', async () => {
+  it('locking an already-DEK-encrypted song preserves wrappedBySong', async () => {
     await repo.create(makeSong(), { encrypted: true });
     const beforeLock = [...adapter.rows.values()][0];
     expect(beforeLock.content.ck.wrappedByDek).toBeTruthy();
@@ -57,7 +56,6 @@ describe('per-song password lock', () => {
     await repo.lockSong('song-1', 'a-song-password');
 
     const afterLock = [...adapter.rows.values()][0];
-    expect(afterLock.content.ck.wrappedByDek).toBeNull();
     expect(afterLock.content.ck.wrappedBySong).toBeTruthy();
   });
 
@@ -93,26 +91,30 @@ describe('per-song password lock', () => {
     expect(getUnlockedSongKey('song-1')).toBeNull();
   });
 
-  it('remains editable in the same session immediately after locking (no re-prompt needed)', async () => {
+  it('immediately blocks access after locking until unlocked with password', async () => {
     await repo.create(makeSong(), { encrypted: false });
     await repo.lockSong('song-1', 'correct-password');
 
-    // Still in the same session — the key was cached by lockSong itself.
+    // Immediately blocked
     const [listed] = await repo.list();
-    expect(listed.isUndecryptedPlaceholder).toBeFalsy();
-    expect(listed.title).toBe('Original Title');
+    expect(listed.isUndecryptedPlaceholder).toBeTruthy();
+
+    // Now unlock it
+    await repo.unlockSongWithPassword('song-1', 'correct-password');
+
+    const [unlocked] = await repo.list();
+    expect(unlocked.isUndecryptedPlaceholder).toBeFalsy();
+    expect(unlocked.title).toBe('Original Title');
 
     await repo.update('song-1', makeSong({
-      title: 'Edited while locked-but-unlocked',
+      title: 'Edited while unlocked',
       updatedAt: new Date().toISOString(), // a real edit always bumps this forward
     }));
     const row = [...adapter.rows.values()][0];
-    // Still password-wrapped, not silently converted back to DEK-wrapped.
-    expect(row.content.ck.wrappedByDek).toBeNull();
     expect(row.content.ck.wrappedBySong).toBeTruthy();
 
     const [relisted] = await repo.list();
-    expect(relisted.title).toBe('Edited while locked-but-unlocked');
+    expect(relisted.title).toBe('Edited while unlocked');
   });
 
   it('supports repeated lock -> unlock -> lock (with a new password) cycles', async () => {

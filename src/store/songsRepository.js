@@ -1,7 +1,9 @@
 import { alignChordsWithLyrics } from '../utils/chords';
-import { getDEK, getUnlockedSongKey, setUnlockedSongKey } from '../crypto/keyManager';
+import { getDEK, getUnlockedSongKey, setUnlockedSongKey, clearUnlockedSongKey, establishDEK } from '../crypto/keyManager';
 import { generateContentKey, encryptJSON, decryptJSON, wrapContentKey, unwrapContentKey } from '../crypto/envelope';
 import { generateSalt, deriveKEK, serializeKdfParams, deserializeKdfParams } from '../crypto/kdf';
+import { unlockWithRecoveryCode } from '../crypto/accountKeys';
+import { SupabaseUserKeysAdapter } from '../lib/userKeysAdapter';
 
 const STORAGE_KEY = 'songnotes_songs';
 
@@ -49,34 +51,200 @@ function saveToStorage(songs) {
 export class LocalSongsRepository {
   async init() {}
 
+  async _decryptSong(song) {
+    if (!song.encrypted) return song;
+    const { contentEnvelope, ck } = song.content;
+    if (!ck.wrappedBySong) {
+      throw new Error('corrupt content-key envelope');
+    }
+    const songKey = getUnlockedSongKey(song.id);
+    if (!songKey) throw new Error('locked: song password not entered this session');
+    const content = await decryptJSON(songKey, contentEnvelope);
+    return { ...song, ...content, isLocked: true };
+  }
+
+  _placeholderSong(song) {
+    return {
+      id: song.id,
+      title: '🔒 Password-protected song',
+      lines: [],
+      isLocked: true,
+      isUndecryptedPlaceholder: true,
+      createdAt: song.createdAt || song.created_at,
+      updatedAt: song.updatedAt || song.updated_at,
+    };
+  }
+
+  async _buildSong(song, existingSong) {
+    const encrypted = existingSong ? existingSong.encrypted : false;
+    if (!encrypted) return song;
+
+    const existingCk = existingSong?.content?.ck;
+    let contentKey;
+    if (existingCk?.wrappedBySong) {
+      const songKey = getUnlockedSongKey(song.id);
+      if (!songKey) throw new Error('Cannot save: this song is password-locked. Unlock it to edit.');
+      contentKey = songKey;
+    } else {
+      throw new Error('corrupt content-key envelope');
+    }
+
+    const contentEnvelope = await encryptJSON(contentKey, {
+      title: song.title,
+      lines: song.lines,
+      createdAt: song.createdAt,
+      updatedAt: song.updatedAt,
+    });
+
+    return {
+      id: song.id,
+      encrypted: true,
+      content: { contentEnvelope, ck: existingCk },
+      isLocked: true,
+      is_locked: true,
+      createdAt: song.createdAt,
+      updatedAt: song.updatedAt,
+    };
+  }
+
   async list() {
-    return loadFromStorage();
+    const rawSongs = loadFromStorage();
+    const songs = [];
+    let updated = false;
+
+    let guestId = sessionStorage.getItem('__songnotes_guest_session_id');
+    if (!guestId) {
+      guestId = crypto.randomUUID();
+      sessionStorage.setItem('__songnotes_guest_session_id', guestId);
+    }
+
+    for (const s of rawSongs) {
+      if (!s.guestSessionId) {
+        s.guestSessionId = guestId;
+        updated = true;
+      }
+      if (s.guestSessionId === guestId) {
+        if (s.encrypted) {
+          try {
+            const decrypted = await this._decryptSong(s);
+            songs.push(decrypted);
+          } catch (e) {
+            songs.push(this._placeholderSong(s));
+          }
+        } else {
+          songs.push(s);
+        }
+      }
+    }
+    if (updated) {
+      saveToStorage(rawSongs);
+    }
+    return songs;
   }
 
   async get(id) {
-    return loadFromStorage().find((s) => s.id === id) ?? null;
+    const guestId = sessionStorage.getItem('__songnotes_guest_session_id');
+    const song = loadFromStorage().find((s) => s.id === id && s.guestSessionId === guestId) ?? null;
+    if (!song) return null;
+    try {
+      return await this._decryptSong(song);
+    } catch {
+      return this._placeholderSong(song);
+    }
   }
 
-  // eslint-disable-next-line no-unused-vars -- kept for interface parity with CloudSongsRepository
   async create(song, _options) {
     const songs = loadFromStorage();
-    songs.push(song);
+    let guestId = sessionStorage.getItem('__songnotes_guest_session_id');
+    if (!guestId) {
+      guestId = crypto.randomUUID();
+      sessionStorage.setItem('__songnotes_guest_session_id', guestId);
+    }
+    const songWithGuestId = { ...song, guestSessionId: guestId };
+    songs.push(songWithGuestId);
     saveToStorage(songs);
-    return song;
+    return songWithGuestId;
   }
 
   async update(id, song) {
     const songs = loadFromStorage();
     const idx = songs.findIndex((s) => s.id === id);
-    if (idx === -1) songs.push(song);
-    else songs[idx] = song;
+    const existingSong = idx !== -1 ? songs[idx] : null;
+    const finalSong = await this._buildSong(song, existingSong);
+
+    let guestId = existingSong?.guestSessionId;
+    if (!guestId) {
+      guestId = sessionStorage.getItem('__songnotes_guest_session_id');
+      if (!guestId) {
+        guestId = crypto.randomUUID();
+        sessionStorage.setItem('__songnotes_guest_session_id', guestId);
+      }
+    }
+    finalSong.guestSessionId = guestId;
+
+    if (idx === -1) songs.push(finalSong);
+    else songs[idx] = finalSong;
     saveToStorage(songs);
-    return song;
+    return finalSong;
   }
 
   async remove(id) {
-    const songs = loadFromStorage().filter((s) => s.id !== id);
+    const guestId = sessionStorage.getItem('__songnotes_guest_session_id');
+    const songs = loadFromStorage().filter((s) => s.id !== id || s.guestSessionId !== guestId);
     saveToStorage(songs);
+  }
+
+  async lockSong(id, password) {
+    const songs = loadFromStorage();
+    const song = songs.find((s) => s.id === id);
+    if (!song) throw new Error('Song not found.');
+
+    const plain = song.encrypted ? await this._decryptSong(song) : song;
+
+    const newCk = await generateContentKey();
+    const salt = generateSalt();
+    const songKek = await deriveKEK(password, salt);
+    const wrap = await wrapContentKey(songKek, newCk);
+    const ck = { wrappedByDek: null, wrappedBySong: { kdf: serializeKdfParams(salt), wrap } };
+
+    const contentEnvelope = await encryptJSON(newCk, {
+      title: plain.title,
+      lines: plain.lines,
+      createdAt: plain.createdAt || plain.created_at || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    const encryptedSong = {
+      id,
+      encrypted: true,
+      content: { contentEnvelope, ck },
+      isLocked: true,
+      is_locked: true,
+      createdAt: plain.createdAt || plain.created_at || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    saveToStorage(songs.map((s) => (s.id === id ? encryptedSong : s)));
+    clearUnlockedSongKey(id); // immediately lock the song
+    return this._placeholderSong(encryptedSong);
+  }
+
+  async unlockSongWithPassword(id, password) {
+    const songs = loadFromStorage();
+    const song = songs.find((s) => s.id === id);
+    if (!song || !song.encrypted || !song.content.ck.wrappedBySong) {
+      throw new Error('This song is not password-locked.');
+    }
+    const { kdf, wrap } = song.content.ck.wrappedBySong;
+    const { salt } = deserializeKdfParams(kdf);
+    const songKek = await deriveKEK(password, salt, kdf);
+    const ck = await unwrapContentKey(songKek, wrap); // throws if wrong password
+    setUnlockedSongKey(id, ck);
+    return this._decryptSong(song);
+  }
+
+  relockSong(id) {
+    clearUnlockedSongKey(id);
   }
 }
 
@@ -246,14 +414,14 @@ export class CloudSongsRepository {
     }
     const { contentEnvelope, ck } = row.content;
     let contentKey;
-    if (ck.wrappedByDek) {
-      const dek = getDEK();
-      if (!dek) throw new Error('locked: account DEK unavailable');
-      contentKey = await unwrapContentKey(dek, ck.wrappedByDek);
-    } else if (ck.wrappedBySong) {
+    if (row.is_locked) {
       const songKey = getUnlockedSongKey(row.id);
       if (!songKey) throw new Error('locked: song password not entered this session');
       contentKey = songKey;
+    } else if (ck.wrappedByDek) {
+      const dek = getDEK();
+      if (!dek) throw new Error('locked: account DEK unavailable');
+      contentKey = await unwrapContentKey(dek, ck.wrappedByDek);
     } else {
       throw new Error('corrupt content-key envelope');
     }
@@ -291,7 +459,9 @@ export class CloudSongsRepository {
     const salt = generateSalt();
     const songKek = await deriveKEK(password, salt);
     const wrap = await wrapContentKey(songKek, newCk);
-    const ck = { wrappedByDek: null, wrappedBySong: { kdf: serializeKdfParams(salt), wrap } };
+    const dek = getDEK();
+    const wrappedByDek = dek ? await wrapContentKey(dek, newCk) : null;
+    const ck = { wrappedByDek, wrappedBySong: { kdf: serializeKdfParams(salt), wrap } };
 
     const contentEnvelope = await encryptJSON(newCk, {
       title: plain.title,
@@ -314,8 +484,8 @@ export class CloudSongsRepository {
     this._writeCache(cachedRows.map((r) => (r.id === id ? row : r)));
     await this.adapter.update(id, row); // explicit security action: push immediately, not debounced
 
-    setUnlockedSongKey(id, newCk);
-    return this._decryptRow(row);
+    clearUnlockedSongKey(id);
+    return this._placeholderSong(row);
   }
 
   /**
@@ -335,6 +505,26 @@ export class CloudSongsRepository {
 
     setUnlockedSongKey(id, ck);
     return this._decryptRow(row);
+  }
+
+  async unlockSongWithRecoveryCode(id, recoveryCode) {
+    const row = this._readCache().find((r) => r.id === id);
+    if (!row || !row.encrypted || !row.content.ck.wrappedByDek) {
+      throw new Error('This song cannot be unlocked with a recovery code.');
+    }
+    const keysAdapter = new SupabaseUserKeysAdapter(this.adapter.client, this.userId);
+    const env = await keysAdapter.get();
+    if (!env) throw new Error('No account recovery key found.');
+
+    const dek = await unlockWithRecoveryCode(env, recoveryCode);
+    establishDEK(dek);
+    const ck = await unwrapContentKey(dek, row.content.ck.wrappedByDek);
+    setUnlockedSongKey(id, ck);
+    return this._decryptRow(row);
+  }
+
+  relockSong(id) {
+    clearUnlockedSongKey(id);
   }
 
   async list() {

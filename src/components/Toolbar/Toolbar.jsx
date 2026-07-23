@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import useSongsStore from '../../store/songsStore';
 import useAuth from '../../auth/useAuth';
 import { downloadText, exportToPdf } from '../../utils/export';
 import styles from './Toolbar.module.css';
 
 export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratchpad, onToggleScratchpad }) {
-  const { renameSong, toggleReadOnly, lockSong } = useSongsStore();
+  const { renameSong, lockSong, relockSong } = useSongsStore();
   const { user } = useAuth();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(song.title);
@@ -59,6 +60,19 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
     setLockError(null);
   }
 
+  const handleAuthRedirect = () => {
+    // Snapshot the full decrypted song into sessionStorage so it survives the
+    // navigation to /login and back. We use a separate key from the old ID-only
+    // approach to avoid any stale data conflicts.
+    try {
+      sessionStorage.setItem('__songnotes_pending_song_data', JSON.stringify(song));
+      // Ensure the book cover doesn't appear when we return post-login.
+      sessionStorage.setItem('songnotes_book_opened', 'true');
+    } catch (e) {
+      console.error('Failed to save pending song data for redirect:', e);
+    }
+  };
+
   // Close lock menu on outside click
   useEffect(() => {
     if (!lockMenuOpen) return;
@@ -88,10 +102,6 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
   }
 
   function handleLockButtonClick() {
-    if (song.isReadOnly) {
-      toggleReadOnly(song.id); // matches the original single-click toggle behavior
-      return;
-    }
     setLockMenuOpen((v) => !v);
     resetLockPrompt();
   }
@@ -138,13 +148,13 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
         ) : (
           <button
             className={styles.titleBtn}
-            onClick={() => { if (!song.isReadOnly) setEditingTitle(true); }}
-            title={song.isReadOnly ? 'Remove read-only to rename' : 'Click to rename'}
+            onClick={() => setEditingTitle(true)}
+            title="Click to rename"
             aria-label="Song title — click to edit"
             id="song-title-btn"
           >
             {song.title}
-            {!song.isReadOnly && <span className={styles.editIcon}>✎</span>}
+            <span className={styles.editIcon}>✎</span>
           </button>
         )}
       </div>
@@ -174,18 +184,34 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
         {/* Lock / Read-only / Password-protect */}
         <div className={styles.exportWrap} ref={lockMenuRef}>
           <button
-            className={`${styles.btn} ${(song.isReadOnly || song.isLocked) ? styles.btnWarning : ''}`}
+            className={`${styles.btn} ${song.isLocked ? styles.btnWarning : ''}`}
             onClick={handleLockButtonClick}
-            title={song.isReadOnly ? 'Remove read-only' : song.isLocked ? 'Song lock options' : 'Lock options'}
+            title={song.isLocked ? 'Song lock options' : 'Lock options'}
             id="lock-btn"
           >
-            {song.isLocked ? '🔒 Locked' : song.isReadOnly ? '🔓 Read-only' : '🔒 Lock ▾'}
+            {song.isLocked ? '🔓 Unlocked ▾' : '🔒 Lock ▾'}
           </button>
 
           {lockMenuOpen && (
             <div className={styles.dropdown} role="menu">
               {passwordPromptMode ? (
                 <form className={styles.lockPasswordForm} onSubmit={submitLockPassword}>
+                  {!user && (
+                    <div className={styles.guestLockWarning}>
+                      <span className={styles.warningIcon}>⚠️</span>
+                      <p>
+                        To encrypt and save your songs permanently, you must sign in or create an account.
+                      </p>
+                      <div className={styles.guestWarningActions}>
+                        <Link to="/login" className={styles.warningLoginBtn} onClick={handleAuthRedirect}>
+                          Sign In
+                        </Link>
+                        <Link to="/signup" className={styles.warningSignupBtn} onClick={handleAuthRedirect}>
+                          Create Account
+                        </Link>
+                      </div>
+                    </div>
+                  )}
                   <input
                     type="password"
                     placeholder="Password"
@@ -196,6 +222,7 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
                     minLength={8}
                     className={styles.lockPasswordInput}
                     id="lock-password-input"
+                    autoComplete="new-password"
                   />
                   <input
                     type="password"
@@ -206,6 +233,7 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
                     minLength={8}
                     className={styles.lockPasswordInput}
                     id="lock-password-confirm-input"
+                    autoComplete="new-password"
                   />
                   {lockError && <div className={styles.lockErrorText}>{lockError}</div>}
                   <button
@@ -218,40 +246,38 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
                   </button>
                 </form>
               ) : song.isLocked ? (
-                <button
-                  className={styles.dropdownItem}
-                  onClick={() => setPasswordPromptMode('change')}
-                  role="menuitem"
-                  id="lock-change-password-btn"
-                >
-                  <span className={styles.dropdownIcon}>🔑</span>
-                  Change password
-                </button>
-              ) : (
                 <>
                   <button
                     className={styles.dropdownItem}
-                    onClick={() => { toggleReadOnly(song.id); setLockMenuOpen(false); }}
+                    onClick={() => { relockSong(song.id); setLockMenuOpen(false); }}
                     role="menuitem"
-                    id="lock-readonly-btn"
+                    id="lock-now-btn"
                   >
-                    <span className={styles.dropdownIcon}>🔏</span>
-                    Make Read-only
-                    <span className={styles.dropdownHint}>Quick toggle, no password</span>
+                    <span className={styles.dropdownIcon}>🔒</span>
+                    Lock song now
+                    <span className={styles.dropdownHint}>Revoke session access</span>
                   </button>
-                  {user && (
-                    <button
-                      className={styles.dropdownItem}
-                      onClick={() => setPasswordPromptMode('set')}
-                      role="menuitem"
-                      id="lock-password-protect-btn"
-                    >
-                      <span className={styles.dropdownIcon}>🔐</span>
-                      Password-protect…
-                      <span className={styles.dropdownHint}>Real encryption</span>
-                    </button>
-                  )}
+                  <button
+                    className={styles.dropdownItem}
+                    onClick={() => setPasswordPromptMode('change')}
+                    role="menuitem"
+                    id="lock-change-password-btn"
+                  >
+                    <span className={styles.dropdownIcon}>🔑</span>
+                    Change password
+                  </button>
                 </>
+              ) : (
+                <button
+                  className={styles.dropdownItem}
+                  onClick={() => setPasswordPromptMode('set')}
+                  role="menuitem"
+                  id="lock-password-protect-btn"
+                >
+                  <span className={styles.dropdownIcon}>🔐</span>
+                  Password-protect…
+                  <span className={styles.dropdownHint}>Real encryption</span>
+                </button>
               )}
             </div>
           )}

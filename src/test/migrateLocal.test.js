@@ -68,4 +68,23 @@ describe('migrateLocal', () => {
     expect(localStorage.getItem(BACKUP_KEY)).toBeNull();
     expect(hasMigrated('user-1')).toBe(false);
   });
+
+  it('deletes only matching migrated songs and leaves non-matching guest songs untouched', async () => {
+    const songA = { id: 'a', title: 'Song A', lines: [], guestSessionId: 'guest-1' };
+    const songB = { id: 'b', title: 'Song B', lines: [], guestSessionId: 'guest-2' };
+    localStorage.setItem(LEGACY_KEY, JSON.stringify([songA, songB]));
+
+    const create = vi.fn().mockResolvedValue(undefined);
+    const repo = { create };
+
+    // Migrate only guest-1's songs
+    await migrateLocalSongsToCloud(repo, 'user-1', [songA]);
+
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledWith({ id: 'a', title: 'Song A', lines: [] }, { encrypted: false }); // guestSessionId stripped
+
+    // Only song B should remain in localStorage
+    expect(JSON.parse(localStorage.getItem(LEGACY_KEY))).toEqual([songB]);
+    expect(hasMigrated('user-1')).toBe(true);
+  });
 });

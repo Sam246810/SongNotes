@@ -4,6 +4,69 @@
 
 :root {
   /* Colors */
+  --bg-primary:      #fdfbf7; /* warm soft parchment */
+  --bg-secondary:    #f5f0e4; /* warm linen / sidebar background */
+  --bg-surface:      #eae1ce; /* warm almond oatmeal */
+  --bg-elevated:     #e2d7be; /* warm biscuit */
+  --bg-hover:        #dcd1b6; /* warm cookie */
+
+  --border-subtle:   #eaddc5;
+  --border-default:  #cebfab;
+  --border-focus:    #b45309; /* warm rust brown */
+
+  --text-primary:    #2c2419; /* dark sepia coffee bean */
+  --text-secondary:  #5e4c3a; /* sepia brown */
+  --text-muted:      #8a7663; /* warm clay */
+  --text-placeholder:#bda793;
+
+  --accent:          #b45309; /* warm rust brown */
+  --accent-hover:    #d97706; /* warm amber */
+  --accent-glow:     rgba(180, 83, 9, 0.15);
+  --accent-dim:      rgba(180, 83, 9, 0.06);
+
+  --chord-color:     #b45309; /* warm rust brown */
+  --chord-bg:        rgba(180, 83, 9, 0.06);
+  --lyric-color:     #2a221b; /* charcoal sepia */
+
+  --danger:          #be123c;
+  --danger-dim:      rgba(190, 18, 60, 0.08);
+  --success:         #047857;
+  --warning:         #b45309;
+
+  --locked-bg:       rgba(180, 83, 9, 0.03);
+  --locked-border:   rgba(180, 83, 9, 0.2);
+
+  /* Lined Notebook Paper Variables */
+  --workspace-bg:    #eae1ce; /* warm coffee-cream workspace */
+  --paper-bg:        #fdfbf7; /* cozy warm parchment */
+  --paper-border:    #cebfab;
+  --paper-line:      rgba(180, 83, 9, 0.1); /* sepia lined paper rule */
+  --paper-margin:    rgba(220, 38, 38, 0.2);
+
+  /* Typography */
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:  'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+  /* Sizes */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  22px;
+
+  /* Transitions */
+  --transition-fast:   0.12s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow:   0.35s ease;
+
+  /* Shadows */
+  --shadow-sm:   0 1px 4px rgba(0,0,0,0.15);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.12);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,0.15);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+}
+
+/* Cozy Dark Mode Theme Overrides */
+body.cozy-dark {
   --bg-primary:      #12100e; /* warm dark espresso bean */
   --bg-secondary:    #1a1613; /* warm dark roast cocoa */
   --bg-surface:      #241f1a; /* walnut brown */
@@ -24,64 +87,6 @@
   --accent-glow:     rgba(217, 119, 6, 0.2);
   --accent-dim:      rgba(217, 119, 6, 0.08);
 
-  --chord-color:     #b45309; /* warm rust brown */
-  --chord-bg:        rgba(180, 83, 9, 0.06);
-  --lyric-color:     #2a221b; /* charcoal sepia */
-
-  --danger:          #e11d48;
-  --danger-dim:      rgba(225, 29, 72, 0.1);
-  --success:         #059669;
-  --warning:         #d97706;
-
-  --locked-bg:       rgba(217, 119, 6, 0.03);
-  --locked-border:   rgba(217, 119, 6, 0.2);
-
-  /* Lined Notebook Paper Variables */
-  --workspace-bg:    #eaddcc; /* warm coffee-cream workspace */
-  --paper-bg:        #fdf5db; /* cozy yellow-y book page */
-  --paper-border:    #e4d2bf;
-  --paper-line:      rgba(139, 90, 43, 0.12); /* sepia lined paper rule */
-  --paper-margin:    rgba(220, 38, 38, 0.22);
-
-  /* Typography */
-  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono:  'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-
-  /* Sizes */
-  --radius-sm:  6px;
-  --radius-md:  10px;
-  --radius-lg:  16px;
-  --radius-xl:  22px;
-
-  /* Transitions */
-  --transition-fast:   0.12s ease;
-  --transition-normal: 0.2s ease;
-  --transition-slow:   0.35s ease;
-
-  /* Shadows */
-  --shadow-sm:   0 1px 4px rgba(0,0,0,0.4);
-  --shadow-md:   0 4px 16px rgba(0,0,0,0.5);
-  --shadow-lg:   0 8px 32px rgba(0,0,0,0.6);
-  --shadow-glow: 0 0 20px var(--accent-glow);
-}
-
-/* Cozy Dark Mode Theme Overrides */
-body.cozy-dark {
-  --bg-primary:      #0e0d0c;
-  --bg-secondary:    #161413;
-  --bg-surface:      #1f1c1a;
-  --bg-elevated:     #282421;
-  --bg-hover:        #332e2a;
-
-  --border-subtle:   #221e1b;
-  --border-default:  #36302b;
-  --border-focus:    #d97706;
-
-  --text-primary:    #f5eee6;
-  --text-secondary:  #d9bda3;
-  --text-muted:      #998471;
-  --text-placeholder:#5e5043;
-
   --chord-color:     #f59e0b; /* lighter amber in dark mode */
   --chord-bg:        rgba(245, 158, 11, 0.08);
   --lyric-color:     #e4d8cb; /* warm cream lyrics in dark mode */
@@ -91,6 +96,10 @@ body.cozy-dark {
   --paper-border:    #36302b;
   --paper-line:      rgba(217, 119, 6, 0.12); /* glowing amber rule line */
   --paper-margin:    rgba(239, 68, 68, 0.25);
+
+  --shadow-sm:   0 1px 4px rgba(0,0,0,0.4);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,0.6);
 }
 
 *, *::before, *::after {
