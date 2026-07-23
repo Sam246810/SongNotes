@@ -80,7 +80,6 @@ export default function LatencyTrimHelper({ initialTrimMs, initialPianoTrimMs, o
   const sinkRef = useRef(null);
   const micStreamRef = useRef(null);
   const pianoDestRef = useRef(null);
-  const keydownRef = useRef(null);
   const timeoutsRef = useRef([]);
   const takeRef = useRef(null); // { source, pcm, startFrame, sampleRate, transportStartTime, latencies }
 
@@ -96,22 +95,16 @@ export default function LatencyTrimHelper({ initialTrimMs, initialPianoTrimMs, o
     timeoutsRef.current = [];
   };
 
-  const removeKeyListener = () => {
-    if (keydownRef.current) {
-      window.removeEventListener('keydown', keydownRef.current);
-      keydownRef.current = null;
-    }
-  };
-
   const teardown = () => {
     clearScheduled();
-    removeKeyListener();
     try { if (recorderRef.current) recorderRef.current.node.disconnect(); } catch { /* noop */ }
     recorderRef.current = null;
     try { if (sinkRef.current) sinkRef.current.disconnect(); } catch { /* noop */ }
     sinkRef.current = null;
     try { if (pianoDestRef.current) pianoDestRef.current.disconnect(); } catch { /* noop */ }
     pianoDestRef.current = null;
+    // Release the global piano routing hook so PianoPanel stops feeding us once we're done.
+    window.__dawPianoDestination = null;
     if (micStreamRef.current) {
       micStreamRef.current.getTracks().forEach((t) => t.stop());
       micStreamRef.current = null;
@@ -152,9 +145,25 @@ export default function LatencyTrimHelper({ initialTrimMs, initialPianoTrimMs, o
     playPianoNote(ctx, [ctx.destination, pianoDestRef.current]);
   };
 
+  // Let Space act as a tap. Re-registered every time isPiano/phase change (rather than
+  // once inside handleRecord) so the listener always closes over the CURRENT phase —
+  // otherwise it captures the stale pre-recording phase and handleTap's guard never passes.
+  useEffect(() => {
+    if (!isPiano || phase !== 'recording') return;
+    const onKey = (e) => {
+      if (e.repeat) return;
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault();
+        handleTap();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPiano, phase]);
+
   const handleRecord = async () => {
     clearScheduled();
-    removeKeyListener();
     setMicError(false);
     setCountIn(null);
     const ctx = getSharedAudioContext();
@@ -193,20 +202,14 @@ export default function LatencyTrimHelper({ initialTrimMs, initialPianoTrimMs, o
     sinkRef.current = sink;
 
     if (isPiano) {
-      // Piano notes (from taps) are routed into recorder input 1.
+      // Piano notes are routed into recorder input 1. window.__dawPianoDestination is
+      // the same global hook DAWPanel's own recorder uses — PianoPanel connects any
+      // note (mouse click or QWERTY key) to it automatically, so real playing on the
+      // Piano Keyboard is captured here too, not just the synthetic tap-pad note.
       const pianoDest = ctx.createGain();
       pianoDest.connect(recorder.node, 0, RECORDER_PIANO_INPUT);
       pianoDestRef.current = pianoDest;
-      // Let the spacebar act as a tap too.
-      const onKey = (e) => {
-        if (e.repeat) return;
-        if (e.code === 'Space' || e.key === ' ') {
-          e.preventDefault();
-          handleTap();
-        }
-      };
-      window.addEventListener('keydown', onKey);
-      keydownRef.current = onKey;
+      window.__dawPianoDestination = pianoDest;
     } else {
       const micSource = ctx.createMediaStreamSource(micStreamRef.current);
       micSource.connect(recorder.node, 0, RECORDER_MIC_INPUT);
@@ -225,7 +228,6 @@ export default function LatencyTrimHelper({ initialTrimMs, initialPianoTrimMs, o
 
     const stopDelayMs = (startTime - ctx.currentTime) * 1000 + (TOTAL_BEATS * BEAT_DUR + TAIL_SEC) * 1000;
     timeoutsRef.current.push(setTimeout(async () => {
-      removeKeyListener();
       let result = null;
       try {
         result = await recorder.stop();
@@ -322,7 +324,7 @@ export default function LatencyTrimHelper({ initialTrimMs, initialPianoTrimMs, o
           {isPiano ? (
             <ol className={styles.stepsList}>
               <li>Click <strong>Record</strong> — you get a <strong>{COUNT_IN}-beat count-in</strong> at 80 BPM.</li>
-              <li>After the count-in, <strong>tap the pad</strong> (or press <strong>Space</strong>) right on each of the {BEATS} clicks.</li>
+              <li>After the count-in, <strong>tap the pad</strong>, press <strong>Space</strong>, or play a real note on the <strong>Piano Keyboard</strong> right on each of the {BEATS} clicks.</li>
               <li>Click <strong>Play Back</strong> — your taps should land right on the click.</li>
               <li>If they sound early or late, nudge the <strong>Trim</strong> slider and play back again.</li>
             </ol>
