@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '../../auth/useAuth';
+import { savePendingSongIntent } from '../../auth/pendingSongIntent';
 import styles from './EncryptChoiceDialog.module.css';
 
 /**
@@ -25,6 +26,12 @@ export default function EncryptChoiceDialog({ onDone, onCancel }) {
       return;
     }
     onDone({ encrypted: true, title: songTitle.trim() || 'Untitled Song' });
+  }
+
+  function handleAuthRedirect() {
+    // No song exists yet — just the title they typed. Saved so that after signing
+    // in/up, App.jsx can create it for real (encrypted) and drop them straight into it.
+    savePendingSongIntent({ mode: 'new', title: songTitle.trim() || 'Untitled Song' });
   }
 
   return (
@@ -69,12 +76,16 @@ export default function EncryptChoiceDialog({ onDone, onCancel }) {
           <>
             <h2 className={styles.title}>Sign in to encrypt songs</h2>
             <p className={styles.body}>
-              Encryption is tied to your account. Sign in or create an account, then try again —
-              or just create this song without encryption for now.
+              Encryption is tied to your account. Sign in or create an account and we'll bring
+              you right back here with "{songTitle.trim() || 'Untitled Song'}" created and
+              encrypted — or just create it without encryption for now.
             </p>
             <div className={styles.choiceActions}>
-              <Link className={styles.encryptBtn} to="/login" id="encrypt-choice-signin-link">
+              <Link className={styles.encryptBtn} to="/login" onClick={handleAuthRedirect} id="encrypt-choice-signin-link">
                 Sign in
+              </Link>
+              <Link className={styles.encryptBtn} to="/signup" onClick={handleAuthRedirect} id="encrypt-choice-signup-link">
+                Create account
               </Link>
               <button className={styles.plainBtn} onClick={choosePlain} id="encrypt-choice-plain-instead-btn">
                 Don't encrypt instead

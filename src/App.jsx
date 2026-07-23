@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard/Dashboard';
 import Editor from './components/Editor/Editor';
 import BookLanding from './components/BookLanding/BookLanding';
-import useSongsStore from './store/songsStore';
+import useSongsStore, { createSong } from './store/songsStore';
 import useCloudSync from './auth/useCloudSync';
 import useAuth from './auth/useAuth';
+import { takePendingSongIntent, hasPendingSongIntent } from './auth/pendingSongIntent';
+import { LocalSongsRepository } from './store/songsRepository';
 import styles from './App.module.css';
 
 /**
@@ -34,40 +36,64 @@ export default function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [user, songs]);
 
+  // After a guest is redirected to sign in/up specifically to encrypt a song (either a
+  // brand new one from the creation dialog, or an existing one from the Toolbar's
+  // password-protect prompt), pick that intent back up once signed in and actually
+  // fulfill it: create the song ENCRYPTED (not silently downgraded to plain) and drop
+  // the user straight into it.
   useEffect(() => {
-    if (!user || status !== 'ready') return;
+    // Wait for useCloudSync to finish swapping in the cloud repo. Reading the
+    // store's `status`/`repo` right after sign-in (before that swap lands) can
+    // observe stale leftovers from the prior guest session — status can still
+    // read 'ready' with `repo` still pointing at the local/guest repository,
+    // which would silently create the song in local storage instead of the
+    // account. `isChecking` is fresh per-mount React state (not persisted like
+    // the store), so it can't be stale the way `status` can.
+    if (!user || isChecking || status !== 'ready') return;
+    const intent = takePendingSongIntent();
+    if (!intent) return;
 
-    const pendingJson = sessionStorage.getItem('__songnotes_pending_song_data');
-    if (!pendingJson) return;
+    async function fulfillIntent() {
+      if (intent.mode === 'new') {
+        // Deliberately NOT using the addSong() store action here: it optimistically
+        // updates local state and fires-and-forgets the actual repo.create() network
+        // call, so an immediate hydrate() right after would race ahead of it and
+        // overwrite that optimistic state with a repo.list() that doesn't have the
+        // new song yet, silently erasing it. Await the real creation first instead.
+        const newSong = createSong(intent.title, { encrypted: true });
+        await repo.create(newSong, { encrypted: true });
+        await hydrate();
+        setActiveSong(newSong.id);
+        return;
+      }
 
-    // Clear the flag immediately to prevent re-runs.
-    sessionStorage.removeItem('__songnotes_pending_song_data');
-
-    try {
-      const pendingSong = JSON.parse(pendingJson);
-      // Strip any guest-specific fields and create as a plain unencrypted cloud song.
-      const { guestSessionId, encrypted, isLocked, isUndecryptedPlaceholder, content, ...cleanSong } = pendingSong;
-      const songToSave = { ...cleanSong, encrypted: false, updatedAt: new Date().toISOString() };
-
-      repo.create(songToSave, { encrypted: false }).then(() => {
-        hydrate().then(() => {
-          setActiveSong(pendingSong.id);
-        });
-      }).catch((err) => {
-        console.error('Failed to migrate guest song after login:', err);
-      });
-    } catch (e) {
-      console.error('Failed to parse pending song data:', e);
+      // mode === 'existing': preserve the original id/content, just move it into the
+      // account encrypted. Strip guest-only bookkeeping fields first.
+      const { guestSessionId: _guestSessionId, encrypted: _encrypted, isLocked: _isLocked, isUndecryptedPlaceholder: _isUndecryptedPlaceholder, content: _content, ...cleanSong } = intent.song;
+      const songToSave = { ...cleanSong, encrypted: true, updatedAt: new Date().toISOString() };
+      await repo.create(songToSave, { encrypted: true });
+      // Remove the now-migrated guest-local copy so it doesn't linger as a stray
+      // duplicate or get offered again later via the "import local songs" prompt.
+      try {
+        await new LocalSongsRepository().remove(intent.song.id);
+      } catch (e) {
+        console.error('SongNotes: failed to clean up migrated guest song', e);
+      }
+      await hydrate();
+      setActiveSong(intent.song.id);
     }
-  }, [user, status, repo, hydrate, setActiveSong]);
+
+    fulfillIntent().catch((err) => {
+      console.error('SongNotes: failed to fulfill pending encrypt intent after sign-in', err);
+    });
+  }, [user, isChecking, status, repo, hydrate, setActiveSong]);
 
   if (authLoading) {
     return <div className={styles.loadingScreen}>Loading SongNotes…</div>;
   }
   // If there's a pending song migration after sign-in, skip the book cover so the
   // user lands directly in the app.
-  const hasPendingSong = Boolean(sessionStorage.getItem('__songnotes_pending_song_data'));
-  const shouldShowCover = !bookOpened && !user && !hasPendingSong;
+  const shouldShowCover = !bookOpened && !user && !hasPendingSongIntent();
   if (shouldShowCover) {
     return (
       <BookLanding

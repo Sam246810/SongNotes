@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useSongsStore from '../../store/songsStore';
 import useAuth from '../../auth/useAuth';
+import { savePendingSongIntent } from '../../auth/pendingSongIntent';
 import { downloadText, exportToPdf } from '../../utils/export';
 import styles from './Toolbar.module.css';
 
@@ -61,16 +62,9 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
   }
 
   const handleAuthRedirect = () => {
-    // Snapshot the full decrypted song into sessionStorage so it survives the
-    // navigation to /login and back. We use a separate key from the old ID-only
-    // approach to avoid any stale data conflicts.
-    try {
-      sessionStorage.setItem('__songnotes_pending_song_data', JSON.stringify(song));
-      // Ensure the book cover doesn't appear when we return post-login.
-      sessionStorage.setItem('songnotes_book_opened', 'true');
-    } catch (e) {
-      console.error('Failed to save pending song data for redirect:', e);
-    }
+    // Snapshot the full song (all progress) so it survives the navigation to
+    // /login or /signup and back — App.jsx re-creates it encrypted once signed in.
+    savePendingSongIntent({ mode: 'existing', song });
   };
 
   // Close lock menu on outside click
