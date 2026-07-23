@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import useSongsStore from '../../store/songsStore';
+import useAuth from '../../auth/useAuth';
 import styles from './Dashboard.module.css';
 
 function formatDate(iso) {
@@ -10,6 +12,7 @@ function formatDate(iso) {
 
 export default function Dashboard() {
   const { songs, activeSongId, addSong, deleteSong, setActiveSong } = useSongsStore();
+  const { configured, user, signOut } = useAuth();
   const [confirmDelete, setConfirmDelete] = useState(null); // songId pending deletion
 
   function handleNew() {
@@ -44,6 +47,27 @@ export default function Dashboard() {
           + New Song
         </button>
       </div>
+
+      {/* Account status */}
+      {configured && (
+        <div className={styles.accountBar}>
+          {user ? (
+            <>
+              <span className={styles.accountEmail} title={user.email}>{user.email}</span>
+              <button className={styles.accountLinkBtn} onClick={signOut} id="sign-out-btn">
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <span className={styles.accountEmail}>Guest (local only)</span>
+              <Link className={styles.accountLinkBtn} to="/login" id="sign-in-link">
+                Sign in
+              </Link>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Song list */}
       <div className={styles.listArea}>
