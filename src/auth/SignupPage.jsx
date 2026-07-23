@@ -42,9 +42,9 @@ export default function SignupPage() {
         </div>
         <h1 className={styles.title}>Create an account</h1>
         <p className={styles.subtitle}>
-          This just syncs your songs to the cloud. Later, you can choose to
-          <strong> encrypt</strong> individual songs so even we can't read them — that uses a
-          separate passphrase, set up only when you turn it on.
+          This syncs your songs to the cloud. You can also choose to <strong>encrypt</strong>{' '}
+          individual songs so even we can't read them — that uses your account password, no
+          separate passphrase to remember.
         </p>
 
         {!configured && (

@@ -6,7 +6,7 @@ import { savePendingSongIntent } from '../../auth/pendingSongIntent';
 import { downloadText, exportToPdf } from '../../utils/export';
 import styles from './Toolbar.module.css';
 
-export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratchpad, onToggleScratchpad }) {
+export default function Toolbar({ song, showScratchpad, onToggleScratchpad }) {
   const { renameSong, lockSong, changeSongPassword, relockSong } = useSongsStore();
   const { user } = useAuth();
   const [editingTitle, setEditingTitle] = useState(false);

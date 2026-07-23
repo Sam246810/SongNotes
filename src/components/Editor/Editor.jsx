@@ -140,7 +140,7 @@ function AccountKeyGate() {
  * Editor — full song editing view.
  * Manages focus state and delegates all store mutations to songsStore.
  */
-export default function Editor({ sidebarOpen, onToggleSidebar }) {
+export default function Editor() {
   const { songs, activeSongId, updateLine, addLineAfter, deleteLine, splitLine, mergeLineWithPrevious } = useSongsStore();
   const song = songs.find((s) => s.id === activeSongId) ?? null;
 
@@ -273,8 +273,6 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
     <div className={styles.editorWrapper}>
       <Toolbar
         song={song}
-        sidebarOpen={sidebarOpen}
-        onToggleSidebar={onToggleSidebar}
         showScratchpad={showScratchpad}
         onToggleScratchpad={handleToggleScratchpad}
       />

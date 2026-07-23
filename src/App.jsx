@@ -131,7 +131,7 @@ export default function App() {
       </button>
 
       <main className={styles.main}>
-        <Editor sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <Editor />
       </main>
     </div>
   );

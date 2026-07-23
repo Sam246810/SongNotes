@@ -65,8 +65,8 @@ export default function LoginPage() {
         </div>
         <h1 className={styles.title}>Sign in</h1>
         <p className={styles.subtitle}>
-          Sync your songs across devices. This is separate from any per-song encryption
-          passphrase you set up later.
+          Sync your songs across devices. Encrypting a song uses this same account password —
+          locking a song with its own separate password is optional.
         </p>
 
         {!configured && (
