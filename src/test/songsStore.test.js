@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import useSongsStore from '../store/songsStore';
+import { LocalSongsRepository } from '../store/songsRepository';
 
 describe('songsStore actions', () => {
   beforeEach(() => {
@@ -7,6 +8,9 @@ describe('songsStore actions', () => {
     useSongsStore.setState({
       songs: [],
       activeSongId: null,
+      status: 'idle',
+      error: null,
+      repo: new LocalSongsRepository(),
     });
   });
 
@@ -70,5 +74,59 @@ describe('songsStore actions', () => {
     expect(targetFocus.lineId).toBe(line1Id);
     expect(targetFocus.track).toBe('lyrics');
     expect(targetFocus.caretIndex).toBe(6); // index of merge boundary
+  });
+
+  it('persists a new song via the bound repository', async () => {
+    const songId = useSongsStore.getState().addSong('Persisted Song');
+    // repo.create is fire-and-forget; flush microtasks before asserting.
+    await Promise.resolve();
+    await Promise.resolve();
+    const stored = JSON.parse(localStorage.getItem('songnotes_songs'));
+    expect(stored.some((s) => s.id === songId && s.title === 'Persisted Song')).toBe(true);
+  });
+});
+
+describe('songsStore hydration', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    useSongsStore.setState({
+      songs: [],
+      activeSongId: null,
+      status: 'idle',
+      error: null,
+      repo: new LocalSongsRepository(),
+    });
+  });
+
+  it('transitions idle -> hydrating -> ready and loads songs from the repo', async () => {
+    const fakeSongs = [{ id: '1', title: 'Fake', lines: [], locked: false, createdAt: '', updatedAt: '' }];
+    const fakeRepo = {
+      init: vi.fn().mockResolvedValue(undefined),
+      list: vi.fn().mockResolvedValue(fakeSongs),
+    };
+    useSongsStore.setState({ repo: fakeRepo });
+
+    const hydratePromise = useSongsStore.getState().hydrate();
+    expect(useSongsStore.getState().status).toBe('hydrating');
+
+    await hydratePromise;
+
+    expect(fakeRepo.init).toHaveBeenCalled();
+    expect(fakeRepo.list).toHaveBeenCalled();
+    expect(useSongsStore.getState().status).toBe('ready');
+    expect(useSongsStore.getState().songs).toEqual(fakeSongs);
+  });
+
+  it('transitions to error status when the repo fails to load', async () => {
+    const fakeRepo = {
+      init: vi.fn().mockResolvedValue(undefined),
+      list: vi.fn().mockRejectedValue(new Error('network down')),
+    };
+    useSongsStore.setState({ repo: fakeRepo });
+
+    await useSongsStore.getState().hydrate();
+
+    expect(useSongsStore.getState().status).toBe('error');
+    expect(useSongsStore.getState().error).toBeInstanceOf(Error);
   });
 });

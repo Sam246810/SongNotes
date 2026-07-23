@@ -5,6 +5,17 @@
   position: relative;
 }
 
+.loadingScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
 .main {
   flex: 1;
   display: flex;

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Dashboard from './components/Dashboard/Dashboard';
 import Editor from './components/Editor/Editor';
+import useSongsStore from './store/songsStore';
 import styles from './App.module.css';
 
 /**
@@ -9,6 +10,19 @@ import styles from './App.module.css';
  */
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const status = useSongsStore((s) => s.status);
+  const hydrate = useSongsStore((s) => s.hydrate);
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
+  if (status === 'error') {
+    return <div className={styles.loadingScreen}>Couldn't load your songs. Try reloading the page.</div>;
+  }
+  if (status !== 'ready') {
+    return <div className={styles.loadingScreen}>Loading your songs…</div>;
+  }
 
   return (
     <div className={styles.appLayout}>

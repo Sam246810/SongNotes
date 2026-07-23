@@ -1,34 +1,7 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { alignChordsWithLyrics } from '../utils/chords';
-
-const STORAGE_KEY = 'songnotes_songs';
-
-// -- Storage helpers (swap these two functions to move to a real backend) --
-
-function loadFromStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const songs = raw ? JSON.parse(raw) : [];
-    return songs.map((s) => ({
-      ...s,
-      lines: s.lines.map((l) => ({
-        ...l,
-        chords: alignChordsWithLyrics(l.chords, l.lyrics),
-      })),
-    }));
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(songs) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
-  } catch (e) {
-    console.error('SongNotes: failed to save to localStorage', e);
-  }
-}
+import { LocalSongsRepository } from './songsRepository';
 
 // -- Factory helpers --
 
@@ -47,28 +20,46 @@ export function createSong(title = 'Untitled Song') {
   };
 }
 
+function logPersistError(err) {
+  console.error('SongNotes: failed to persist song data', err);
+}
 
 // -- Zustand Store --
 
 const useSongsStore = create((set, get) => ({
-  songs: loadFromStorage(),
+  songs: [],
   activeSongId: null,
+
+  // status: 'idle' | 'hydrating' | 'ready' | 'error' — starts idle, App triggers hydrate()
+  status: 'idle',
+  error: null,
+  // Defaults to guest-mode local storage; swapped for a CloudSongsRepository after login.
+  repo: new LocalSongsRepository(),
+
+  setRepo: (repo) => set({ repo, status: 'idle', songs: [], activeSongId: null }),
+
+  hydrate: async () => {
+    set({ status: 'hydrating', error: null });
+    try {
+      await get().repo.init();
+      const songs = await get().repo.list();
+      set({ songs, status: 'ready' });
+    } catch (error) {
+      set({ status: 'error', error });
+    }
+  },
 
   // --- Song-level actions ---
   addSong: (title) => {
     const song = createSong(title);
-    set((state) => {
-      const songs = [...state.songs, song];
-      saveToStorage(songs);
-      return { songs, activeSongId: song.id };
-    });
+    set((state) => ({ songs: [...state.songs, song], activeSongId: song.id }));
+    get().repo.create(song).catch(logPersistError);
     return song.id;
   },
 
   deleteSong: (id) => {
     set((state) => {
       const songs = state.songs.filter((s) => s.id !== id);
-      saveToStorage(songs);
       const activeSongId =
         state.activeSongId === id
           ? songs.length > 0
@@ -77,32 +68,40 @@ const useSongsStore = create((set, get) => ({
           : state.activeSongId;
       return { songs, activeSongId };
     });
+    get().repo.remove(id).catch(logPersistError);
   },
 
   renameSong: (id, title) => {
+    let updatedSong = null;
     set((state) => {
-      const songs = state.songs.map((s) =>
-        s.id === id ? { ...s, title, updatedAt: new Date().toISOString() } : s
-      );
-      saveToStorage(songs);
+      const songs = state.songs.map((s) => {
+        if (s.id !== id) return s;
+        updatedSong = { ...s, title, updatedAt: new Date().toISOString() };
+        return updatedSong;
+      });
       return { songs };
     });
+    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
   },
 
   setActiveSong: (id) => set({ activeSongId: id }),
 
   toggleLock: (id) => {
+    let updatedSong = null;
     set((state) => {
-      const songs = state.songs.map((s) =>
-        s.id === id ? { ...s, locked: !s.locked, updatedAt: new Date().toISOString() } : s
-      );
-      saveToStorage(songs);
+      const songs = state.songs.map((s) => {
+        if (s.id !== id) return s;
+        updatedSong = { ...s, locked: !s.locked, updatedAt: new Date().toISOString() };
+        return updatedSong;
+      });
       return { songs };
     });
+    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
   },
 
   // --- Line-level actions ---
   updateLine: (songId, lineId, changes) => {
+    let updatedSong = null;
     set((state) => {
       const songs = state.songs.map((s) => {
         if (s.id !== songId) return s;
@@ -115,45 +114,51 @@ const useSongsStore = create((set, get) => ({
           }
           return l;
         });
-        return { ...s, lines, updatedAt: new Date().toISOString() };
+        updatedSong = { ...s, lines, updatedAt: new Date().toISOString() };
+        return updatedSong;
       });
-      saveToStorage(songs);
       return { songs };
     });
+    if (updatedSong) get().repo.update(songId, updatedSong).catch(logPersistError);
   },
 
 
   addLineAfter: (songId, afterLineId) => {
     const newLine = createLine();
+    let updatedSong = null;
     set((state) => {
       const songs = state.songs.map((s) => {
         if (s.id !== songId) return s;
         const idx = s.lines.findIndex((l) => l.id === afterLineId);
         const lines = [...s.lines];
         lines.splice(idx + 1, 0, newLine);
-        return { ...s, lines, updatedAt: new Date().toISOString() };
+        updatedSong = { ...s, lines, updatedAt: new Date().toISOString() };
+        return updatedSong;
       });
-      saveToStorage(songs);
       return { songs };
     });
+    if (updatedSong) get().repo.update(songId, updatedSong).catch(logPersistError);
     return newLine.id;
   },
 
   deleteLine: (songId, lineId) => {
+    let updatedSong = null;
     set((state) => {
       const songs = state.songs.map((s) => {
         if (s.id !== songId) return s;
         if (s.lines.length <= 1) return s; // keep at least one line
         const lines = s.lines.filter((l) => l.id !== lineId);
-        return { ...s, lines, updatedAt: new Date().toISOString() };
+        updatedSong = { ...s, lines, updatedAt: new Date().toISOString() };
+        return updatedSong;
       });
-      saveToStorage(songs);
       return { songs };
     });
+    if (updatedSong) get().repo.update(songId, updatedSong).catch(logPersistError);
   },
 
   splitLine: (songId, lineId, splitIndex, track, caretIndex) => {
     let targetFocus = null;
+    let updatedSong = null;
     set((state) => {
       const songs = state.songs.map((s) => {
         if (s.id !== songId) return s;
@@ -184,16 +189,18 @@ const useSongsStore = create((set, get) => ({
           caretIndex: typeof caretIndex === 'number' ? caretIndex : 0,
         };
 
-        return { ...s, lines, updatedAt: new Date().toISOString() };
+        updatedSong = { ...s, lines, updatedAt: new Date().toISOString() };
+        return updatedSong;
       });
-      saveToStorage(songs);
       return { songs };
     });
+    if (updatedSong) get().repo.update(songId, updatedSong).catch(logPersistError);
     return targetFocus;
   },
 
   mergeLineWithPrevious: (songId, lineId) => {
     let targetFocus = null;
+    let updatedSong = null;
     set((state) => {
       const songs = state.songs.map((s) => {
         if (s.id !== songId) return s;
@@ -204,7 +211,7 @@ const useSongsStore = create((set, get) => ({
         const currLine = s.lines[idx];
 
         const prevLyricsLength = prevLine.lyrics.length;
-        
+
         // Merge: concatenate lyrics and chords
         const alignedPrevChords = alignChordsWithLyrics(prevLine.chords, prevLine.lyrics);
         const mergedChords = alignedPrevChords + currLine.chords;
@@ -226,11 +233,12 @@ const useSongsStore = create((set, get) => ({
           caretIndex: prevLyricsLength,
         };
 
-        return { ...s, lines, updatedAt: new Date().toISOString() };
+        updatedSong = { ...s, lines, updatedAt: new Date().toISOString() };
+        return updatedSong;
       });
-      saveToStorage(songs);
       return { songs };
     });
+    if (updatedSong) get().repo.update(songId, updatedSong).catch(logPersistError);
     return targetFocus;
   },
 
