@@ -48,6 +48,38 @@
   color: #fff;
 }
 
+.stepBadge {
+  margin-left: auto;
+  margin-right: 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #a5a5f5;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 10px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.tapPad {
+  width: 100%;
+  padding: 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid #6366f1;
+  background: rgba(99, 102, 241, 0.18);
+  color: #c7c7fa;
+  transition: background 0.08s, transform 0.05s;
+  user-select: none;
+}
+
+.tapPad:active {
+  background: rgba(99, 102, 241, 0.42);
+  transform: scale(0.98);
+}
+
 .closeModalBtn {
   background: transparent;
   border: none;
@@ -129,6 +161,13 @@
 .beatDotActive {
   background: #6366f1;
   transform: scale(1.25);
+}
+
+.countInNumber {
+  font-size: 15px;
+  font-weight: 700;
+  color: #a5a5f5;
+  letter-spacing: 0.02em;
 }
 
 .statusText {
@@ -225,6 +264,40 @@
 
 .recordBtn {
   color: #ef4444;
+}
+
+.autoBtn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid #6366f1;
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5a5f5;
+  transition: all 0.15s;
+}
+
+.autoBtn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.28);
+}
+
+.autoBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.autoResult {
+  font-size: 12px;
+  font-weight: 600;
+  color: #34d399;
+  text-align: center;
+}
+
+.trimHintTip {
+  margin-top: 2px;
+  color: #9a9ab0;
 }
 
 .footerRow {

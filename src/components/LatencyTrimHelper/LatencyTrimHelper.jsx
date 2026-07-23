@@ -1,78 +1,45 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from './LatencyTrimHelper.module.css';
 import { getSharedAudioContext } from '../../utils/audioContext';
-import { setStoredLatencyTrimMs, markLatencyTrimHelperSeen } from '../../utils/latencyTrimSettings';
+import { setStoredLatencyTrimMs, setStoredPianoTrimMs, markLatencyTrimHelperSeen } from '../../utils/latencyTrimSettings';
+import {
+  LOW_LATENCY_MIC_CONSTRAINTS,
+  RECORD_PREROLL_SEC,
+  ensureRecorderLoaded,
+  createRecorder,
+  RECORDER_MIC_INPUT,
+  RECORDER_PIANO_INPUT,
+  measureLatencies,
+} from '../../audio/recorderEngine';
+import {
+  compensationSeconds,
+  headSkipSamples,
+} from '../../audio/latency';
 
 const BPM = 80;
 const BEAT_DUR = 60 / BPM;
 const BEATS = 8;
+const COUNT_IN = 4; // preparatory beats before the recording beats
+const TOTAL_BEATS = COUNT_IN + BEATS;
+const TAIL_SEC = 0.5;
 
 /**
- * Minimal Wasm-backed PCM capture, scoped to this component so it never
- * collides with (or has to coordinate with) DAWPanel's own recording engine.
+ * Schedule a click track: COUNT_IN softer preparatory beats, then BEATS accented
+ * recording beats. onBeat(i) fires per beat with the raw index (0..TOTAL_BEATS-1).
  */
-const helperWorkletCode = `
-class LatencyHelperPcmProcessor extends AudioWorkletProcessor {
-  constructor() {
-    super();
-    this.wasmMemory = new WebAssembly.Memory({ initial: 64 }); // ~21s mono @48kHz
-    this.ringBuffer = new Float32Array(this.wasmMemory.buffer);
-    this.writePos = 0;
-    this.active = true;
-
-    this.port.onmessage = (msg) => {
-      if (msg.data === 'flush') {
-        const totalSamples = this.writePos;
-        if (totalSamples > 0) {
-          const out = new Float32Array(totalSamples);
-          out.set(this.ringBuffer.subarray(0, totalSamples));
-          this.port.postMessage({ type: 'pcm-data', buffer: out.buffer, samples: totalSamples }, [out.buffer]);
-        } else {
-          this.port.postMessage({ type: 'pcm-data', buffer: null, samples: 0 });
-        }
-        this.writePos = 0;
-        this.active = false;
-      }
-    };
-  }
-
-  process(inputs) {
-    if (!this.active) return true;
-    const ch = inputs[0] && inputs[0][0];
-    if (ch) {
-      const len = ch.length;
-      if (this.writePos + len <= this.ringBuffer.length) {
-        this.ringBuffer.set(ch, this.writePos);
-        this.writePos += len;
-      }
-    }
-    return true;
-  }
-}
-registerProcessor('latency-helper-pcm-processor', LatencyHelperPcmProcessor);
-`;
-
-let _helperWorkletLoaded = false;
-async function ensureHelperWorkletLoaded(ctx) {
-  if (_helperWorkletLoaded) return;
-  const blob = new Blob([helperWorkletCode], { type: 'application/javascript' });
-  const url = URL.createObjectURL(blob);
-  await ctx.audioWorklet.addModule(url);
-  URL.revokeObjectURL(url);
-  _helperWorkletLoaded = true;
-}
-
-/** Schedules a fixed-length click track and returns its beat-highlight timeouts. */
 function scheduleClickTrack(ctx, startTime, destination, onBeat) {
   const timeouts = [];
-  for (let i = 0; i < BEATS; i++) {
+  for (let i = 0; i < TOTAL_BEATS; i++) {
     const t = startTime + i * BEAT_DUR;
+    const isCountIn = i < COUNT_IN;
+    const recBeat = i - COUNT_IN;
+
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(destination);
-    osc.frequency.setValueAtTime(i === 0 ? 1000 : 700, t);
-    gain.gain.setValueAtTime(0.5, t);
+    osc.frequency.setValueAtTime(isCountIn ? 500 : (recBeat === 0 ? 1000 : 700), t);
+    gain.gain.setValueAtTime(isCountIn ? 0.3 : 0.5, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
     osc.start(t);
     osc.stop(t + 0.06);
@@ -83,155 +50,255 @@ function scheduleClickTrack(ctx, startTime, destination, onBeat) {
   return timeouts;
 }
 
-export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
+/** Play a short synthesised piano-ish note now, into each destination. */
+function playPianoNote(ctx, destinations) {
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(523.25, t); // C5
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(0.5, t + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+  osc.connect(gain);
+  destinations.forEach((d) => { if (d) gain.connect(d); });
+  osc.start(t);
+  osc.stop(t + 0.35);
+}
+
+export default function LatencyTrimHelper({ initialTrimMs, initialPianoTrimMs, onSave, onClose }) {
+  const [step, setStep] = useState('voice'); // 'voice' | 'piano'
   const [phase, setPhase] = useState('intro'); // intro | recording | recorded | playing
   const [beatIndex, setBeatIndex] = useState(-1);
-  const [trimMs, setTrimMs] = useState(initialTrimMs);
+  const [countIn, setCountIn] = useState(null);
+  const [voiceTrimMs, setVoiceTrimMs] = useState(initialTrimMs);
+  const [pianoTrimMs, setPianoTrimMs] = useState(initialPianoTrimMs ?? 0);
   const [hasRecording, setHasRecording] = useState(false);
   const [micError, setMicError] = useState(false);
 
-  const workletRef = useRef(null);
+  const recorderRef = useRef(null);
+  const sinkRef = useRef(null);
   const micStreamRef = useRef(null);
-  const rawBufferRef = useRef(null); // { data: Float32Array, sampleRate }
-  const micInputLatencyRef = useRef(0);
+  const pianoDestRef = useRef(null);
   const timeoutsRef = useRef([]);
+  const takeRef = useRef(null); // { source, pcm, startFrame, sampleRate, transportStartTime, latencies }
+
+  const isPiano = step === 'piano';
+  const source = isPiano ? 'piano' : 'mic';
+  const trimMs = isPiano ? pianoTrimMs : voiceTrimMs;
+  const setTrimMs = isPiano ? setPianoTrimMs : setVoiceTrimMs;
+  const busy = phase === 'recording' || phase === 'playing';
+  const actionWord = isPiano ? 'tap' : 'sing';
 
   const clearScheduled = () => {
     timeoutsRef.current.forEach(clearTimeout);
     timeoutsRef.current = [];
   };
 
-  useEffect(() => {
-    return () => {
-      clearScheduled();
-      if (micStreamRef.current) {
-        micStreamRef.current.getTracks().forEach((t) => t.stop());
-      }
-      if (workletRef.current) {
-        try { workletRef.current.disconnect(); } catch (e) {}
-      }
-    };
-  }, []);
-
-  const finishRecording = () => {
-    const worklet = workletRef.current;
-    if (!worklet) return;
-    worklet.port.onmessage = (e) => {
-      if (e.data && e.data.type === 'pcm-data' && e.data.buffer) {
-        rawBufferRef.current = {
-          data: new Float32Array(e.data.buffer),
-          sampleRate: getSharedAudioContext().sampleRate,
-        };
-        setHasRecording(true);
-      }
-      setPhase('recorded');
-      setBeatIndex(-1);
-    };
-    worklet.port.postMessage('flush');
-
+  const teardown = () => {
+    clearScheduled();
+    try { if (recorderRef.current) recorderRef.current.node.disconnect(); } catch { /* noop */ }
+    recorderRef.current = null;
+    try { if (sinkRef.current) sinkRef.current.disconnect(); } catch { /* noop */ }
+    sinkRef.current = null;
+    try { if (pianoDestRef.current) pianoDestRef.current.disconnect(); } catch { /* noop */ }
+    pianoDestRef.current = null;
+    // Release the global piano routing hook so PianoPanel stops feeding us once we're done.
+    window.__dawPianoDestination = null;
     if (micStreamRef.current) {
       micStreamRef.current.getTracks().forEach((t) => t.stop());
       micStreamRef.current = null;
     }
-    try { worklet.disconnect(); } catch (e) {}
-    workletRef.current = null;
   };
+
+  useEffect(() => teardown, []);
+
+  const resetTakeState = () => {
+    teardown();
+    takeRef.current = null;
+    setPhase('intro');
+    setHasRecording(false);
+    setBeatIndex(-1);
+    setCountIn(null);
+    setMicError(false);
+  };
+
+  const goToStep = (next) => {
+    resetTakeState();
+    setStep(next);
+  };
+
+  const handleBeat = (i) => {
+    if (i < COUNT_IN) {
+      setCountIn(COUNT_IN - i);
+      setBeatIndex(-1);
+    } else {
+      setCountIn(null);
+      setBeatIndex(i - COUNT_IN);
+    }
+  };
+
+  // Live tap during the piano step: play a note into the recorder + speakers.
+  const handleTap = () => {
+    if (!isPiano || phase !== 'recording') return;
+    const ctx = getSharedAudioContext();
+    playPianoNote(ctx, [ctx.destination, pianoDestRef.current]);
+  };
+
+  // Let Space act as a tap. Re-registered every time isPiano/phase change (rather than
+  // once inside handleRecord) so the listener always closes over the CURRENT phase —
+  // otherwise it captures the stale pre-recording phase and handleTap's guard never passes.
+  useEffect(() => {
+    if (!isPiano || phase !== 'recording') return;
+    const onKey = (e) => {
+      if (e.repeat) return;
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault();
+        handleTap();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPiano, phase]);
 
   const handleRecord = async () => {
     clearScheduled();
     setMicError(false);
+    setCountIn(null);
     const ctx = getSharedAudioContext();
-    if (ctx.state === 'suspended') {
-      await ctx.resume().catch(() => {});
+    if (ctx.state === 'suspended') await ctx.resume().catch(() => {});
+
+    let micTrack = null;
+
+    // Mic (voice step only) — request before loading the worklet so a denial exits early.
+    if (!isPiano) {
+      try {
+        micStreamRef.current = await navigator.mediaDevices.getUserMedia(LOW_LATENCY_MIC_CONSTRAINTS);
+      } catch {
+        setMicError(true);
+        return;
+      }
+      micTrack = micStreamRef.current.getAudioTracks()[0] || null;
     }
 
-    let stream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, latency: 0, channelCount: 1 },
-      });
+      await ensureRecorderLoaded(ctx);
     } catch (err) {
+      console.error('Failed to load recorder worklet:', err);
       setMicError(true);
+      teardown();
       return;
     }
-    micStreamRef.current = stream;
-    const micTrack = stream.getAudioTracks()[0];
-    const trackSettings = micTrack ? micTrack.getSettings() : {};
-    micInputLatencyRef.current = trackSettings.latency || ctx.outputLatency || 0;
 
-    try {
-      await ensureHelperWorkletLoaded(ctx);
-      const workletNode = new AudioWorkletNode(ctx, 'latency-helper-pcm-processor', {
-        numberOfInputs: 1,
-        numberOfOutputs: 0,
-        channelCount: 1,
-      });
-      workletRef.current = workletNode;
+    const recorder = createRecorder(ctx);
+    recorderRef.current = recorder;
 
-      const micSource = ctx.createMediaStreamSource(stream);
-      micSource.connect(workletNode);
+    // Silent sink keeps the recorder worklet pulled continuously.
+    const sink = ctx.createGain();
+    sink.gain.value = 0;
+    recorder.node.connect(sink);
+    sink.connect(ctx.destination);
+    sinkRef.current = sink;
 
-      const clickGain = ctx.createGain();
-      clickGain.gain.value = 0.6;
-      clickGain.connect(ctx.destination);
-
-      const startTime = ctx.currentTime + 0.15;
-      setPhase('recording');
-      setBeatIndex(-1);
-      timeoutsRef.current = scheduleClickTrack(ctx, startTime, clickGain, setBeatIndex);
-
-      const stopDelayMs = (startTime - ctx.currentTime) * 1000 + (BEATS * BEAT_DUR + 0.5) * 1000;
-      timeoutsRef.current.push(setTimeout(finishRecording, stopDelayMs));
-    } catch (err) {
-      console.error('Failed to start latency calibration recording:', err);
-      setMicError(true);
-      if (micStreamRef.current) {
-        micStreamRef.current.getTracks().forEach((t) => t.stop());
-        micStreamRef.current = null;
-      }
+    if (isPiano) {
+      // Piano notes are routed into recorder input 1. window.__dawPianoDestination is
+      // the same global hook DAWPanel's own recorder uses — PianoPanel connects any
+      // note (mouse click or QWERTY key) to it automatically, so real playing on the
+      // Piano Keyboard is captured here too, not just the synthetic tap-pad note.
+      const pianoDest = ctx.createGain();
+      pianoDest.connect(recorder.node, 0, RECORDER_PIANO_INPUT);
+      pianoDestRef.current = pianoDest;
+      window.__dawPianoDestination = pianoDest;
+    } else {
+      const micSource = ctx.createMediaStreamSource(micStreamRef.current);
+      micSource.connect(recorder.node, 0, RECORDER_MIC_INPUT);
     }
-  };
 
-  const handlePlayback = () => {
-    const raw = rawBufferRef.current;
-    if (!raw) return;
-    clearScheduled();
-
-    const ctx = getSharedAudioContext();
-    const rtLatencySec = micInputLatencyRef.current + (ctx.baseLatency || 0) + (ctx.outputLatency || 0) + trimMs / 1000;
-    const compSamples = Math.max(0, Math.min(Math.round(rtLatencySec * raw.sampleRate), raw.data.length - 1));
-    const finalLength = raw.data.length - compSamples;
-
-    const buffer = ctx.createBuffer(1, Math.max(1, finalLength), raw.sampleRate);
-    buffer.getChannelData(0).set(raw.data.subarray(compSamples));
-
-    const voiceGain = ctx.createGain();
-    voiceGain.gain.value = 1;
-    voiceGain.connect(ctx.destination);
+    const latencies = measureLatencies(ctx, micTrack);
 
     const clickGain = ctx.createGain();
     clickGain.gain.value = 0.6;
     clickGain.connect(ctx.destination);
 
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(voiceGain);
+    const startTime = ctx.currentTime + RECORD_PREROLL_SEC;
+    setPhase('recording');
+    setBeatIndex(-1);
+    timeoutsRef.current = scheduleClickTrack(ctx, startTime, clickGain, handleBeat);
+
+    const stopDelayMs = (startTime - ctx.currentTime) * 1000 + (TOTAL_BEATS * BEAT_DUR + TAIL_SEC) * 1000;
+    timeoutsRef.current.push(setTimeout(async () => {
+      let result = null;
+      try {
+        result = await recorder.stop();
+      } catch (e) {
+        console.error('Recorder flush failed:', e);
+      }
+      teardown();
+      if (result && result.samples > 0) {
+        takeRef.current = {
+          source,
+          pcm: isPiano ? result.pianoPcm : result.micPcm,
+          startFrame: result.startFrame,
+          sampleRate: result.sampleRate,
+          transportStartTime: startTime,
+          latencies,
+        };
+        setHasRecording(true);
+      }
+      setPhase('recorded');
+      setBeatIndex(-1);
+      setCountIn(null);
+    }, stopDelayMs));
+  };
+
+  const handlePlayback = () => {
+    const take = takeRef.current;
+    if (!take || !take.pcm) return;
+    clearScheduled();
+
+    const ctx = getSharedAudioContext();
+    const compensationSec = compensationSeconds(take.latencies, take.source, trimMs);
+    const skip = headSkipSamples({
+      transportStartTime: take.transportStartTime,
+      recordStartFrame: take.startFrame,
+      sampleRate: take.sampleRate,
+      compensationSec,
+    });
+    const safeSkip = Math.min(skip, Math.max(0, take.pcm.length - 1));
+    const aligned = take.pcm.subarray(safeSkip);
+
+    const buffer = ctx.createBuffer(1, Math.max(1, aligned.length), take.sampleRate);
+    buffer.getChannelData(0).set(aligned);
+
+    const takeGain = ctx.createGain();
+    takeGain.gain.value = 1;
+    takeGain.connect(ctx.destination);
+
+    const clickGain = ctx.createGain();
+    clickGain.gain.value = 0.6;
+    clickGain.connect(ctx.destination);
+
+    const bufSource = ctx.createBufferSource();
+    bufSource.buffer = buffer;
+    bufSource.connect(takeGain);
 
     const startTime = ctx.currentTime + 0.15;
-    source.start(startTime);
+    bufSource.start(startTime);
 
     setPhase('playing');
     setBeatIndex(-1);
-    timeoutsRef.current = scheduleClickTrack(ctx, startTime, clickGain, setBeatIndex);
+    timeoutsRef.current = scheduleClickTrack(ctx, startTime, clickGain, handleBeat);
 
-    const totalMs = (startTime - ctx.currentTime) * 1000 + (BEATS * BEAT_DUR + 0.5) * 1000;
-    timeoutsRef.current.push(setTimeout(() => { setPhase('recorded'); setBeatIndex(-1); }, totalMs));
+    const totalMs = (startTime - ctx.currentTime) * 1000 + (TOTAL_BEATS * BEAT_DUR + TAIL_SEC) * 1000;
+    timeoutsRef.current.push(setTimeout(() => { setPhase('recorded'); setBeatIndex(-1); setCountIn(null); }, totalMs));
   };
 
   const handleSave = () => {
-    setStoredLatencyTrimMs(trimMs);
+    setStoredLatencyTrimMs(voiceTrimMs);
+    setStoredPianoTrimMs(pianoTrimMs);
     markLatencyTrimHelperSeen();
-    onSave(trimMs);
+    onSave({ trimMs: voiceTrimMs, pianoTrimMs });
   };
 
   const handleSkip = () => {
@@ -239,59 +306,84 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
     onClose();
   };
 
-  const busy = phase === 'recording' || phase === 'playing';
-
   return (
     <div className={styles.modalOverlay} onClick={handleSkip}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3>🎯 Calibrate Recording Latency</h3>
+          <h3>{isPiano ? '🎹 Calibrate Piano' : '🎤 Calibrate Voice'}</h3>
+          <span className={styles.stepBadge}>Step {isPiano ? 2 : 1} of 2</span>
           <button className={styles.closeModalBtn} onClick={handleSkip} title="Skip for now" id="latency-helper-skip-btn">✕</button>
         </div>
 
         <div className={styles.modalBody}>
           <p className={styles.introText}>
-            Your mic and speakers add a small delay that can throw recordings out of sync.
-            Let's fix that once — it applies to every song from now on, not just this one.
+            Your mic, speakers and piano each add a small delay that can throw recordings out of
+            sync. Let's line them up once — it applies to every song from now on.
           </p>
-          <ol className={styles.stepsList}>
-            <li>Click <strong>Record</strong> — a click plays at 80 BPM.</li>
-            <li>Say <strong>&ldquo;Do&rdquo;</strong> right on each of the {BEATS} clicks.</li>
-            <li>Click <strong>Play Back</strong> — you should hear your own &ldquo;Do&rdquo; landing right on the click.</li>
-            <li>If it sounds early or late, nudge the <strong>Trim</strong> slider and play back again.</li>
-          </ol>
+
+          {isPiano ? (
+            <ol className={styles.stepsList}>
+              <li>Click <strong>Record</strong> — you get a <strong>{COUNT_IN}-beat count-in</strong> at 80 BPM.</li>
+              <li>After the count-in, <strong>tap the pad</strong>, press <strong>Space</strong>, or play a real note on the <strong>Piano Keyboard</strong> right on each of the {BEATS} clicks.</li>
+              <li>Click <strong>Play Back</strong> — your taps should land right on the click.</li>
+              <li>If they sound early or late, nudge the <strong>Trim</strong> slider and play back again.</li>
+            </ol>
+          ) : (
+            <ol className={styles.stepsList}>
+              <li>Click <strong>Record</strong> — you get a <strong>{COUNT_IN}-beat count-in</strong> at 80 BPM.</li>
+              <li>After the count-in, say <strong>&ldquo;Do&rdquo;</strong> right on each of the {BEATS} clicks.</li>
+              <li>Click <strong>Play Back</strong> — your &ldquo;Do&rdquo; should land right on the click.</li>
+              <li>If it sounds early or late, nudge the <strong>Trim</strong> slider and play back again.</li>
+            </ol>
+          )}
 
           <div className={styles.trimHint}>
-            <div>⬆️ &ldquo;Do&rdquo; lands <strong>after</strong> the click (late) → <strong>increase</strong> Trim.</div>
-            <div>⬇️ &ldquo;Do&rdquo; lands <strong>before</strong> the click (early) → <strong>decrease</strong> Trim.</div>
+            <div>⬆️ Lands <strong>after</strong> the click (late) → <strong>increase</strong> Trim.</div>
+            <div>⬇️ Lands <strong>before</strong> the click (early) → <strong>decrease</strong> Trim.</div>
           </div>
 
           <div className={styles.beatRow}>
-            {Array.from({ length: BEATS }).map((_, i) => (
-              <span key={i} className={`${styles.beatDot} ${i === beatIndex ? styles.beatDotActive : ''}`} />
-            ))}
+            {countIn !== null ? (
+              <span className={styles.countInNumber}>Get ready… {countIn}</span>
+            ) : (
+              Array.from({ length: BEATS }).map((_, i) => (
+                <span key={i} className={`${styles.beatDot} ${i === beatIndex ? styles.beatDotActive : ''}`} />
+              ))
+            )}
           </div>
 
+          {isPiano && phase === 'recording' && countIn === null && (
+            <button
+              className={styles.tapPad}
+              onMouseDown={handleTap}
+              id="latency-helper-tap-btn"
+            >
+              🎹 TAP on each click
+            </button>
+          )}
+
           <div className={styles.statusText}>
-            {phase === 'recording' && `🔴 Say "Do" on the click… (${Math.max(1, beatIndex + 1)}/${BEATS})`}
-            {phase === 'playing' && '▶ Listening — does "Do" land on the click?'}
+            {phase === 'recording' && countIn !== null && '🎧 Count-in — get ready…'}
+            {phase === 'recording' && countIn === null && `🔴 ${isPiano ? 'Tap' : 'Say "Do"'} on the click… (${Math.max(1, beatIndex + 1)}/${BEATS})`}
+            {phase === 'playing' && `▶ Listening — does your ${actionWord} land on the click?`}
             {phase === 'recorded' && 'Recorded! Play it back, or record again.'}
-            {phase === 'intro' && ' '}
+            {phase === 'intro' && ' '}
           </div>
 
           {micError && (
-            <div className={styles.errorText}>Microphone access is required to calibrate latency.</div>
+            <div className={styles.errorText}>Microphone access is required to calibrate the voice.</div>
           )}
 
           <div className={styles.trimRow}>
-            <span className={styles.trimLabel}>Trim</span>
+            <span className={styles.trimLabel}>{isPiano ? '🎹' : '🎤'} Trim</span>
             <input
               type="range"
-              min="-10" max="40" step="1"
+              min={isPiano ? -50 : -10} max="40" step="1"
               value={trimMs}
               onChange={(e) => setTrimMs(parseInt(e.target.value, 10))}
               className={styles.trimSlider}
-              title={`Latency trim: ${trimMs}ms`}
+              title={`${isPiano ? 'Piano' : 'Voice'} latency trim: ${trimMs}ms`}
+              id={isPiano ? 'latency-helper-piano-trim' : 'latency-helper-voice-trim'}
             />
             <span className={styles.trimValue}>{trimMs}ms</span>
           </div>
@@ -303,15 +395,30 @@ export default function LatencyTrimHelper({ initialTrimMs, onSave, onClose }) {
             <button className={styles.playBtn} onClick={handlePlayback} disabled={!hasRecording || busy} id="latency-helper-playback-btn">
               ▶ Play Back
             </button>
+            <button className={styles.autoBtn} disabled id="latency-helper-auto-btn" title="Coming soon — automatically measure your latency from the recorded click">
+              🎯 Auto-detect · soon
+            </button>
           </div>
 
           <div className={styles.footerRow}>
-            <button className={styles.skipBtn} onClick={handleSkip} id="latency-helper-skip-footer-btn">
-              Skip for now
-            </button>
-            <button className={styles.saveBtn} onClick={handleSave} disabled={!hasRecording} id="latency-helper-save-btn">
-              ✅ Sounds Right — Save
-            </button>
+            {isPiano ? (
+              <button className={styles.skipBtn} onClick={() => goToStep('voice')} disabled={busy} id="latency-helper-back-btn">
+                ← Back to Voice
+              </button>
+            ) : (
+              <button className={styles.skipBtn} onClick={handleSkip} id="latency-helper-skip-footer-btn">
+                Skip for now
+              </button>
+            )}
+            {isPiano ? (
+              <button className={styles.saveBtn} onClick={handleSave} disabled={busy} id="latency-helper-save-btn">
+                ✅ Save Both
+              </button>
+            ) : (
+              <button className={styles.saveBtn} onClick={() => goToStep('piano')} disabled={busy} id="latency-helper-next-btn">
+                Next: Piano →
+              </button>
+            )}
           </div>
         </div>
       </div>
