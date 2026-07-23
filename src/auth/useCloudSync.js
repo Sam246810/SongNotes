@@ -10,13 +10,21 @@ import { clearSession, restoreSession } from '../crypto/keyManager';
  * based on the current auth session.
  */
 export default function useCloudSync() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const setRepo = useSongsStore((s) => s.setRepo);
   const hydrate = useSongsStore((s) => s.hydrate);
 
   const [phase, setPhase] = useState('checking'); // 'checking' | 'ready'
 
   useEffect(() => {
+    // AuthProvider's session starts null and is only known for sure once `loading`
+    // flips false — on every fresh page load `user` is transiently null while that
+    // restores. Acting on it as "signed out" here would call clearSession() and wipe
+    // the sessionStorage-persisted DEK before the real (signed-in) session even
+    // arrives, permanently breaking decryption for DEK-only encrypted songs on every
+    // reload. Wait for the real answer instead of the transient one.
+    if (authLoading) return undefined;
+
     let cancelled = false;
 
     async function setup() {
@@ -48,10 +56,10 @@ export default function useCloudSync() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, setRepo, hydrate]);
+  }, [user?.id, authLoading, setRepo, hydrate]);
 
   return {
     showUnlockGate: false,
-    isChecking: phase === 'checking',
+    isChecking: phase === 'checking' || authLoading,
   };
 }
