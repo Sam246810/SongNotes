@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useSongsStore from '../../store/songsStore';
 import useAuth from '../../auth/useAuth';
+import EncryptChoiceDialog from './EncryptChoiceDialog';
 import styles from './Dashboard.module.css';
 
 function formatDate(iso) {
@@ -14,9 +15,21 @@ export default function Dashboard() {
   const { songs, activeSongId, addSong, deleteSong, setActiveSong } = useSongsStore();
   const { configured, user, signOut } = useAuth();
   const [confirmDelete, setConfirmDelete] = useState(null); // songId pending deletion
+  const [showEncryptChoice, setShowEncryptChoice] = useState(false);
 
   function handleNew() {
-    addSong('Untitled Song');
+    if (!configured) {
+      // No accounts available at all in this deployment — encryption isn't possible,
+      // so skip straight to today's behavior.
+      addSong('Untitled Song');
+      return;
+    }
+    setShowEncryptChoice(true);
+  }
+
+  function handleEncryptChoiceDone({ encrypted }) {
+    setShowEncryptChoice(false);
+    addSong('Untitled Song', { encrypted });
   }
 
   function handleOpen(id) {
@@ -94,7 +107,9 @@ export default function Dashboard() {
                 id={`song-item-${song.id}`}
               >
                 <div className={styles.itemLeft}>
-                  <span className={styles.itemIcon}>{song.locked ? '🔒' : '♪'}</span>
+                  <span className={styles.itemIcon} title={song.encrypted ? 'Encrypted' : undefined}>
+                    {song.locked ? '🔒' : song.encrypted ? '🔐' : '♪'}
+                  </span>
                   <div className={styles.itemMeta}>
                     <span className={styles.itemTitle}>{song.title}</span>
                     <span className={styles.itemDate}>
@@ -116,6 +131,14 @@ export default function Dashboard() {
           </ul>
         )}
       </div>
+
+      {/* Encrypt-this-song? choice, shown on every new song when accounts are available */}
+      {showEncryptChoice && (
+        <EncryptChoiceDialog
+          onDone={handleEncryptChoiceDone}
+          onCancel={() => setShowEncryptChoice(false)}
+        />
+      )}
 
       {/* Delete confirm modal */}
       {confirmDelete && (

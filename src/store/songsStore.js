@@ -9,12 +9,13 @@ export function createLine(chords = '', lyrics = '') {
   return { id: uuidv4(), chords: alignChordsWithLyrics(chords, lyrics), lyrics };
 }
 
-export function createSong(title = 'Untitled Song') {
+export function createSong(title = 'Untitled Song', { encrypted = false } = {}) {
   return {
     id: uuidv4(),
     title,
     lines: [createLine()],
     locked: false,
+    encrypted,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -50,10 +51,10 @@ const useSongsStore = create((set, get) => ({
   },
 
   // --- Song-level actions ---
-  addSong: (title) => {
-    const song = createSong(title);
+  addSong: (title, { encrypted = false } = {}) => {
+    const song = createSong(title, { encrypted });
     set((state) => ({ songs: [...state.songs, song], activeSongId: song.id }));
-    get().repo.create(song).catch(logPersistError);
+    get().repo.create(song, { encrypted }).catch(logPersistError);
     return song.id;
   },
 
