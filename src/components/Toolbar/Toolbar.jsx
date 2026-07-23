@@ -204,11 +204,17 @@ export default function Toolbar({ song, showScratchpad, onToggleScratchpad }) {
             <div className={styles.dropdown} role="menu">
               {passwordPromptMode ? (
                 <form className={styles.lockPasswordForm} onSubmit={submitLockPassword}>
-                  {!user && passwordPromptMode === 'set' && (
+                  {!user ? (
+                    // Password-locking is tied to an account (the account DEK still
+                    // co-wraps the content key alongside the song password — see
+                    // lockSong/changeSongPassword), so a guest has no way to actually
+                    // use this. Show the sign-in nudge only, no password fields at all.
                     <div className={styles.guestLockWarning}>
                       <span className={styles.warningIcon}>⚠️</span>
                       <p>
-                        To encrypt and save your songs permanently, you must sign in or create an account.
+                        {passwordPromptMode === 'change'
+                          ? 'To change a song password, you must sign in or create an account.'
+                          : 'To password-protect a song, you must sign in or create an account.'}
                       </p>
                       <div className={styles.guestWarningActions}>
                         <Link to="/login" className={styles.warningLoginBtn} onClick={handleAuthRedirect}>
@@ -219,52 +225,55 @@ export default function Toolbar({ song, showScratchpad, onToggleScratchpad }) {
                         </Link>
                       </div>
                     </div>
+                  ) : (
+                    <>
+                      {passwordPromptMode === 'change' && (
+                        <input
+                          type="password"
+                          placeholder="Current password"
+                          value={currentLockPassword}
+                          onChange={(e) => setCurrentLockPassword(e.target.value)}
+                          autoFocus
+                          required
+                          className={styles.lockPasswordInput}
+                          id="lock-current-password-input"
+                          autoComplete="current-password"
+                        />
+                      )}
+                      <input
+                        type="password"
+                        placeholder={passwordPromptMode === 'change' ? 'New password' : 'Password'}
+                        value={lockPassword}
+                        onChange={(e) => setLockPassword(e.target.value)}
+                        autoFocus={passwordPromptMode !== 'change'}
+                        required
+                        minLength={8}
+                        className={styles.lockPasswordInput}
+                        id="lock-password-input"
+                        autoComplete="new-password"
+                      />
+                      <input
+                        type="password"
+                        placeholder="Confirm password"
+                        value={confirmLockPassword}
+                        onChange={(e) => setConfirmLockPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        className={styles.lockPasswordInput}
+                        id="lock-password-confirm-input"
+                        autoComplete="new-password"
+                      />
+                      {lockError && <div className={styles.lockErrorText}>{lockError}</div>}
+                      <button
+                        type="submit"
+                        className={styles.dropdownItem}
+                        disabled={lockSubmitting}
+                        id="lock-password-submit-btn"
+                      >
+                        {lockSubmitting ? 'Saving…' : passwordPromptMode === 'change' ? 'Change password' : 'Set password & lock'}
+                      </button>
+                    </>
                   )}
-                  {passwordPromptMode === 'change' && (
-                    <input
-                      type="password"
-                      placeholder="Current password"
-                      value={currentLockPassword}
-                      onChange={(e) => setCurrentLockPassword(e.target.value)}
-                      autoFocus
-                      required
-                      className={styles.lockPasswordInput}
-                      id="lock-current-password-input"
-                      autoComplete="current-password"
-                    />
-                  )}
-                  <input
-                    type="password"
-                    placeholder={passwordPromptMode === 'change' ? 'New password' : 'Password'}
-                    value={lockPassword}
-                    onChange={(e) => setLockPassword(e.target.value)}
-                    autoFocus={passwordPromptMode !== 'change'}
-                    required
-                    minLength={8}
-                    className={styles.lockPasswordInput}
-                    id="lock-password-input"
-                    autoComplete="new-password"
-                  />
-                  <input
-                    type="password"
-                    placeholder="Confirm password"
-                    value={confirmLockPassword}
-                    onChange={(e) => setConfirmLockPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    className={styles.lockPasswordInput}
-                    id="lock-password-confirm-input"
-                    autoComplete="new-password"
-                  />
-                  {lockError && <div className={styles.lockErrorText}>{lockError}</div>}
-                  <button
-                    type="submit"
-                    className={styles.dropdownItem}
-                    disabled={lockSubmitting}
-                    id="lock-password-submit-btn"
-                  >
-                    {lockSubmitting ? 'Saving…' : passwordPromptMode === 'change' ? 'Change password' : 'Set password & lock'}
-                  </button>
                 </form>
               ) : song.isLocked ? (
                 <>
