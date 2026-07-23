@@ -7,7 +7,7 @@ import { downloadText, exportToPdf } from '../../utils/export';
 import styles from './Toolbar.module.css';
 
 export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratchpad, onToggleScratchpad }) {
-  const { renameSong, lockSong, relockSong } = useSongsStore();
+  const { renameSong, lockSong, changeSongPassword, relockSong } = useSongsStore();
   const { user } = useAuth();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(song.title);
@@ -19,6 +19,7 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
   // for the real crypto lock (password-protect / change password).
   const [lockMenuOpen, setLockMenuOpen] = useState(false);
   const [passwordPromptMode, setPasswordPromptMode] = useState(null); // null | 'set' | 'change'
+  const [currentLockPassword, setCurrentLockPassword] = useState('');
   const [lockPassword, setLockPassword] = useState('');
   const [confirmLockPassword, setConfirmLockPassword] = useState('');
   const [lockError, setLockError] = useState(null);
@@ -56,6 +57,7 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
 
   function resetLockPrompt() {
     setPasswordPromptMode(null);
+    setCurrentLockPassword('');
     setLockPassword('');
     setConfirmLockPassword('');
     setLockError(null);
@@ -103,6 +105,10 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
   async function submitLockPassword(e) {
     e.preventDefault();
     setLockError(null);
+    if (passwordPromptMode === 'change' && !currentLockPassword) {
+      setLockError('Enter your current password.');
+      return;
+    }
     if (lockPassword.length < 8) {
       setLockError('Use at least 8 characters.');
       return;
@@ -111,13 +117,21 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
       setLockError("Passwords don't match.");
       return;
     }
+    if (passwordPromptMode === 'change' && lockPassword === currentLockPassword) {
+      setLockError('New password must be different from the current one.');
+      return;
+    }
     setLockSubmitting(true);
     try {
-      await lockSong(song.id, lockPassword);
+      if (passwordPromptMode === 'change') {
+        await changeSongPassword(song.id, currentLockPassword, lockPassword);
+      } else {
+        await lockSong(song.id, lockPassword);
+      }
       setLockMenuOpen(false);
       resetLockPrompt();
     } catch (err) {
-      setLockError(err.message || 'Failed to lock song.');
+      setLockError(err.message || 'Failed to update song password.');
       setLockSubmitting(false);
     }
   }
@@ -190,7 +204,7 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
             <div className={styles.dropdown} role="menu">
               {passwordPromptMode ? (
                 <form className={styles.lockPasswordForm} onSubmit={submitLockPassword}>
-                  {!user && (
+                  {!user && passwordPromptMode === 'set' && (
                     <div className={styles.guestLockWarning}>
                       <span className={styles.warningIcon}>⚠️</span>
                       <p>
@@ -206,12 +220,25 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
                       </div>
                     </div>
                   )}
+                  {passwordPromptMode === 'change' && (
+                    <input
+                      type="password"
+                      placeholder="Current password"
+                      value={currentLockPassword}
+                      onChange={(e) => setCurrentLockPassword(e.target.value)}
+                      autoFocus
+                      required
+                      className={styles.lockPasswordInput}
+                      id="lock-current-password-input"
+                      autoComplete="current-password"
+                    />
+                  )}
                   <input
                     type="password"
-                    placeholder="Password"
+                    placeholder={passwordPromptMode === 'change' ? 'New password' : 'Password'}
                     value={lockPassword}
                     onChange={(e) => setLockPassword(e.target.value)}
-                    autoFocus
+                    autoFocus={passwordPromptMode !== 'change'}
                     required
                     minLength={8}
                     className={styles.lockPasswordInput}

@@ -104,6 +104,16 @@ const useSongsStore = create((set, get) => ({
     return unlockedSong;
   },
 
+  changeSongPassword: async (id, currentPassword, newPassword) => {
+    const repo = get().repo;
+    if (typeof repo.changeSongPassword !== 'function') {
+      throw new Error('Changing password is not available in this mode.');
+    }
+    const lockedSong = await repo.changeSongPassword(id, currentPassword, newPassword);
+    set((state) => ({ songs: state.songs.map((s) => (s.id === id ? lockedSong : s)) }));
+    return lockedSong;
+  },
+
   unlockSongWithRecoveryCode: async (id, recoveryCode) => {
     const repo = get().repo;
     if (typeof repo.unlockSongWithRecoveryCode !== 'function') {

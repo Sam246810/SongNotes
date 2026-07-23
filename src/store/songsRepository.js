@@ -243,6 +243,52 @@ export class LocalSongsRepository {
     return this._decryptSong(song);
   }
 
+  /** Requires proving the CURRENT password before re-wrapping under a new one. */
+  async changeSongPassword(id, currentPassword, newPassword) {
+    const songs = loadFromStorage();
+    const song = songs.find((s) => s.id === id);
+    if (!song || !song.encrypted || !song.content.ck.wrappedBySong) {
+      throw new Error('This song is not password-locked.');
+    }
+    const { kdf, wrap } = song.content.ck.wrappedBySong;
+    const { salt } = deserializeKdfParams(kdf);
+    const currentKek = await deriveKEK(currentPassword, salt, kdf);
+    let currentCk;
+    try {
+      currentCk = await unwrapContentKey(currentKek, wrap);
+    } catch {
+      throw new Error('Current password is incorrect.');
+    }
+    const plain = await decryptJSON(currentCk, song.content.contentEnvelope);
+
+    const newCk = await generateContentKey();
+    const newSalt = generateSalt();
+    const newKek = await deriveKEK(newPassword, newSalt);
+    const newWrap = await wrapContentKey(newKek, newCk);
+    const ck = { wrappedByDek: null, wrappedBySong: { kdf: serializeKdfParams(newSalt), wrap: newWrap } };
+
+    const contentEnvelope = await encryptJSON(newCk, {
+      title: plain.title,
+      lines: plain.lines,
+      createdAt: plain.createdAt,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const encryptedSong = {
+      id,
+      encrypted: true,
+      content: { contentEnvelope, ck },
+      isLocked: true,
+      is_locked: true,
+      createdAt: plain.createdAt,
+      updatedAt: new Date().toISOString(),
+    };
+
+    saveToStorage(songs.map((s) => (s.id === id ? encryptedSong : s)));
+    clearUnlockedSongKey(id); // require re-entering the NEW password, same as a fresh lock
+    return this._placeholderSong(encryptedSong);
+  }
+
   relockSong(id) {
     clearUnlockedSongKey(id);
   }
@@ -524,6 +570,57 @@ export class CloudSongsRepository {
     const ck = await unwrapContentKey(dek, row.content.ck.wrappedByDek);
     setUnlockedSongKey(id, ck);
     return this._decryptRow(row);
+  }
+
+  /** Requires proving the CURRENT song password before re-wrapping under a new one. */
+  async changeSongPassword(id, currentPassword, newPassword) {
+    const cachedRows = this._readCache();
+    const existingRow = cachedRows.find((r) => r.id === id);
+    if (!existingRow || !existingRow.encrypted || !existingRow.content.ck.wrappedBySong) {
+      throw new Error('This song is not password-locked.');
+    }
+    const { kdf, wrap } = existingRow.content.ck.wrappedBySong;
+    const { salt } = deserializeKdfParams(kdf);
+    const currentKek = await deriveKEK(currentPassword, salt, kdf);
+    let currentCk;
+    try {
+      currentCk = await unwrapContentKey(currentKek, wrap);
+    } catch {
+      throw new Error('Current password is incorrect.');
+    }
+    const plain = await decryptJSON(currentCk, existingRow.content.contentEnvelope);
+
+    const newCk = await generateContentKey();
+    const newSalt = generateSalt();
+    const newKek = await deriveKEK(newPassword, newSalt);
+    const newWrap = await wrapContentKey(newKek, newCk);
+    const dek = getDEK();
+    const wrappedByDek = dek ? await wrapContentKey(dek, newCk) : null;
+    const ck = { wrappedByDek, wrappedBySong: { kdf: serializeKdfParams(newSalt), wrap: newWrap } };
+
+    const contentEnvelope = await encryptJSON(newCk, {
+      title: plain.title,
+      lines: plain.lines,
+      createdAt: plain.createdAt,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const row = {
+      id,
+      user_id: this.userId,
+      encrypted: true,
+      content: { contentEnvelope, ck },
+      title: null,
+      is_locked: true,
+      created_at: plain.createdAt,
+      updated_at: new Date().toISOString(),
+    };
+
+    this._writeCache(cachedRows.map((r) => (r.id === id ? row : r)));
+    await this.adapter.update(id, row); // explicit security action: push immediately, not debounced
+
+    clearUnlockedSongKey(id); // require re-entering the NEW password, same as a fresh lock
+    return this._placeholderSong(row);
   }
 
   relockSong(id) {
