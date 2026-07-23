@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useSongsStore from '../../store/songsStore';
 import useAuth from '../../auth/useAuth';
+import useLocalMigration from '../../auth/useLocalMigration';
 import EncryptChoiceDialog from './EncryptChoiceDialog';
 import styles from './Dashboard.module.css';
 
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const { configured, user, signOut } = useAuth();
   const [confirmDelete, setConfirmDelete] = useState(null); // songId pending deletion
   const [showEncryptChoice, setShowEncryptChoice] = useState(false);
+  const migration = useLocalMigration();
 
   function handleNew() {
     if (!configured) {
@@ -141,6 +143,40 @@ export default function Dashboard() {
           onDone={handleEncryptChoiceDone}
           onCancel={() => setShowEncryptChoice(false)}
         />
+      )}
+
+      {/* One-time offer to import pre-existing local songs into the account */}
+      {migration.show && (
+        <div className={styles.overlay} onClick={migration.importing ? undefined : migration.handleDismiss}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <h2 className={styles.modalTitle}>Import your local songs?</h2>
+            <p className={styles.modalText}>
+              You have {migration.count} song{migration.count === 1 ? '' : 's'} saved on just this
+              device. Import {migration.count === 1 ? 'it' : 'them'} into your account so they sync
+              everywhere? They'll be imported as unencrypted, exactly as they are now — you can
+              always encrypt any of them afterward.
+            </p>
+            {migration.error && <p className={styles.modalErrorText}>{migration.error}</p>}
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelBtn}
+                onClick={migration.handleDismiss}
+                disabled={migration.importing}
+                id="migration-dismiss-btn"
+              >
+                Not now
+              </button>
+              <button
+                className={styles.confirmBtnPositive}
+                onClick={migration.handleImport}
+                disabled={migration.importing}
+                id="migration-import-btn"
+              >
+                {migration.importing ? 'Importing…' : 'Import'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Delete confirm modal */}
