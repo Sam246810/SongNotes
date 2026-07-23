@@ -34,7 +34,7 @@ function makeSong(overrides = {}) {
     id: 'song-1',
     title: 'Super Secret Title',
     lines: [{ id: 'line-1', chords: 'Am', lyrics: 'super secret lyrics' }],
-    locked: false,
+    isReadOnly: false,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,

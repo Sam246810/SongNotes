@@ -99,7 +99,7 @@ describe('songsStore hydration', () => {
   });
 
   it('transitions idle -> hydrating -> ready and loads songs from the repo', async () => {
-    const fakeSongs = [{ id: '1', title: 'Fake', lines: [], locked: false, createdAt: '', updatedAt: '' }];
+    const fakeSongs = [{ id: '1', title: 'Fake', lines: [], isReadOnly: false, createdAt: '', updatedAt: '' }];
     const fakeRepo = {
       init: vi.fn().mockResolvedValue(undefined),
       list: vi.fn().mockResolvedValue(fakeSongs),

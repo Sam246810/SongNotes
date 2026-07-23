@@ -14,7 +14,9 @@ export function createSong(title = 'Untitled Song', { encrypted = false } = {}) 
     id: uuidv4(),
     title,
     lines: [createLine()],
-    locked: false,
+    // isReadOnly: a plain UI toggle, no security (the original "locked" flag, renamed
+    // now that a REAL crypto lock exists too — see lockSong/unlockSong below).
+    isReadOnly: false,
     encrypted,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -87,17 +89,46 @@ const useSongsStore = create((set, get) => ({
 
   setActiveSong: (id) => set({ activeSongId: id }),
 
-  toggleLock: (id) => {
+  toggleReadOnly: (id) => {
     let updatedSong = null;
     set((state) => {
       const songs = state.songs.map((s) => {
         if (s.id !== id) return s;
-        updatedSong = { ...s, locked: !s.locked, updatedAt: new Date().toISOString() };
+        updatedSong = { ...s, isReadOnly: !s.isReadOnly, updatedAt: new Date().toISOString() };
         return updatedSong;
       });
       return { songs };
     });
     if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
+  },
+
+  /**
+   * Password-protect a song with real client-side encryption (distinct from the
+   * plain isReadOnly toggle above). Requires an account with the DEK unlocked — the
+   * repo must implement lockSong (only CloudSongsRepository does).
+   */
+  lockSong: async (id, password) => {
+    const repo = get().repo;
+    if (typeof repo.lockSong !== 'function') {
+      throw new Error('Password-protecting songs requires an account.');
+    }
+    const lockedSong = await repo.lockSong(id, password);
+    set((state) => ({ songs: state.songs.map((s) => (s.id === id ? lockedSong : s)) }));
+    return lockedSong;
+  },
+
+  /**
+   * Unlock a password-protected song for this session (verifies the password, caches
+   * its content key in memory, and returns the real decrypted content into the store).
+   */
+  unlockSong: async (id, password) => {
+    const repo = get().repo;
+    if (typeof repo.unlockSongWithPassword !== 'function') {
+      throw new Error('This song cannot be unlocked in the current mode.');
+    }
+    const unlockedSong = await repo.unlockSongWithPassword(id, password);
+    set((state) => ({ songs: state.songs.map((s) => (s.id === id ? unlockedSong : s)) }));
+    return unlockedSong;
   },
 
   // --- Line-level actions ---

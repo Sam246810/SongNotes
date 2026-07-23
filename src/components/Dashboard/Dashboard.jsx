@@ -107,8 +107,11 @@ export default function Dashboard() {
                 id={`song-item-${song.id}`}
               >
                 <div className={styles.itemLeft}>
-                  <span className={styles.itemIcon} title={song.encrypted ? 'Encrypted' : undefined}>
-                    {song.locked ? '🔒' : song.encrypted ? '🔐' : '♪'}
+                  <span
+                    className={styles.itemIcon}
+                    title={song.isLocked ? 'Password-protected' : song.isReadOnly ? 'Read-only' : song.encrypted ? 'Encrypted' : undefined}
+                  >
+                    {song.isLocked ? '🔒' : song.isReadOnly ? '🔏' : song.encrypted ? '🔐' : '♪'}
                   </span>
                   <div className={styles.itemMeta}>
                     <span className={styles.itemTitle}>{song.title}</span>

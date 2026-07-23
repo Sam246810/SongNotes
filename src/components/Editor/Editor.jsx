@@ -1,10 +1,53 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import useSongsStore from '../../store/songsStore';
 import SongLine from '../SongLine/SongLine';
 import Toolbar from '../Toolbar/Toolbar';
 import PianoPanel from '../PianoPanel/PianoPanel';
 import DAWPanel from '../DAWPanel/DAWPanel';
 import styles from './Editor.module.css';
+
+/** Shown instead of the editor for a password-locked song not yet unlocked this session. */
+function SongPasswordGate({ song }) {
+  const unlockSong = useSongsStore((s) => s.unlockSong);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await unlockSong(song.id, password);
+    } catch (err) {
+      setError(err.message || 'Wrong password.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className={styles.emptyState}>
+      <div className={styles.emptyIcon}>🔒</div>
+      <p>This song is password-protected.</p>
+      <form className={styles.unlockForm} onSubmit={handleSubmit}>
+        <input
+          type="password"
+          className={styles.unlockInput}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Song password"
+          autoFocus
+          required
+        />
+        <button type="submit" className={styles.unlockBtn} disabled={submitting} id="song-password-unlock-btn">
+          {submitting ? 'Unlocking…' : 'Unlock'}
+        </button>
+      </form>
+      {error && <p className={styles.unlockError}>{error}</p>}
+    </div>
+  );
+}
 
 /**
  * Editor — full song editing view.
@@ -128,8 +171,15 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
     );
   }
 
+  // A password-locked song not yet unlocked this session has no real content to show
+  // (see CloudSongsRepository's placeholder) — gate on its password before rendering
+  // the normal editor at all, rather than merely treating it as read-only.
+  if (song.isUndecryptedPlaceholder) {
+    return <SongPasswordGate song={song} />;
+  }
+
   return (
-    <div className={`${styles.editorWrapper} ${song.locked ? styles.lockedMode : ''}`}>
+    <div className={`${styles.editorWrapper} ${song.isReadOnly ? styles.lockedMode : ''}`}>
       <Toolbar
         song={song}
         sidebarOpen={sidebarOpen}
@@ -148,7 +198,7 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
                 <SongLine
                   key={line.id}
                   line={line}
-                  locked={song.locked}
+                  locked={song.isReadOnly}
                   isActive={isActive}
                   focusTarget={isFocusTarget}
                   focusCaretIndex={focusCaretIndex}
@@ -173,9 +223,9 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
           />
         )}
       </div>
-      {song.locked && (
+      {song.isReadOnly && (
         <div className={styles.lockedBanner}>
-          <span>🔒 Document is locked — unlock from the toolbar to edit</span>
+          <span>🔒 Document is read-only — unlock from the toolbar to edit</span>
         </div>
       )}
     </div>

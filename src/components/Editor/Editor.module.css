@@ -73,6 +73,56 @@
   animation: pulse 3s ease infinite;
 }
 
+.unlockForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.unlockInput {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  padding: 8px 11px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.unlockInput:focus {
+  border-color: var(--border-focus);
+}
+
+.unlockBtn {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: white;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.unlockBtn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.unlockBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.unlockError {
+  color: var(--danger);
+  font-size: 12.5px;
+  margin-top: 4px;
+}
+
 .lockedBanner {
   position: fixed;
   bottom: 0;
