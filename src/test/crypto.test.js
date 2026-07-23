@@ -2,6 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { generateSalt, deriveKEK, serializeKdfParams, deserializeKdfParams } from '../crypto/kdf';
 import { generateContentKey, encryptJSON, decryptJSON, wrapContentKey, unwrapContentKey } from '../crypto/envelope';
 import { establishDEK, getDEK, isUnlocked, clearSession, setUnlockedSongKey, getUnlockedSongKey, clearUnlockedSongKey } from '../crypto/keyManager';
+import {
+  createAccountKeys,
+  generateRecoveryCode,
+  unlockWithPassphrase,
+  unlockWithRecoveryCode,
+  rewrapWithNewPassphrase,
+} from '../crypto/accountKeys';
 
 describe('kdf: deriveKEK', () => {
   it('derives the same key for the same passphrase + salt', async () => {
@@ -164,5 +171,56 @@ describe('keyManager: in-memory session', () => {
     clearSession();
     expect(getDEK()).toBeNull();
     expect(getUnlockedSongKey('song-1')).toBeNull();
+  });
+});
+
+describe('accountKeys: envelope-encryption key hierarchy', () => {
+  it('unlocks the same DEK via either the passphrase or the recovery code', async () => {
+    const passphrase = 'my account passphrase';
+    const recoveryCode = generateRecoveryCode();
+    const { dek, envelope } = await createAccountKeys(passphrase, recoveryCode);
+
+    const viaPassphrase = await unlockWithPassphrase(envelope, passphrase);
+    const viaRecovery = await unlockWithRecoveryCode(envelope, recoveryCode);
+
+    // Prove both unlocked keys are functionally identical to the original DEK.
+    const probe = { secret: 'proves-same-key' };
+    const envelopeCt = await encryptJSON(dek, probe);
+    expect(await decryptJSON(viaPassphrase, envelopeCt)).toEqual(probe);
+    expect(await decryptJSON(viaRecovery, envelopeCt)).toEqual(probe);
+  });
+
+  it('rejects the wrong passphrase', async () => {
+    const { envelope } = await createAccountKeys('right-passphrase', generateRecoveryCode());
+    await expect(unlockWithPassphrase(envelope, 'wrong-passphrase')).rejects.toThrow();
+  });
+
+  it('rejects the wrong recovery code', async () => {
+    const { envelope } = await createAccountKeys('a-passphrase', generateRecoveryCode());
+    await expect(unlockWithRecoveryCode(envelope, 'WRONG-CODE-000-000-000')).rejects.toThrow();
+  });
+
+  it('generates recovery codes that look distinct and reasonably long', () => {
+    const a = generateRecoveryCode();
+    const b = generateRecoveryCode();
+    expect(a).not.toBe(b);
+    expect(a.replace(/-/g, '').length).toBe(20);
+  });
+
+  it('rewrapWithNewPassphrase lets a new passphrase unlock the same DEK, old one no longer works', async () => {
+    const recoveryCode = generateRecoveryCode();
+    const { dek, envelope } = await createAccountKeys('old-passphrase', recoveryCode);
+
+    const newEnvelope = await rewrapWithNewPassphrase(envelope, dek, 'new-passphrase');
+
+    const viaNewPassphrase = await unlockWithPassphrase(newEnvelope, 'new-passphrase');
+    const probe = { still: 'works' };
+    const envelopeCt = await encryptJSON(dek, probe);
+    expect(await decryptJSON(viaNewPassphrase, envelopeCt)).toEqual(probe);
+
+    await expect(unlockWithPassphrase(newEnvelope, 'old-passphrase')).rejects.toThrow();
+    // Recovery code still unlocks the same DEK — untouched by the passphrase reset.
+    const viaRecovery = await unlockWithRecoveryCode(newEnvelope, recoveryCode);
+    expect(await decryptJSON(viaRecovery, envelopeCt)).toEqual(probe);
   });
 });
