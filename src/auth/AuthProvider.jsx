@@ -83,6 +83,25 @@ export default function AuthProvider({ children }) {
     },
 
     /**
+     * Re-derives the account DEK from `password` against the EXISTING stored envelope
+     * and establishes it — no writes, no new key material. For when the DEK is simply
+     * missing from this session (e.g. sessionStorage was cleared while the Supabase auth
+     * session, which lives in localStorage, survived — closing and reopening the browser
+     * is the common case) rather than actually mismatched. Unlike resetAccountEncryption,
+     * this can't orphan any already-encrypted songs since it doesn't touch the envelope.
+     */
+    async unlockAccountKey(password) {
+      if (!isSupabaseConfigured) throw new Error('Accounts are not configured for this deployment.');
+      const currentUser = session?.user;
+      if (!currentUser) throw new Error('You must be signed in to unlock encryption.');
+      const keysAdapter = new SupabaseUserKeysAdapter(supabase, currentUser.id);
+      const env = await keysAdapter.get();
+      if (!env) throw new Error('No account encryption key found yet.');
+      const dek = await unlockWithPassphrase(env, password); // throws if password is wrong
+      establishDEK(dek);
+    },
+
+    /**
      * Re-derives the account DEK from `password` and re-wraps it fresh, overwriting the
      * stored envelope. Used to recover from a mismatched envelope (e.g. after a password
      * change desynced it from the encryption key). Songs already password-locked are

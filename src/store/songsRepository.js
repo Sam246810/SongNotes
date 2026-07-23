@@ -434,7 +434,10 @@ export class CloudSongsRepository {
       id: row.id,
       title: row.is_locked ? '🔒 Password-protected song' : '🔒 Encrypted (unlock account to view)',
       lines: [],
-      isLocked: true,
+      // Reflect the row's real lock state, not just "undecryptable" — a DEK-only
+      // encrypted song with no per-song password must not be treated as password-locked
+      // (see Editor.jsx's gate, which needs this to show the right recovery UI).
+      isLocked: row.is_locked,
       isUndecryptedPlaceholder: true,
       createdAt: row.created_at,
       updatedAt: row.updated_at,

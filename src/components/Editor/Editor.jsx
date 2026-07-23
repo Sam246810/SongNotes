@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import useSongsStore from '../../store/songsStore';
+import useAuth from '../../auth/useAuth';
 import SongLine from '../SongLine/SongLine';
 import Toolbar from '../Toolbar/Toolbar';
 import PianoPanel from '../PianoPanel/PianoPanel';
@@ -76,6 +77,61 @@ function SongPasswordGate({ song }) {
       >
         {mode === 'password' ? 'Forgot song password? Use recovery code' : '← Back to song password'}
       </button>
+    </div>
+  );
+}
+
+/**
+ * Shown instead of the editor for a DEK-only encrypted song (never given its own
+ * password) when the account encryption key just isn't unlocked in this session —
+ * e.g. the browser was closed and reopened, so the Supabase auth session (persisted
+ * in localStorage) survived but the DEK cached in sessionStorage didn't. This is
+ * NOT a per-song lock, so it must not be confused with SongPasswordGate above:
+ * there is no song password to enter here, only the account password.
+ */
+function AccountKeyGate() {
+  const { unlockAccountKey } = useAuth();
+  const hydrate = useSongsStore((s) => s.hydrate);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await unlockAccountKey(password);
+      // Re-fetch: this unlocks every DEK-only song affected this session, not just
+      // the one currently open.
+      await hydrate();
+    } catch (err) {
+      setError(err.message || 'Failed to unlock account encryption key.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className={styles.emptyState}>
+      <div className={styles.emptyIcon}>🔐</div>
+      <p>This song is encrypted with your account key, which isn't unlocked in this session.</p>
+      <form className={styles.unlockForm} onSubmit={handleSubmit}>
+        <input
+          type="password"
+          className={styles.unlockInput}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Account password"
+          autoFocus
+          required
+          autoComplete="current-password"
+        />
+        <button type="submit" className={styles.unlockBtn} disabled={submitting} id="account-key-unlock-btn">
+          {submitting ? 'Unlocking…' : 'Unlock'}
+        </button>
+      </form>
+      {error && <p className={styles.unlockError}>{error}</p>}
     </div>
   );
 }
@@ -202,11 +258,15 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
     );
   }
 
-  // A password-locked song not yet unlocked this session has no real content to show
-  // (see CloudSongsRepository's placeholder) — gate on its password before rendering
-  // the normal editor at all, rather than merely treating it as read-only.
+  // An undecryptable song has no real content to show (see repository placeholders)
+  // — gate before rendering the normal editor, rather than merely treating it as
+  // read-only. Two distinct causes need two distinct gates: a song actually
+  // password-locked (isLocked) needs its own password; a DEK-only encrypted song
+  // that just isn't unlocked this session needs the ACCOUNT password instead — it
+  // was never given a song password, so asking for one is both wrong and, per past
+  // testing, produces a confusing "not password-locked" error on submit.
   if (song.isUndecryptedPlaceholder) {
-    return <SongPasswordGate song={song} />;
+    return song.isLocked ? <SongPasswordGate song={song} /> : <AccountKeyGate />;
   }
 
   return (
