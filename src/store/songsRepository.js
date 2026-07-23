@@ -1,9 +1,6 @@
 import { alignChordsWithLyrics } from '../utils/chords';
-import { getDEK, getUnlockedSongKey, setUnlockedSongKey, clearUnlockedSongKey, establishDEK } from '../crypto/keyManager';
-import { generateContentKey, encryptJSON, decryptJSON, wrapContentKey, unwrapContentKey } from '../crypto/envelope';
-import { generateSalt, deriveKEK, serializeKdfParams, deserializeKdfParams } from '../crypto/kdf';
-import { unlockWithRecoveryCode } from '../crypto/accountKeys';
-import { SupabaseUserKeysAdapter } from '../lib/userKeysAdapter';
+import { getDEK } from '../crypto/keyManager';
+import { encryptJSON, decryptJSON } from '../crypto/envelope';
 
 const STORAGE_KEY = 'songnotes_songs';
 
@@ -11,12 +8,12 @@ const STORAGE_KEY = 'songnotes_songs';
  * Async persistence contract the store depends on. The store never touches
  * localStorage or a remote backend directly — only a SongsRepository implementation.
  *
- *   init()                     -> Promise<void>  bind any session/key needed to operate
- *   list()                     -> Promise<Song[]>
- *   get(id)                    -> Promise<Song|null>
- *   create(song, options?)      -> Promise<Song>  options: { encrypted?: boolean }
- *   update(id, song)            -> Promise<Song>
- *   remove(id)                  -> Promise<void>
+ *   init()          -> Promise<void>  bind any session/key needed to operate
+ *   list()          -> Promise<Song[]>
+ *   get(id)         -> Promise<Song|null>
+ *   create(song)    -> Promise<Song>
+ *   update(id, song) -> Promise<Song>
+ *   remove(id)       -> Promise<void>
  */
 
 function loadFromStorage() {
@@ -43,124 +40,48 @@ function saveToStorage(songs) {
   }
 }
 
+function getOrCreateGuestId() {
+  let guestId = sessionStorage.getItem('__songnotes_guest_session_id');
+  if (!guestId) {
+    guestId = crypto.randomUUID();
+    sessionStorage.setItem('__songnotes_guest_session_id', guestId);
+  }
+  return guestId;
+}
+
 /**
- * Guest-mode repository — the original pre-accounts localStorage behavior, verbatim,
- * behind the async interface. Stateless (always reads/writes localStorage directly) so
- * test isolation via localStorage.clear() keeps working exactly as before.
+ * Guest-mode repository — plain localStorage CRUD, scoped to the current guest session
+ * so different guest sessions/tabs don't see each other's local data. Guests have no
+ * account and therefore no encryption key, so guest songs are never encrypted.
  */
 export class LocalSongsRepository {
   async init() {}
 
-  async _decryptSong(song) {
-    if (!song.encrypted) return song;
-    const { contentEnvelope, ck } = song.content;
-    if (!ck.wrappedBySong) {
-      throw new Error('corrupt content-key envelope');
-    }
-    const songKey = getUnlockedSongKey(song.id);
-    if (!songKey) throw new Error('locked: song password not entered this session');
-    const content = await decryptJSON(songKey, contentEnvelope);
-    return { ...song, ...content, isLocked: true };
-  }
-
-  _placeholderSong(song) {
-    return {
-      id: song.id,
-      title: '🔒 Password-protected song',
-      lines: [],
-      isLocked: true,
-      isUndecryptedPlaceholder: true,
-      createdAt: song.createdAt || song.created_at,
-      updatedAt: song.updatedAt || song.updated_at,
-    };
-  }
-
-  async _buildSong(song, existingSong) {
-    const encrypted = existingSong ? existingSong.encrypted : false;
-    if (!encrypted) return song;
-
-    const existingCk = existingSong?.content?.ck;
-    let contentKey;
-    if (existingCk?.wrappedBySong) {
-      const songKey = getUnlockedSongKey(song.id);
-      if (!songKey) throw new Error('Cannot save: this song is password-locked. Unlock it to edit.');
-      contentKey = songKey;
-    } else {
-      throw new Error('corrupt content-key envelope');
-    }
-
-    const contentEnvelope = await encryptJSON(contentKey, {
-      title: song.title,
-      lines: song.lines,
-      createdAt: song.createdAt,
-      updatedAt: song.updatedAt,
-    });
-
-    return {
-      id: song.id,
-      encrypted: true,
-      content: { contentEnvelope, ck: existingCk },
-      isLocked: true,
-      is_locked: true,
-      createdAt: song.createdAt,
-      updatedAt: song.updatedAt,
-    };
-  }
-
   async list() {
     const rawSongs = loadFromStorage();
+    const guestId = getOrCreateGuestId();
     const songs = [];
     let updated = false;
-
-    let guestId = sessionStorage.getItem('__songnotes_guest_session_id');
-    if (!guestId) {
-      guestId = crypto.randomUUID();
-      sessionStorage.setItem('__songnotes_guest_session_id', guestId);
-    }
 
     for (const s of rawSongs) {
       if (!s.guestSessionId) {
         s.guestSessionId = guestId;
         updated = true;
       }
-      if (s.guestSessionId === guestId) {
-        if (s.encrypted) {
-          try {
-            const decrypted = await this._decryptSong(s);
-            songs.push(decrypted);
-          } catch (e) {
-            songs.push(this._placeholderSong(s));
-          }
-        } else {
-          songs.push(s);
-        }
-      }
+      if (s.guestSessionId === guestId) songs.push(s);
     }
-    if (updated) {
-      saveToStorage(rawSongs);
-    }
+    if (updated) saveToStorage(rawSongs);
     return songs;
   }
 
   async get(id) {
     const guestId = sessionStorage.getItem('__songnotes_guest_session_id');
-    const song = loadFromStorage().find((s) => s.id === id && s.guestSessionId === guestId) ?? null;
-    if (!song) return null;
-    try {
-      return await this._decryptSong(song);
-    } catch {
-      return this._placeholderSong(song);
-    }
+    return loadFromStorage().find((s) => s.id === id && s.guestSessionId === guestId) ?? null;
   }
 
-  async create(song, _options) {
+  async create(song) {
     const songs = loadFromStorage();
-    let guestId = sessionStorage.getItem('__songnotes_guest_session_id');
-    if (!guestId) {
-      guestId = crypto.randomUUID();
-      sessionStorage.setItem('__songnotes_guest_session_id', guestId);
-    }
-    const songWithGuestId = { ...song, guestSessionId: guestId };
+    const songWithGuestId = { ...song, guestSessionId: getOrCreateGuestId() };
     songs.push(songWithGuestId);
     saveToStorage(songs);
     return songWithGuestId;
@@ -169,19 +90,8 @@ export class LocalSongsRepository {
   async update(id, song) {
     const songs = loadFromStorage();
     const idx = songs.findIndex((s) => s.id === id);
-    const existingSong = idx !== -1 ? songs[idx] : null;
-    const finalSong = await this._buildSong(song, existingSong);
-
-    let guestId = existingSong?.guestSessionId;
-    if (!guestId) {
-      guestId = sessionStorage.getItem('__songnotes_guest_session_id');
-      if (!guestId) {
-        guestId = crypto.randomUUID();
-        sessionStorage.setItem('__songnotes_guest_session_id', guestId);
-      }
-    }
-    finalSong.guestSessionId = guestId;
-
+    const guestId = songs[idx]?.guestSessionId || getOrCreateGuestId();
+    const finalSong = { ...song, guestSessionId: guestId };
     if (idx === -1) songs.push(finalSong);
     else songs[idx] = finalSong;
     saveToStorage(songs);
@@ -190,107 +100,7 @@ export class LocalSongsRepository {
 
   async remove(id) {
     const guestId = sessionStorage.getItem('__songnotes_guest_session_id');
-    const songs = loadFromStorage().filter((s) => s.id !== id || s.guestSessionId !== guestId);
-    saveToStorage(songs);
-  }
-
-  async lockSong(id, password) {
-    const songs = loadFromStorage();
-    const song = songs.find((s) => s.id === id);
-    if (!song) throw new Error('Song not found.');
-
-    const plain = song.encrypted ? await this._decryptSong(song) : song;
-
-    const newCk = await generateContentKey();
-    const salt = generateSalt();
-    const songKek = await deriveKEK(password, salt);
-    const wrap = await wrapContentKey(songKek, newCk);
-    const ck = { wrappedByDek: null, wrappedBySong: { kdf: serializeKdfParams(salt), wrap } };
-
-    const contentEnvelope = await encryptJSON(newCk, {
-      title: plain.title,
-      lines: plain.lines,
-      createdAt: plain.createdAt || plain.created_at || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    const encryptedSong = {
-      id,
-      encrypted: true,
-      content: { contentEnvelope, ck },
-      isLocked: true,
-      is_locked: true,
-      createdAt: plain.createdAt || plain.created_at || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    saveToStorage(songs.map((s) => (s.id === id ? encryptedSong : s)));
-    clearUnlockedSongKey(id); // immediately lock the song
-    return this._placeholderSong(encryptedSong);
-  }
-
-  async unlockSongWithPassword(id, password) {
-    const songs = loadFromStorage();
-    const song = songs.find((s) => s.id === id);
-    if (!song || !song.encrypted || !song.content.ck.wrappedBySong) {
-      throw new Error('This song is not password-locked.');
-    }
-    const { kdf, wrap } = song.content.ck.wrappedBySong;
-    const { salt } = deserializeKdfParams(kdf);
-    const songKek = await deriveKEK(password, salt, kdf);
-    const ck = await unwrapContentKey(songKek, wrap); // throws if wrong password
-    setUnlockedSongKey(id, ck);
-    return this._decryptSong(song);
-  }
-
-  /** Requires proving the CURRENT password before re-wrapping under a new one. */
-  async changeSongPassword(id, currentPassword, newPassword) {
-    const songs = loadFromStorage();
-    const song = songs.find((s) => s.id === id);
-    if (!song || !song.encrypted || !song.content.ck.wrappedBySong) {
-      throw new Error('This song is not password-locked.');
-    }
-    const { kdf, wrap } = song.content.ck.wrappedBySong;
-    const { salt } = deserializeKdfParams(kdf);
-    const currentKek = await deriveKEK(currentPassword, salt, kdf);
-    let currentCk;
-    try {
-      currentCk = await unwrapContentKey(currentKek, wrap);
-    } catch {
-      throw new Error('Current password is incorrect.');
-    }
-    const plain = await decryptJSON(currentCk, song.content.contentEnvelope);
-
-    const newCk = await generateContentKey();
-    const newSalt = generateSalt();
-    const newKek = await deriveKEK(newPassword, newSalt);
-    const newWrap = await wrapContentKey(newKek, newCk);
-    const ck = { wrappedByDek: null, wrappedBySong: { kdf: serializeKdfParams(newSalt), wrap: newWrap } };
-
-    const contentEnvelope = await encryptJSON(newCk, {
-      title: plain.title,
-      lines: plain.lines,
-      createdAt: plain.createdAt,
-      updatedAt: new Date().toISOString(),
-    });
-
-    const encryptedSong = {
-      id,
-      encrypted: true,
-      content: { contentEnvelope, ck },
-      isLocked: true,
-      is_locked: true,
-      createdAt: plain.createdAt,
-      updatedAt: new Date().toISOString(),
-    };
-
-    saveToStorage(songs.map((s) => (s.id === id ? encryptedSong : s)));
-    clearUnlockedSongKey(id); // require re-entering the NEW password, same as a fresh lock
-    return this._placeholderSong(encryptedSong);
-  }
-
-  relockSong(id) {
-    clearUnlockedSongKey(id);
+    saveToStorage(loadFromStorage().filter((s) => s.id !== id || s.guestSessionId !== guestId));
   }
 }
 
@@ -330,17 +140,15 @@ export class SupabaseSongsAdapter {
 }
 
 /**
- * Account-mode repository: encrypts on write / decrypts on read (only for songs the
- * user chose to encrypt — see `encrypted` per song), against any adapter exposing
- * { list, insert, update, remove }, composing a local cache of the exact server row
- * shape (i.e. ciphertext, never plaintext) for instant loads and offline resilience.
+ * Account-mode repository: every song is always encrypted directly with the account's
+ * Data Encryption Key (DEK) — no per-song key, no choice. envelope.js's encryptJSON
+ * generates a fresh random IV on every call, which is what makes it safe to reuse the
+ * same DEK across every song and every edit (AES-GCM's security model is exactly "one
+ * key, many messages, each with a unique nonce").
  *
- * Encryption model: each encrypted song has its own random Content Key (CK), which
- * encrypts the song content. The CK itself is wrapped either by the account DEK
- * (normal encrypted song) or by a per-song-password-derived key (a locked song — see
- * src/crypto/keyManager's per-song key cache). Routine content edits reuse the
- * existing CK and its existing wrap — only the content ciphertext changes; the CK
- * (and how it's wrapped) is only touched by an explicit encrypt/lock/unlock action.
+ * Composes a local cache of the exact server row shape (i.e. ciphertext, never
+ * plaintext) for instant loads and offline resilience, against any adapter exposing
+ * { list, insert, update, remove }.
  */
 export class CloudSongsRepository {
   constructor({ adapter, userId, cacheKey, debounceMs = 750 }) {
@@ -398,44 +206,12 @@ export class CloudSongsRepository {
     return [...byId.values()];
   }
 
-  /** Build (or refresh) the persisted row for a song, given whether it's encrypted. */
-  async _buildRow(song, { encrypted, existingRow }) {
-    if (!encrypted) {
-      return {
-        id: song.id,
-        user_id: this.userId,
-        encrypted: false,
-        content: song,
-        title: song.title,
-        is_locked: false,
-        created_at: song.createdAt,
-        updated_at: song.updatedAt,
-      };
-    }
+  /** Build the persisted row for a song. Always encrypted — throws if the DEK isn't available. */
+  async _buildRow(song) {
+    const dek = getDEK();
+    if (!dek) throw new Error('Cannot save: your account encryption key is not unlocked in this session.');
 
-    let contentKey;
-    let ck;
-    const existingCk = existingRow?.encrypted ? existingRow.content.ck : null;
-
-    if (existingCk?.wrappedByDek) {
-      const dek = getDEK();
-      if (!dek) throw new Error('Cannot save: account is locked. Unlock it to edit this encrypted song.');
-      contentKey = await unwrapContentKey(dek, existingCk.wrappedByDek);
-      ck = existingCk;
-    } else if (existingCk?.wrappedBySong) {
-      const songKey = getUnlockedSongKey(song.id);
-      if (!songKey) throw new Error('Cannot save: this song is password-locked. Unlock it to edit.');
-      contentKey = songKey;
-      ck = existingCk;
-    } else {
-      // First time this song is being encrypted.
-      const dek = getDEK();
-      if (!dek) throw new Error('Cannot encrypt: set up an encryption passphrase first.');
-      contentKey = await generateContentKey();
-      ck = { wrappedByDek: await wrapContentKey(dek, contentKey), wrappedBySong: null };
-    }
-
-    const contentEnvelope = await encryptJSON(contentKey, {
+    const content = await encryptJSON(dek, {
       title: song.title,
       lines: song.lines,
       createdAt: song.createdAt,
@@ -446,185 +222,34 @@ export class CloudSongsRepository {
       id: song.id,
       user_id: this.userId,
       encrypted: true,
-      content: { contentEnvelope, ck },
+      content,
       title: null,
-      is_locked: Boolean(ck.wrappedBySong),
+      is_locked: false,
       created_at: song.createdAt,
       updated_at: song.updatedAt,
     };
   }
 
   async _decryptRow(row) {
+    // Backward-compat read path only — nothing writes encrypted:false anymore.
     if (!row.encrypted) {
       return { ...row.content, id: row.id };
     }
-    const { contentEnvelope, ck } = row.content;
-    let contentKey;
-    if (row.is_locked) {
-      const songKey = getUnlockedSongKey(row.id);
-      if (!songKey) throw new Error('locked: song password not entered this session');
-      contentKey = songKey;
-    } else if (ck.wrappedByDek) {
-      const dek = getDEK();
-      if (!dek) throw new Error('locked: account DEK unavailable');
-      contentKey = await unwrapContentKey(dek, ck.wrappedByDek);
-    } else {
-      throw new Error('corrupt content-key envelope');
-    }
-    const content = await decryptJSON(contentKey, contentEnvelope);
-    return { id: row.id, ...content, isLocked: row.is_locked };
+    const dek = getDEK();
+    if (!dek) throw new Error('locked: account DEK unavailable');
+    const content = await decryptJSON(dek, row.content);
+    return { id: row.id, ...content };
   }
 
   _placeholderSong(row) {
     return {
       id: row.id,
-      title: row.is_locked ? '🔒 Password-protected song' : '🔒 Encrypted (unlock account to view)',
+      title: '🔒 Encrypted (unlock account to view)',
       lines: [],
-      // Reflect the row's real lock state, not just "undecryptable" — a DEK-only
-      // encrypted song with no per-song password must not be treated as password-locked
-      // (see Editor.jsx's gate, which needs this to show the right recovery UI).
-      isLocked: row.is_locked,
       isUndecryptedPlaceholder: true,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
-  }
-
-  /**
-   * Password-protect a song: re-encrypts its content under a brand-new content key
-   * wrapped by a key derived from `password` (dropping any existing DEK-wrap), so
-   * the account passphrase alone can no longer open it — only this song's password
-   * can. The freshly unwrapped key is cached for this session so the user can keep
-   * editing immediately after locking, without re-entering the password.
-   */
-  async lockSong(id, password) {
-    const cachedRows = this._readCache();
-    const existingRow = cachedRows.find((r) => r.id === id);
-    if (!existingRow) throw new Error('Song not found.');
-
-    const plain = existingRow.encrypted ? await this._decryptRow(existingRow) : existingRow.content;
-
-    const newCk = await generateContentKey();
-    const salt = generateSalt();
-    const songKek = await deriveKEK(password, salt);
-    const wrap = await wrapContentKey(songKek, newCk);
-    const dek = getDEK();
-    const wrappedByDek = dek ? await wrapContentKey(dek, newCk) : null;
-    const ck = { wrappedByDek, wrappedBySong: { kdf: serializeKdfParams(salt), wrap } };
-
-    const contentEnvelope = await encryptJSON(newCk, {
-      title: plain.title,
-      lines: plain.lines,
-      createdAt: plain.createdAt,
-      updatedAt: new Date().toISOString(),
-    });
-
-    const row = {
-      id,
-      user_id: this.userId,
-      encrypted: true,
-      content: { contentEnvelope, ck },
-      title: null,
-      is_locked: true,
-      created_at: plain.createdAt,
-      updated_at: new Date().toISOString(),
-    };
-
-    this._writeCache(cachedRows.map((r) => (r.id === id ? row : r)));
-    await this.adapter.update(id, row); // explicit security action: push immediately, not debounced
-
-    clearUnlockedSongKey(id);
-    return this._placeholderSong(row);
-  }
-
-  /**
-   * Verify a song's password, unwrap its content key, cache it for this session, and
-   * return the now-decryptable song. Does not remove the lock — the song stays
-   * password-protected for future sessions/devices.
-   */
-  async unlockSongWithPassword(id, password) {
-    const row = this._readCache().find((r) => r.id === id);
-    if (!row || !row.encrypted || !row.content.ck.wrappedBySong) {
-      throw new Error('This song is not password-locked.');
-    }
-    const { kdf, wrap } = row.content.ck.wrappedBySong;
-    const { salt } = deserializeKdfParams(kdf);
-    const songKek = await deriveKEK(password, salt, kdf);
-    const ck = await unwrapContentKey(songKek, wrap); // throws if the password is wrong
-
-    setUnlockedSongKey(id, ck);
-    return this._decryptRow(row);
-  }
-
-  async unlockSongWithRecoveryCode(id, recoveryCode) {
-    const row = this._readCache().find((r) => r.id === id);
-    if (!row || !row.encrypted || !row.content.ck.wrappedByDek) {
-      throw new Error('This song cannot be unlocked with a recovery code.');
-    }
-    const keysAdapter = new SupabaseUserKeysAdapter(this.adapter.client, this.userId);
-    const env = await keysAdapter.get();
-    if (!env) throw new Error('No account recovery key found.');
-
-    const dek = await unlockWithRecoveryCode(env, recoveryCode);
-    establishDEK(dek);
-    const ck = await unwrapContentKey(dek, row.content.ck.wrappedByDek);
-    setUnlockedSongKey(id, ck);
-    return this._decryptRow(row);
-  }
-
-  /** Requires proving the CURRENT song password before re-wrapping under a new one. */
-  async changeSongPassword(id, currentPassword, newPassword) {
-    const cachedRows = this._readCache();
-    const existingRow = cachedRows.find((r) => r.id === id);
-    if (!existingRow || !existingRow.encrypted || !existingRow.content.ck.wrappedBySong) {
-      throw new Error('This song is not password-locked.');
-    }
-    const { kdf, wrap } = existingRow.content.ck.wrappedBySong;
-    const { salt } = deserializeKdfParams(kdf);
-    const currentKek = await deriveKEK(currentPassword, salt, kdf);
-    let currentCk;
-    try {
-      currentCk = await unwrapContentKey(currentKek, wrap);
-    } catch {
-      throw new Error('Current password is incorrect.');
-    }
-    const plain = await decryptJSON(currentCk, existingRow.content.contentEnvelope);
-
-    const newCk = await generateContentKey();
-    const newSalt = generateSalt();
-    const newKek = await deriveKEK(newPassword, newSalt);
-    const newWrap = await wrapContentKey(newKek, newCk);
-    const dek = getDEK();
-    const wrappedByDek = dek ? await wrapContentKey(dek, newCk) : null;
-    const ck = { wrappedByDek, wrappedBySong: { kdf: serializeKdfParams(newSalt), wrap: newWrap } };
-
-    const contentEnvelope = await encryptJSON(newCk, {
-      title: plain.title,
-      lines: plain.lines,
-      createdAt: plain.createdAt,
-      updatedAt: new Date().toISOString(),
-    });
-
-    const row = {
-      id,
-      user_id: this.userId,
-      encrypted: true,
-      content: { contentEnvelope, ck },
-      title: null,
-      is_locked: true,
-      created_at: plain.createdAt,
-      updated_at: new Date().toISOString(),
-    };
-
-    this._writeCache(cachedRows.map((r) => (r.id === id ? row : r)));
-    await this.adapter.update(id, row); // explicit security action: push immediately, not debounced
-
-    clearUnlockedSongKey(id); // require re-entering the NEW password, same as a fresh lock
-    return this._placeholderSong(row);
-  }
-
-  relockSong(id) {
-    clearUnlockedSongKey(id);
   }
 
   async list() {
@@ -659,21 +284,20 @@ export class CloudSongsRepository {
     }
   }
 
-  async create(song, { encrypted = false } = {}) {
-    const row = await this._buildRow(song, { encrypted, existingRow: null });
+  async create(song) {
+    const row = await this._buildRow(song);
     const created = await this.adapter.insert(row);
     this._writeCache([...this._readCache(), created]);
     return song;
   }
 
   async update(id, song) {
-    const cachedRows = this._readCache();
-    const existingRow = cachedRows.find((r) => r.id === id) ?? null;
-    const encrypted = existingRow ? existingRow.encrypted : false;
-    const row = await this._buildRow(song, { encrypted, existingRow });
+    const row = await this._buildRow(song);
 
     // Cache is written immediately so a reload never loses the latest edit even if
     // the debounced remote push hasn't fired yet.
+    const cachedRows = this._readCache();
+    const existingRow = cachedRows.find((r) => r.id === id) ?? null;
     const nextRows = existingRow
       ? cachedRows.map((r) => (r.id === id ? row : r))
       : [...cachedRows, row];

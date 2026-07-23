@@ -4,13 +4,19 @@ import useAuth from './useAuth';
 import styles from './AuthPage.module.css';
 
 export default function LoginPage() {
-  const { configured, user, signIn, resetAccountEncryption } = useAuth();
+  const { configured, user, signIn, unlockWithRecoveryCode, resetAccountEncryption } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [keyMismatch, setKeyMismatch] = useState(false);
+  // 'recover' (non-destructive, needs the recovery code) is the default/recommended
+  // path — 'reset' (mints a brand new key, orphaning every existing encrypted song)
+  // is an explicit last resort for when the code isn't available.
+  const [recoveryMode, setRecoveryMode] = useState('recover');
+  const [recoveryCode, setRecoveryCode] = useState('');
+  const [recovering, setRecovering] = useState(false);
   const [resetting, setResetting] = useState(false);
   // Supabase's onAuthStateChange can flip `user` truthy mid-way through our own
   // handleSubmit (before we've had a chance to check keyUnlockFailed and possibly
@@ -43,6 +49,20 @@ export default function LoginPage() {
     }
   }
 
+  async function handleRecoverWithCode(e) {
+    e.preventDefault();
+    setError(null);
+    setRecovering(true);
+    try {
+      await unlockWithRecoveryCode(recoveryCode.trim(), password);
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Failed to recover with that code.');
+    } finally {
+      setRecovering(false);
+    }
+  }
+
   async function handleResetEncryption() {
     setResetting(true);
     setError(null);
@@ -65,8 +85,8 @@ export default function LoginPage() {
         </div>
         <h1 className={styles.title}>Sign in</h1>
         <p className={styles.subtitle}>
-          Sync your songs across devices. Encrypting a song uses this same account password —
-          locking a song with its own separate password is optional.
+          Sync your songs across devices. Every song is automatically encrypted with this
+          same account password.
         </p>
 
         {!configured && (
@@ -82,20 +102,61 @@ export default function LoginPage() {
               You're signed in, but your saved encryption key doesn't match this password —
               likely because the password was changed since encryption was set up.
             </p>
-            <p className={styles.infoText}>
-              Reset your encryption key using this password? Any song-specific passwords still
-              work either way. Songs that were encrypted (but not password-locked) under the old
-              key will no longer be readable — this can't be undone.
-            </p>
-            {error && <div className={styles.errorText}>{error}</div>}
-            <button
-              className={styles.submitBtn}
-              onClick={handleResetEncryption}
-              disabled={resetting}
-              id="reset-encryption-btn"
-            >
-              {resetting ? 'Resetting…' : 'Reset encryption key & continue'}
-            </button>
+
+            {recoveryMode === 'recover' ? (
+              <>
+                <p className={styles.infoText}>
+                  Enter your recovery code (shown once when you signed up) to get back every
+                  encrypted song under the original key — nothing is lost.
+                </p>
+                <form className={styles.form} onSubmit={handleRecoverWithCode}>
+                  <input
+                    className={styles.input}
+                    type="text"
+                    value={recoveryCode}
+                    onChange={(e) => setRecoveryCode(e.target.value)}
+                    placeholder="Recovery Code (XXXXX-XXXXX...)"
+                    autoFocus
+                    required
+                  />
+                  {error && <div className={styles.errorText}>{error}</div>}
+                  <button className={styles.submitBtn} type="submit" disabled={recovering} id="recover-with-code-btn">
+                    {recovering ? 'Recovering…' : 'Recover access'}
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  className={`${styles.guestLink} ${styles.linkButton}`}
+                  onClick={() => { setRecoveryMode('reset'); setError(null); }}
+                >
+                  Don't have your recovery code?
+                </button>
+              </>
+            ) : (
+              <>
+                <p className={styles.infoText}>
+                  Resetting mints a brand new encryption key from this password. Every song
+                  currently encrypted under the old key becomes permanently unreadable — this
+                  can't be undone. Only do this if you don't have your recovery code.
+                </p>
+                {error && <div className={styles.errorText}>{error}</div>}
+                <button
+                  className={styles.submitBtn}
+                  onClick={handleResetEncryption}
+                  disabled={resetting}
+                  id="reset-encryption-btn"
+                >
+                  {resetting ? 'Resetting…' : 'Reset encryption key & continue'}
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.guestLink} ${styles.linkButton}`}
+                  onClick={() => { setRecoveryMode('recover'); setError(null); }}
+                >
+                  ← Back to recovery code
+                </button>
+              </>
+            )}
             <Link className={styles.guestLink} to="/">Continue without resetting →</Link>
           </div>
         )}

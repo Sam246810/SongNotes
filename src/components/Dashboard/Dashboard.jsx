@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import useSongsStore from '../../store/songsStore';
 import useAuth from '../../auth/useAuth';
 import useLocalMigration from '../../auth/useLocalMigration';
-import EncryptChoiceDialog from './EncryptChoiceDialog';
+import NewSongDialog from './NewSongDialog';
 import styles from './Dashboard.module.css';
 
 function formatDate(iso) {
@@ -16,24 +16,25 @@ export default function Dashboard() {
   const { songs, activeSongId, addSong, deleteSong, setActiveSong } = useSongsStore();
   const { configured, user, signOut } = useAuth();
   const [confirmDelete, setConfirmDelete] = useState(null); // songId pending deletion
-  const [showEncryptChoice, setShowEncryptChoice] = useState(false);
+  const [showNewSongDialog, setShowNewSongDialog] = useState(false);
   const migration = useLocalMigration();
 
   function handleNew() {
     if (!configured) {
-      // No accounts available at all in this deployment — encryption isn't possible,
-      // so skip straight to today's behavior but ask for title first.
+      // No accounts available at all in this deployment — ask for a title directly.
       const name = window.prompt("Enter song name:", "Untitled Song");
       if (name === null) return;
       addSong(name.trim() || 'Untitled Song');
       return;
     }
-    setShowEncryptChoice(true);
+    setShowNewSongDialog(true);
   }
 
-  function handleEncryptChoiceDone({ encrypted, title }) {
-    setShowEncryptChoice(false);
-    addSong(title || 'Untitled Song', { encrypted });
+  // Signed-in users always get every song encrypted with their account key — no
+  // per-song choice. Guests never encrypt (no account, no key).
+  function handleNewSongDone({ title }) {
+    setShowNewSongDialog(false);
+    addSong(title || 'Untitled Song', { encrypted: !!user });
   }
 
   function handleOpen(id) {
@@ -113,9 +114,9 @@ export default function Dashboard() {
                 <div className={styles.itemLeft}>
                   <span
                     className={styles.itemIcon}
-                    title={song.isLocked ? (song.isUndecryptedPlaceholder ? 'Password-protected (locked)' : 'Password-protected (unlocked)') : song.encrypted ? 'Encrypted' : undefined}
+                    title={song.isUndecryptedPlaceholder ? 'Encrypted (unlock account to view)' : song.encrypted ? 'Encrypted' : undefined}
                   >
-                    {song.isLocked ? (song.isUndecryptedPlaceholder ? '🔒' : '🔓') : song.encrypted ? '🔐' : '♪'}
+                    {song.isUndecryptedPlaceholder ? '🔒' : song.encrypted ? '🔐' : '♪'}
                   </span>
                   <div className={styles.itemMeta}>
                     <span className={styles.itemTitle}>{song.title}</span>
@@ -139,11 +140,11 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Encrypt-this-song? choice, shown on every new song when accounts are available */}
-      {showEncryptChoice && (
-        <EncryptChoiceDialog
-          onDone={handleEncryptChoiceDone}
-          onCancel={() => setShowEncryptChoice(false)}
+      {/* New song title prompt */}
+      {showNewSongDialog && (
+        <NewSongDialog
+          onDone={handleNewSongDone}
+          onCancel={() => setShowNewSongDialog(false)}
         />
       )}
 
@@ -155,8 +156,7 @@ export default function Dashboard() {
             <p className={styles.modalText}>
               You have {migration.count} song{migration.count === 1 ? '' : 's'} saved on just this
               device. Import {migration.count === 1 ? 'it' : 'them'} into your account so they sync
-              everywhere? They'll be imported as unencrypted, exactly as they are now — you can
-              always encrypt any of them afterward.
+              everywhere and get encrypted, like every other song in your account?
             </p>
             {migration.error && <p className={styles.modalErrorText}>{migration.error}</p>}
             <div className={styles.modalActions}>

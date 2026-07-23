@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { generateSalt, deriveKEK, serializeKdfParams, deserializeKdfParams } from '../crypto/kdf';
 import { generateContentKey, encryptJSON, decryptJSON, wrapContentKey, unwrapContentKey } from '../crypto/envelope';
-import { establishDEK, getDEK, isUnlocked, clearSession, setUnlockedSongKey, getUnlockedSongKey, clearUnlockedSongKey } from '../crypto/keyManager';
+import { establishDEK, getDEK, isUnlocked, clearSession } from '../crypto/keyManager';
 import {
   createAccountKeys,
   generateRecoveryCode,
@@ -152,26 +152,6 @@ describe('keyManager: in-memory session', () => {
     expect(getDEK()).toBeNull();
   });
 
-  it('tracks unlocked per-song keys independently of the DEK', async () => {
-    clearSession();
-    const songKey = await generateContentKey();
-    setUnlockedSongKey('song-1', songKey);
-    expect(getUnlockedSongKey('song-1')).toBe(songKey);
-    expect(getUnlockedSongKey('song-2')).toBeNull();
-
-    clearUnlockedSongKey('song-1');
-    expect(getUnlockedSongKey('song-1')).toBeNull();
-  });
-
-  it('clearSession wipes both the DEK and all unlocked song keys', async () => {
-    clearSession();
-    establishDEK(await generateContentKey());
-    setUnlockedSongKey('song-1', await generateContentKey());
-
-    clearSession();
-    expect(getDEK()).toBeNull();
-    expect(getUnlockedSongKey('song-1')).toBeNull();
-  });
 });
 
 describe('accountKeys: envelope-encryption key hierarchy', () => {

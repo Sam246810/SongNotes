@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { clearSession as clearCryptoSession, establishDEK } from '../crypto/keyManager';
-import { createAccountKeys, unlockWithPassphrase } from '../crypto/accountKeys';
+import {
+  createAccountKeys,
+  unlockWithPassphrase,
+  unlockWithRecoveryCode as recoverDekWithCode,
+  rewrapWithNewPassphrase,
+} from '../crypto/accountKeys';
 import { SupabaseUserKeysAdapter } from '../lib/userKeysAdapter';
 import { AuthContext } from './AuthContext';
 
@@ -39,17 +44,19 @@ export default function AuthProvider({ children }) {
       if (!isSupabaseConfigured) throw new Error('Accounts are not configured for this deployment.');
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
+      let recoveryCode = null;
       if (data?.user) {
         try {
           const keysAdapter = new SupabaseUserKeysAdapter(supabase, data.user.id);
-          const { dek, envelope } = await createAccountKeys(password);
-          await keysAdapter.upsert(envelope);
-          establishDEK(dek);
+          const created = await createAccountKeys(password);
+          await keysAdapter.upsert(created.envelope);
+          establishDEK(created.dek);
+          recoveryCode = created.recoveryCode;
         } catch (e) {
           console.error('Failed to setup account encryption key on signup', e);
         }
       }
-      return data;
+      return { ...data, recoveryCode };
     },
 
     async signIn(email, password) {
@@ -102,12 +109,33 @@ export default function AuthProvider({ children }) {
     },
 
     /**
+     * Recovers the ORIGINAL DEK using the account's recovery code (shown once at
+     * signup) rather than the password — for when the stored envelope no longer
+     * matches the current login password (e.g. after a Supabase password reset).
+     * Unlike resetAccountEncryption below, this doesn't mint new key material, so
+     * every existing encrypted song stays readable. Also re-wraps the recovered DEK
+     * under `currentPassword` and persists that, so future logins work normally via
+     * password again without needing the code every time.
+     */
+    async unlockWithRecoveryCode(code, currentPassword) {
+      if (!isSupabaseConfigured) throw new Error('Accounts are not configured for this deployment.');
+      const currentUser = session?.user;
+      if (!currentUser) throw new Error('You must be signed in to recover encryption.');
+      const keysAdapter = new SupabaseUserKeysAdapter(supabase, currentUser.id);
+      const env = await keysAdapter.get();
+      if (!env) throw new Error('No account encryption key found yet.');
+      const dek = await recoverDekWithCode(env, code); // throws if the code is wrong
+      establishDEK(dek);
+      const rewrapped = await rewrapWithNewPassphrase(env, dek, currentPassword);
+      await keysAdapter.upsert(rewrapped);
+    },
+
+    /**
      * Re-derives the account DEK from `password` and re-wraps it fresh, overwriting the
-     * stored envelope. Used to recover from a mismatched envelope (e.g. after a password
-     * change desynced it from the encryption key). Songs already password-locked are
-     * unaffected (their content key is wrapped by the song password, not the DEK) —
-     * only DEK-only encrypted songs from the OLD key become unreadable, since there is
-     * no way to recover a key that's actually been lost.
+     * stored envelope. Used as a LAST RESORT when the envelope is mismatched and the
+     * recovery code isn't available — this mints a brand new DEK, so every existing
+     * encrypted song becomes permanently unreadable. Prefer unlockWithRecoveryCode
+     * above whenever the code is known.
      */
     async resetAccountEncryption(password) {
       if (!isSupabaseConfigured) throw new Error('Accounts are not configured for this deployment.');
@@ -121,7 +149,7 @@ export default function AuthProvider({ children }) {
 
     async signOut() {
       if (!isSupabaseConfigured) return;
-      clearCryptoSession(); // wipe the in-memory DEK / unlocked song keys
+      clearCryptoSession(); // wipe the in-memory DEK
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     },

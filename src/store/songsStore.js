@@ -14,8 +14,7 @@ export function createSong(title = 'Untitled Song', { encrypted = false } = {}) 
     id: uuidv4(),
     title,
     lines: [createLine()],
-    // isReadOnly: a plain UI toggle, no security (the original "locked" flag, renamed
-    // now that a REAL crypto lock exists too — see lockSong/unlockSong below).
+    // isReadOnly: a plain UI toggle, no security implications.
     isReadOnly: false,
     encrypted,
     createdAt: new Date().toISOString(),
@@ -89,61 +88,6 @@ const useSongsStore = create((set, get) => ({
   },
 
   setActiveSong: (id) => set({ activeSongId: id }),
-
-  lockSong: async (id, password) => {
-    const repo = get().repo;
-    const lockedSong = await repo.lockSong(id, password);
-    set((state) => ({ songs: state.songs.map((s) => (s.id === id ? lockedSong : s)) }));
-    return lockedSong;
-  },
-
-  unlockSong: async (id, password) => {
-    const repo = get().repo;
-    const unlockedSong = await repo.unlockSongWithPassword(id, password);
-    set((state) => ({ songs: state.songs.map((s) => (s.id === id ? unlockedSong : s)) }));
-    return unlockedSong;
-  },
-
-  changeSongPassword: async (id, currentPassword, newPassword) => {
-    const repo = get().repo;
-    if (typeof repo.changeSongPassword !== 'function') {
-      throw new Error('Changing password is not available in this mode.');
-    }
-    const lockedSong = await repo.changeSongPassword(id, currentPassword, newPassword);
-    set((state) => ({ songs: state.songs.map((s) => (s.id === id ? lockedSong : s)) }));
-    return lockedSong;
-  },
-
-  unlockSongWithRecoveryCode: async (id, recoveryCode) => {
-    const repo = get().repo;
-    if (typeof repo.unlockSongWithRecoveryCode !== 'function') {
-      throw new Error('Recovery code unlock is not available in guest mode.');
-    }
-    const unlockedSong = await repo.unlockSongWithRecoveryCode(id, recoveryCode);
-    set((state) => ({ songs: state.songs.map((s) => (s.id === id ? unlockedSong : s)) }));
-    return unlockedSong;
-  },
-
-  relockSong: (id) => {
-    const repo = get().repo;
-    if (typeof repo.relockSong === 'function') {
-      repo.relockSong(id);
-    }
-    set((state) => ({
-      songs: state.songs.map((s) => {
-        if (s.id !== id) return s;
-        return {
-          id: s.id,
-          title: '🔒 Password-protected song',
-          lines: [],
-          isLocked: true,
-          isUndecryptedPlaceholder: true,
-          createdAt: s.createdAt || s.created_at,
-          updatedAt: s.updatedAt || s.updated_at,
-        };
-      }),
-    }));
-  },
 
   // --- Line-level actions ---
   updateLine: (songId, lineId, changes) => {

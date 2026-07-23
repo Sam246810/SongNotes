@@ -157,3 +157,27 @@
   color: var(--text-secondary);
   text-decoration: underline;
 }
+
+.linkButton {
+  background: none;
+  border: none;
+  padding: 0;
+  width: 100%;
+  cursor: pointer;
+  font: inherit;
+}
+
+.recoveryCode {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--accent-hover);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  text-align: center;
+  margin-bottom: 14px;
+  user-select: all;
+}

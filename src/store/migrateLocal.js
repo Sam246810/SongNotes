@@ -19,16 +19,16 @@ export function markMigrated(userId) {
 }
 
 /**
- * Imports the guest-mode local songs into the signed-in account (as unencrypted
- * songs, matching how they were already stored — this is a plain move, not a
- * decision to encrypt). Deletes only the successfully migrated songs from the
- * legacy key, leaving other guest users' local songs intact.
+ * Imports the guest-mode local songs into the signed-in account. CloudSongsRepository
+ * always encrypts with the account DEK, so these become encrypted on import — matching
+ * every other song in the account. Deletes only the successfully migrated songs from
+ * the legacy key, leaving other guest users' local songs intact.
  */
 export async function migrateLocalSongsToCloud(repo, userId, songs) {
   for (const song of songs) {
     // Strip the guestSessionId tag when sending to the remote repository
     const { guestSessionId, ...cleanSong } = song;
-    await repo.create(cleanSong, { encrypted: false });
+    await repo.create(cleanSong);
   }
 
   // Backup current state

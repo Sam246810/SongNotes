@@ -10,7 +10,11 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [confirmSent, setConfirmSent] = useState(false);
+  // 'form' -> (recoveryCode, if account-key setup succeeded) -> confirmSent | app
+  const [step, setStep] = useState('form');
+  const [recoveryCode, setRecoveryCode] = useState(null);
+  const [hasSession, setHasSession] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   if (user) return <Navigate to="/" replace />;
 
@@ -20,9 +24,14 @@ export default function SignupPage() {
     setSubmitting(true);
     try {
       const data = await signUp(email, password);
-      if (!data.session) {
-        // Email confirmation required before a session exists.
-        setConfirmSent(true);
+      setHasSession(Boolean(data.session));
+      if (data.recoveryCode) {
+        // Account-key setup can fail silently (see AuthProvider.signUp's own
+        // try/catch) — only show this step when there's actually a code to show.
+        setRecoveryCode(data.recoveryCode);
+        setStep('recoveryCode');
+      } else if (!data.session) {
+        setStep('confirmSent');
       } else {
         navigate('/');
       }
@@ -30,6 +39,20 @@ export default function SignupPage() {
       setError(err.message || 'Failed to sign up.');
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  function handleRecoveryCodeContinue() {
+    if (hasSession) navigate('/');
+    else setStep('confirmSent');
+  }
+
+  async function handleCopyCode() {
+    try {
+      await navigator.clipboard.writeText(recoveryCode);
+      setCopied(true);
+    } catch {
+      // Clipboard access can be denied — the code is still selectable/visible either way.
     }
   }
 
@@ -42,9 +65,8 @@ export default function SignupPage() {
         </div>
         <h1 className={styles.title}>Create an account</h1>
         <p className={styles.subtitle}>
-          This syncs your songs to the cloud. You can also choose to <strong>encrypt</strong>{' '}
-          individual songs so even we can't read them — that uses your account password, no
-          separate passphrase to remember.
+          This syncs your songs to the cloud. Every song is automatically <strong>encrypted</strong>{' '}
+          — protected by this same password, no separate passphrase to remember.
         </p>
 
         {!configured && (
@@ -54,13 +76,42 @@ export default function SignupPage() {
           </p>
         )}
 
-        {configured && confirmSent && (
+        {configured && step === 'recoveryCode' && (
+          <>
+            <p className={styles.infoText}>
+              Save this recovery code somewhere safe — it's the only way to get your
+              encrypted songs back if you ever forget your password. It won't be shown
+              again.
+            </p>
+            <div className={styles.recoveryCode}>{recoveryCode}</div>
+            <div className={styles.form}>
+              <button
+                className={styles.submitBtn}
+                type="button"
+                onClick={handleCopyCode}
+                id="signup-copy-recovery-btn"
+              >
+                {copied ? 'Copied!' : 'Copy to clipboard'}
+              </button>
+              <button
+                className={styles.submitBtn}
+                type="button"
+                onClick={handleRecoveryCodeContinue}
+                id="signup-recovery-continue-btn"
+              >
+                I've saved it — continue
+              </button>
+            </div>
+          </>
+        )}
+
+        {configured && step === 'confirmSent' && (
           <p className={styles.infoText}>
             Check your email to confirm your account, then sign in.
           </p>
         )}
 
-        {configured && !confirmSent && (
+        {configured && step === 'form' && (
           <form className={styles.form} onSubmit={handleSubmit}>
             <label className={styles.label}>
               Email

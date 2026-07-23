@@ -45,8 +45,8 @@ describe('migrateLocal', () => {
     await migrateLocalSongsToCloud(repo, 'user-1', songs);
 
     expect(create).toHaveBeenCalledTimes(2);
-    expect(create).toHaveBeenNthCalledWith(1, songs[0], { encrypted: false });
-    expect(create).toHaveBeenNthCalledWith(2, songs[1], { encrypted: false });
+    expect(create).toHaveBeenNthCalledWith(1, songs[0]);
+    expect(create).toHaveBeenNthCalledWith(2, songs[1]);
 
     expect(localStorage.getItem(LEGACY_KEY)).toBeNull();
     expect(JSON.parse(localStorage.getItem(BACKUP_KEY))).toEqual(songs);
@@ -81,7 +81,7 @@ describe('migrateLocal', () => {
     await migrateLocalSongsToCloud(repo, 'user-1', [songA]);
 
     expect(create).toHaveBeenCalledTimes(1);
-    expect(create).toHaveBeenCalledWith({ id: 'a', title: 'Song A', lines: [] }, { encrypted: false }); // guestSessionId stripped
+    expect(create).toHaveBeenCalledWith({ id: 'a', title: 'Song A', lines: [] }); // guestSessionId stripped
 
     // Only song B should remain in localStorage
     expect(JSON.parse(localStorage.getItem(LEGACY_KEY))).toEqual([songB]);

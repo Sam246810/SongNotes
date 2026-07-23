@@ -7,87 +7,11 @@ import PianoPanel from '../PianoPanel/PianoPanel';
 import DAWPanel from '../DAWPanel/DAWPanel';
 import styles from './Editor.module.css';
 
-/** Shown instead of the editor for a password-locked song not yet unlocked this session. */
-function SongPasswordGate({ song }) {
-  const unlockSong = useSongsStore((s) => s.unlockSong);
-  const unlockSongWithRecoveryCode = useSongsStore((s) => s.unlockSongWithRecoveryCode);
-  const [mode, setMode] = useState('password'); // 'password' | 'recovery'
-  const [password, setPassword] = useState('');
-  const [recoveryCode, setRecoveryCode] = useState('');
-  const [error, setError] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-    try {
-      if (mode === 'password') {
-        await unlockSong(song.id, password);
-      } else {
-        await unlockSongWithRecoveryCode(song.id, recoveryCode.trim());
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to unlock song.');
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  return (
-    <div className={styles.emptyState}>
-      <div className={styles.emptyIcon}>🔒</div>
-      <p>{mode === 'password' ? 'This song is password-protected.' : 'Unlock with Recovery Code'}</p>
-      <form className={styles.unlockForm} onSubmit={handleSubmit}>
-        {mode === 'password' ? (
-          <input
-            type="password"
-            className={styles.unlockInput}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Song password"
-            autoFocus
-            required
-            autoComplete="new-password"
-          />
-        ) : (
-          <input
-            type="text"
-            className={styles.unlockInput}
-            value={recoveryCode}
-            onChange={(e) => setRecoveryCode(e.target.value)}
-            placeholder="Recovery Code (XXXXX-XXXXX...)"
-            autoFocus
-            required
-          />
-        )}
-        <button type="submit" className={styles.unlockBtn} disabled={submitting} id="song-password-unlock-btn">
-          {submitting ? 'Unlocking…' : 'Unlock'}
-        </button>
-      </form>
-      {error && <p className={styles.unlockError}>{error}</p>}
-
-      <button
-        type="button"
-        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer', marginTop: '12px', textDecoration: 'underline' }}
-        onClick={() => {
-          setMode(mode === 'password' ? 'recovery' : 'password');
-          setError(null);
-        }}
-      >
-        {mode === 'password' ? 'Forgot song password? Use recovery code' : '← Back to song password'}
-      </button>
-    </div>
-  );
-}
-
 /**
- * Shown instead of the editor for a DEK-only encrypted song (never given its own
- * password) when the account encryption key just isn't unlocked in this session —
- * e.g. the browser was closed and reopened, so the Supabase auth session (persisted
- * in localStorage) survived but the DEK cached in sessionStorage didn't. This is
- * NOT a per-song lock, so it must not be confused with SongPasswordGate above:
- * there is no song password to enter here, only the account password.
+ * Shown instead of the editor for an encrypted song when the account encryption key
+ * isn't unlocked in this session — e.g. the browser was closed and reopened, so the
+ * Supabase auth session (persisted in localStorage) survived but the DEK cached in
+ * sessionStorage didn't.
  */
 function AccountKeyGate() {
   const { unlockAccountKey } = useAuth();
@@ -260,13 +184,10 @@ export default function Editor() {
 
   // An undecryptable song has no real content to show (see repository placeholders)
   // — gate before rendering the normal editor, rather than merely treating it as
-  // read-only. Two distinct causes need two distinct gates: a song actually
-  // password-locked (isLocked) needs its own password; a DEK-only encrypted song
-  // that just isn't unlocked this session needs the ACCOUNT password instead — it
-  // was never given a song password, so asking for one is both wrong and, per past
-  // testing, produces a confusing "not password-locked" error on submit.
+  // read-only. There's only one reason a song can be undecryptable now: the account
+  // DEK isn't unlocked in this session.
   if (song.isUndecryptedPlaceholder) {
-    return song.isLocked ? <SongPasswordGate song={song} /> : <AccountKeyGate />;
+    return <AccountKeyGate />;
   }
 
   return (
