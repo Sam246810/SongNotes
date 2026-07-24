@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import useSongsStore from '../../store/songsStore';
 import useAuth from '../../auth/useAuth';
 import useLocalMigration from '../../auth/useLocalMigration';
+import useDawSession, { selectAnyDawDirty } from '../../audio/dawSession';
 import NewSongDialog from './NewSongDialog';
+import ConfirmDialog from '../ConfirmDialog/ConfirmDialog';
 import styles from './Dashboard.module.css';
 
 function formatDate(iso) {
@@ -17,7 +19,21 @@ export default function Dashboard({ onPrivacyLock }) {
   const { configured, user, signOut } = useAuth();
   const [confirmDelete, setConfirmDelete] = useState(null); // songId pending deletion
   const [showNewSongDialog, setShowNewSongDialog] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const migration = useLocalMigration();
+
+  // Recorded/imported Scratchpad audio is session-only (see src/audio/dawSession.js) —
+  // warn before an action that would make it unreachable, rather than losing it silently.
+  const deleteTargetDawDirty = useDawSession((s) => Boolean(confirmDelete && s.dirtyBySong[confirmDelete]));
+  const anyDawDirty = useDawSession(selectAnyDawDirty);
+
+  function handleSignOutClick() {
+    if (anyDawDirty) {
+      setShowSignOutConfirm(true);
+    } else {
+      signOut();
+    }
+  }
 
   function handleNew() {
     if (!configured) {
@@ -81,7 +97,7 @@ export default function Dashboard({ onPrivacyLock }) {
                 >
                   🙈 Hide Screen
                 </button>
-                <button className={styles.accountLinkBtn} onClick={signOut} id="sign-out-btn">
+                <button className={styles.accountLinkBtn} onClick={handleSignOutClick} id="sign-out-btn">
                   Sign out
                 </button>
               </div>
@@ -192,6 +208,9 @@ export default function Dashboard({ onPrivacyLock }) {
             <h2 className={styles.modalTitle}>Delete song?</h2>
             <p className={styles.modalText}>
               "{songs.find((s) => s.id === confirmDelete)?.title}" will be permanently deleted.
+              {deleteTargetDawDirty && (
+                <> This song also has unexported Scratchpad audio — deleting it will lose that too.</>
+              )}
             </p>
             <div className={styles.modalActions}>
               <button className={styles.cancelBtn} onClick={() => setConfirmDelete(null)} id="delete-cancel-btn">Cancel</button>
@@ -199,6 +218,21 @@ export default function Dashboard({ onPrivacyLock }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Sign-out gate when unexported Scratchpad audio exists somewhere in the account */}
+      {showSignOutConfirm && (
+        <ConfirmDialog
+          title="Unsaved Scratchpad audio"
+          message="You have recorded or imported audio that hasn't been exported. Signing out may make it unreachable — export it first, or sign out anyway and lose it."
+          cancelLabel="Cancel"
+          onCancel={() => setShowSignOutConfirm(false)}
+          confirmLabel="Sign out anyway"
+          onConfirm={() => { setShowSignOutConfirm(false); signOut(); }}
+          danger
+          cancelId="sign-out-confirm-cancel-btn"
+          confirmId="sign-out-confirm-btn"
+        />
       )}
     </div>
   );

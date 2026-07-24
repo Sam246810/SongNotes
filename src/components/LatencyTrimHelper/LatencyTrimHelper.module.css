@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
@@ -14,13 +14,13 @@
 }
 
 .modal {
-  background: #222228;
-  border: 1px solid #444452;
-  border-radius: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
   width: 460px;
   max-width: 90vw;
   max-height: 85vh;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -33,9 +33,9 @@
 }
 
 .modalHeader {
-  background: #292932;
+  background: var(--bg-surface);
   padding: 12px 16px;
-  border-bottom: 1px solid #3d3d4a;
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -45,7 +45,7 @@
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .stepBadge {
@@ -53,9 +53,9 @@
   margin-right: 10px;
   font-size: 10.5px;
   font-weight: 700;
-  color: #a5a5f5;
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 10px;
   padding: 2px 8px;
   white-space: nowrap;
@@ -64,36 +64,36 @@
 .tapPad {
   width: 100%;
   padding: 14px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  border: 1px solid #6366f1;
-  background: rgba(99, 102, 241, 0.18);
-  color: #c7c7fa;
+  border: 1px solid var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
   transition: background 0.08s, transform 0.05s;
   user-select: none;
 }
 
 .tapPad:active {
-  background: rgba(99, 102, 241, 0.42);
+  background: color-mix(in srgb, var(--accent) 42%, transparent);
   transform: scale(0.98);
 }
 
 .closeModalBtn {
   background: transparent;
   border: none;
-  color: #aaa;
+  color: var(--text-muted);
   font-size: 16px;
   cursor: pointer;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: all 0.15s;
 }
 
 .closeModalBtn:hover {
-  background: #3d3d4a;
-  color: #fff;
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .modalBody {
@@ -107,7 +107,7 @@
 .introText {
   margin: 0;
   font-size: 12.5px;
-  color: #ccc;
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
@@ -118,12 +118,12 @@
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
-  color: #ccc;
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
 .stepsList strong {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .trimHint {
@@ -131,16 +131,16 @@
   flex-direction: column;
   gap: 3px;
   padding: 8px 10px;
-  background: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  border-radius: 4px;
+  background: var(--accent-dim);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: var(--radius-sm);
   font-size: 11.5px;
-  color: #c9c9d6;
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
 .trimHint strong {
-  color: #a5a5f5;
+  color: var(--accent);
 }
 
 .beatRow {
@@ -154,19 +154,19 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #3d3d4a;
+  background: var(--border-default);
   transition: background 0.1s, transform 0.1s;
 }
 
 .beatDotActive {
-  background: #6366f1;
+  background: var(--accent);
   transform: scale(1.25);
 }
 
 .countInNumber {
   font-size: 15px;
   font-weight: 700;
-  color: #a5a5f5;
+  color: var(--accent);
   letter-spacing: 0.02em;
 }
 
@@ -174,13 +174,13 @@
   min-height: 16px;
   font-size: 12px;
   font-weight: 600;
-  color: #a5a5b5;
+  color: var(--text-muted);
   text-align: center;
 }
 
 .errorText {
   font-size: 12px;
-  color: #ef4444;
+  color: var(--danger);
   text-align: center;
 }
 
@@ -189,13 +189,13 @@
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  background: #1a1a1e;
-  border: 1px solid #333;
-  border-radius: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
 }
 
 .trimLabel {
-  color: #777;
+  color: var(--text-muted);
   font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
@@ -206,27 +206,29 @@
   -webkit-appearance: none;
   flex: 1;
   height: 3px;
-  background: #333;
+  background: var(--border-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 2px;
   outline: none;
 }
 
 .trimSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 10px;
-  height: 12px;
-  background: #6366f1;
+  width: 11px;
+  height: 14px;
+  background: var(--accent);
+  border: 1px solid var(--border-focus);
   border-radius: 2px;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .trimSlider::-webkit-slider-thumb:hover {
-  background: #818cf8;
+  background: var(--accent-hover);
 }
 
 .trimValue {
-  color: #6366f1;
+  color: var(--accent);
   font-size: 11px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -242,19 +244,19 @@
 .recordBtn, .playBtn {
   flex: 1;
   padding: 8px 10px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
-  border: 1px solid #444452;
-  background: #2c2c36;
-  color: #eee;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
   transition: all 0.15s;
 }
 
 .recordBtn:hover:not(:disabled), .playBtn:hover:not(:disabled) {
-  background: #3d3d4a;
-  border-color: #6366f1;
+  background: var(--bg-hover);
+  border-color: var(--accent);
 }
 
 .recordBtn:disabled, .playBtn:disabled {
@@ -263,24 +265,24 @@
 }
 
 .recordBtn {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .autoBtn {
   flex: 1;
   padding: 8px 10px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
-  border: 1px solid #6366f1;
-  background: rgba(99, 102, 241, 0.12);
-  color: #a5a5f5;
+  border: 1px solid var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
   transition: all 0.15s;
 }
 
 .autoBtn:hover:not(:disabled) {
-  background: rgba(99, 102, 241, 0.28);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .autoBtn:disabled {
@@ -291,13 +293,13 @@
 .autoResult {
   font-size: 12px;
   font-weight: 600;
-  color: #34d399;
+  color: var(--success);
   text-align: center;
 }
 
 .trimHintTip {
   margin-top: 2px;
-  color: #9a9ab0;
+  color: var(--text-muted);
 }
 
 .footerRow {
@@ -311,7 +313,7 @@
 .skipBtn {
   background: transparent;
   border: none;
-  color: #888;
+  color: var(--text-muted);
   font-size: 12px;
   cursor: pointer;
   padding: 6px 8px;
@@ -319,23 +321,23 @@
 }
 
 .skipBtn:hover {
-  color: #ccc;
+  color: var(--text-secondary);
 }
 
 .saveBtn {
   padding: 8px 14px;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
-  border: 1px solid #059669;
-  background: rgba(5, 150, 105, 0.15);
-  color: #34d399;
+  border: 1px solid var(--success);
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
   transition: all 0.15s;
 }
 
 .saveBtn:hover:not(:disabled) {
-  background: rgba(5, 150, 105, 0.3);
+  background: color-mix(in srgb, var(--success) 30%, transparent);
 }
 
 .saveBtn:disabled {
