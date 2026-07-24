@@ -198,6 +198,23 @@
 /* Audio Export Dropdown */
 .exportAudioWrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.unexportedPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
 }
 
 .exportAudioBtn {

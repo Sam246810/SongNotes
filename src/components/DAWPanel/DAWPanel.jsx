@@ -3,6 +3,7 @@ import styles from './DAWPanel.module.css';
 import { getSharedAudioContext } from '../../utils/audioContext';
 import { audioBufferToWav, audioBufferToMp3, mixTracksToMasterBuffer, downloadAudioBlob, sanitizeAudioFilename } from '../../utils/audioExport';
 import { getStoredLatencyTrimMs, setStoredLatencyTrimMs, getStoredPianoTrimMs, setStoredPianoTrimMs, hasSeenLatencyTrimHelper } from '../../utils/latencyTrimSettings';
+import useDawSession from '../../audio/dawSession';
 import {
   LOW_LATENCY_MIC_CONSTRAINTS,
   RECORD_PREROLL_SEC,
@@ -96,11 +97,32 @@ function getDefaultPipelineOverheadMs() {
   return 10; // safe default
 }
 
-export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDaw }) {
-  const [tracks, setTracks] = useState([
+/** The startup tracks for a song that's never had anything recorded/imported yet. */
+function makeDefaultTracks() {
+  return [
     { id: '1', name: 'Vocals', inputType: 'mic', audioBuffer: null, volume: 0.8, isMuted: false, isSoloed: false, isArmed: true, duration: 0 },
     { id: '2', name: 'Grand Piano', inputType: 'piano', audioBuffer: null, volume: 0.8, isMuted: false, isSoloed: false, isArmed: false, duration: 0 },
-  ]);
+  ];
+}
+
+export default function DAWPanel({ songId, showPiano, onTogglePiano, showDaw, onToggleDaw }) {
+  // Hydrate from this song's in-memory session tracks (if any were recorded/imported
+  // earlier this session), falling back to the defaults for a song seen for the first
+  // time — or when songId is falsy (e.g. no active song), which never touches the store.
+  const [tracks, setTracks] = useState(
+    () => useDawSession.getState().getTracks(songId) ?? makeDefaultTracks()
+  );
+
+  // Write every change straight back to the session store, keyed by song. Since
+  // Editor.jsx remounts DAWPanel with key={song.id} on song switch, this keeps the
+  // store current before the old instance ever unmounts — no unmount-time flush needed.
+  useEffect(() => {
+    useDawSession.getState().saveTracks(songId, tracks);
+  }, [songId, tracks]);
+
+  // Whether this song has recorded/imported audio that hasn't been exported yet.
+  const dawDirty = useDawSession((s) => !!(songId && s.dirtyBySong[songId]));
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [playhead, setPlayhead] = useState(0); // in seconds
@@ -118,6 +140,7 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
   const [showExportMenu, setShowExportMenu] = useState(false);
 
   const exportAudioRef = useRef(null);
+  const importInputRef = useRef(null);
 
   // Close audio export dropdown on outside click
   useEffect(() => {
@@ -143,6 +166,10 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
     const blob = format === 'mp3' ? await audioBufferToMp3(master) : audioBufferToWav(master);
     const filename = `${sanitizeAudioFilename('Master_Mix')}.${format}`;
     downloadAudioBlob(blob, filename);
+    // Exporting the full master mix is the "I saved everything" gesture — clears the
+    // unexported-audio nudge. A single-track export intentionally does NOT clear it,
+    // since it's safer to keep warning than risk losing other tracks.
+    useDawSession.getState().markExported(songId);
     setShowExportMenu(false);
   };
 
@@ -152,6 +179,46 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
     const filename = `${sanitizeAudioFilename(track.name)}.${format}`;
     downloadAudioBlob(blob, filename);
     setShowExportMenu(false);
+  };
+
+  function makeImportedTrack(name, audioBuffer) {
+    return {
+      id: crypto.randomUUID(),
+      name,
+      inputType: 'mic',
+      audioBuffer,
+      volume: 0.8,
+      isMuted: false,
+      isSoloed: false,
+      isArmed: false,
+      duration: audioBuffer.duration,
+    };
+  }
+
+  // Bring a previously-exported (or any) audio file back in as a new track — the
+  // manual re-import half of the export nudge, since recorded audio never persists
+  // across a reload on its own. Our own "mp3" export is really WAV bytes under a
+  // different extension, so decodeAudioData handles a round-tripped file either way.
+  const handleImportFiles = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = ''; // allow re-importing the same file again later
+    if (!files.length) return;
+
+    initAudio();
+    const ctx = audioCtxRef.current;
+
+    for (const file of files) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+        const name = file.name.replace(/\.[^./\\]+$/, '') || 'Imported Track';
+        setTracks((prev) => [...prev, makeImportedTrack(name, audioBuffer)]);
+      } catch (err) {
+        console.error('Failed to import audio file:', err);
+        alert(`Couldn't import "${file.name}". Make sure it's a valid audio file.`);
+      }
+    }
+    useDawSession.getState().markDirty(songId);
   };
 
   // Resizable Panel Width state
@@ -635,6 +702,7 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
         setTracks(prev => prev.map(t => (
           t.isArmed ? { ...t, audioBuffer, duration: audioBuffer.duration } : t
         )));
+        useDawSession.getState().markDirty(songId);
       }
     }
   };
@@ -786,12 +854,36 @@ export default function DAWPanel({ showPiano, onTogglePiano, showDaw, onToggleDa
                 )}
               </div>
 
+              {/* Import a previously-exported (or any) audio file back in as a new track */}
+              <input
+                ref={importInputRef}
+                type="file"
+                accept="audio/*"
+                multiple
+                hidden
+                onChange={handleImportFiles}
+                id="import-audio-input"
+              />
+              <button
+                className={styles.addTrackBtn}
+                onClick={() => importInputRef.current?.click()}
+                title="Import an audio file as a new track"
+                id="import-audio-btn"
+              >
+                ⇩ Import
+              </button>
+
               {/* Audio Export Dropdown */}
               <div className={styles.exportAudioWrapper} ref={exportAudioRef}>
+                {dawDirty && (
+                  <span className={styles.unexportedPill} title="This song has recorded or imported audio that hasn't been exported yet">
+                    ● Unexported
+                  </span>
+                )}
                 <button
                   className={`${styles.exportAudioBtn} ${hasRecordedAudio ? styles.hasAudio : ''}`}
                   onClick={() => setShowExportMenu(!showExportMenu)}
-                  title="Export recorded audio (.wav / .mp3)"
+                  title={dawDirty ? 'You have unexported audio — export to keep it' : 'Export recorded audio (.wav / .mp3)'}
                   id="export-audio-btn"
                 >
                   💾 Export Audio ▼

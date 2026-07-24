@@ -6,6 +6,7 @@ import PrivacyScreen from './components/PrivacyScreen/PrivacyScreen';
 import useSongsStore from './store/songsStore';
 import useCloudSync from './auth/useCloudSync';
 import useAuth from './auth/useAuth';
+import useDawSession, { selectAnyDawDirty } from './audio/dawSession';
 import styles from './App.module.css';
 
 /**
@@ -18,6 +19,9 @@ export default function App() {
   const songs = useSongsStore((s) => s.songs);
   const { user, loading: authLoading } = useAuth();
   const { isChecking } = useCloudSync();
+  // Recorded/imported Scratchpad audio never persists across a reload on its own (see
+  // src/audio/dawSession.js) — warn before leaving regardless of guest/signed-in status.
+  const anyDawDirty = useDawSession(selectAnyDawDirty);
 
   // Manual "someone might glance at my screen" cover for the whole app — a
   // visibility toggle, not a new crypto scheme (content is already decrypted in
@@ -33,15 +37,17 @@ export default function App() {
 
   useEffect(() => {
     function handleBeforeUnload(e) {
-      if (!user && songs.length > 0) {
+      if ((!user && songs.length > 0) || anyDawDirty) {
         e.preventDefault();
-        e.returnValue = 'You are in guest mode. Sign up to save your progress permanently to the cloud and prevent data loss.';
+        e.returnValue = anyDawDirty
+          ? 'You have recorded or imported Scratchpad audio that hasn\'t been exported — it will be lost if you leave.'
+          : 'You are in guest mode. Sign up to save your progress permanently to the cloud and prevent data loss.';
         return e.returnValue;
       }
     }
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [user, songs]);
+  }, [user, songs, anyDawDirty]);
 
   if (authLoading) {
     return <div className={styles.loadingScreen}>Loading SongNotes…</div>;

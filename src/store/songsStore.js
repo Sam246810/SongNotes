@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { alignChordsWithLyrics } from '../utils/chords';
 import { LocalSongsRepository } from './songsRepository';
+import useDawSession from '../audio/dawSession';
 
 // -- Factory helpers --
 
@@ -72,6 +73,7 @@ const useSongsStore = create((set, get) => ({
       return { songs, activeSongId };
     });
     get().repo.remove(id).catch(logPersistError);
+    useDawSession.getState().clearSong(id); // drop this song's in-memory DAW audio too
   },
 
   renameSong: (id, title) => {

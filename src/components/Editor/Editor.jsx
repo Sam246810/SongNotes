@@ -226,6 +226,8 @@ export default function Editor() {
         </div>
         {showScratchpad && (
           <DAWPanel
+            key={song.id}
+            songId={song.id}
             showPiano={showPiano}
             onTogglePiano={() => setShowPiano((p) => !p)}
             showDaw={showDaw}
