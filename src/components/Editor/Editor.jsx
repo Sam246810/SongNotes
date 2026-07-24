@@ -29,8 +29,8 @@ function AccountKeyGate() {
       // Re-fetch: this unlocks every DEK-only song affected this session, not just
       // the one currently open.
       await hydrate();
-    } catch (err) {
-      setError(err.message || 'Failed to unlock account encryption key.');
+    } catch {
+      setError('Incorrect password.');
     } finally {
       setSubmitting(false);
     }
@@ -38,15 +38,15 @@ function AccountKeyGate() {
 
   return (
     <div className={styles.emptyState}>
-      <div className={styles.emptyIcon}>🔐</div>
-      <p>This song is encrypted with your account key, which isn't unlocked in this session.</p>
+      <div className={styles.emptyIcon}>🔒</div>
+      <p>Enter your password to view this song.</p>
       <form className={styles.unlockForm} onSubmit={handleSubmit}>
         <input
           type="password"
           className={styles.unlockInput}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Account password"
+          placeholder="Password"
           autoFocus
           required
           autoComplete="current-password"

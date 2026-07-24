@@ -76,10 +76,10 @@ export default function Dashboard({ onPrivacyLock }) {
                 <button
                   className={styles.accountLinkBtn}
                   onClick={onPrivacyLock}
-                  title="Hide screen for privacy"
+                  title="Hide your songs until you enter your password again"
                   id="privacy-toggle-btn"
                 >
-                  🙈 Privacy
+                  🙈 Hide Screen
                 </button>
                 <button className={styles.accountLinkBtn} onClick={signOut} id="sign-out-btn">
                   Sign out
@@ -122,12 +122,6 @@ export default function Dashboard({ onPrivacyLock }) {
                 id={`song-item-${song.id}`}
               >
                 <div className={styles.itemLeft}>
-                  <span
-                    className={styles.itemIcon}
-                    title={song.isUndecryptedPlaceholder ? 'Encrypted (unlock account to view)' : song.encrypted ? 'Encrypted' : undefined}
-                  >
-                    {song.isUndecryptedPlaceholder ? '🔒' : song.encrypted ? '🔐' : '♪'}
-                  </span>
                   <div className={styles.itemMeta}>
                     <span className={styles.itemTitle}>{song.title}</span>
                     <span className={styles.itemDate}>

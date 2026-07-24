@@ -244,7 +244,7 @@ export class CloudSongsRepository {
   _placeholderSong(row) {
     return {
       id: row.id,
-      title: '🔒 Encrypted (unlock account to view)',
+      title: '🔒 Locked — click to unlock',
       lines: [],
       isUndecryptedPlaceholder: true,
       createdAt: row.created_at,
