@@ -3,6 +3,13 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Toolbar from '../components/Toolbar/Toolbar';
 import DAWPanel from '../components/DAWPanel/DAWPanel';
+import AuthProvider from '../auth/AuthProvider';
+
+// Toolbar reads useAuth() (Supabase not configured in tests, so it resolves to a
+// guest/no-session context immediately) — wrap it so the hook has a provider.
+function renderWithAuth(ui) {
+  return render(<AuthProvider>{ui}</AuthProvider>);
+}
 
 beforeEach(() => {
   window.AudioContext = function MockAudioContext() {
@@ -28,10 +35,10 @@ beforeEach(() => {
 });
 
 describe('Scratchpad UI Integration', () => {
-  const dummySong = { id: '1', title: 'Test Song', locked: false, lines: [] };
+  const dummySong = { id: '1', title: 'Test Song', isReadOnly: false, lines: [] };
 
   it('renders unified Scratchpad toggle button in Toolbar', () => {
-    render(
+    renderWithAuth(
       <Toolbar
         song={dummySong}
         sidebarOpen={true}
@@ -48,7 +55,7 @@ describe('Scratchpad UI Integration', () => {
   it('calls onToggleScratchpad when toolbar Scratchpad button is clicked', async () => {
     const user = userEvent.setup();
     const handleToggle = vi.fn();
-    render(
+    renderWithAuth(
       <Toolbar
         song={dummySong}
         sidebarOpen={true}

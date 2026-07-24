@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+# Real Supabase credentials — copy .env.example to .env.local instead.
+.env
+.env.local
 
 # Editor directories and files
 .vscode/*

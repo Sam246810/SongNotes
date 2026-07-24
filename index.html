@@ -11,6 +11,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <script>
+      // Applied before first paint, and before the Toolbar (which owns the toggle) ever
+      // mounts — otherwise the page always paints light first and only flips to the
+      // saved theme once a song is open and Toolbar's effect runs. Must run here (start
+      // of body), not in <head>, since document.body doesn't exist yet up there.
+      if (localStorage.getItem('songnotes-theme') === 'dark') {
+        document.body.classList.add('cozy-dark');
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

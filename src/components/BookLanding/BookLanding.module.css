@@ -1,0 +1,214 @@
+.viewport {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fdfbf7; /* warm light parchment background */
+  font-family: 'Lora', 'Playfair Display', Georgia, serif;
+  color: #2c2419;
+  z-index: 1000;
+  overflow: hidden;
+  user-select: none;
+  perspective: 1000px;
+}
+
+/* Minimalist Elegant Book Container */
+.book {
+  position: relative;
+  width: 300px;
+  height: 400px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease-out;
+  cursor: pointer;
+  box-shadow: 0 15px 35px rgba(44, 36, 25, 0.15);
+  border-radius: 4px;
+}
+
+.book.opened {
+  transform: scale(1.03);
+}
+
+.zoomed {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out 0.3s;
+}
+
+/* Book Parts */
+.bookPart {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px 12px 12px 4px;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+}
+
+.backCover {
+  background: #f3efe6;
+  border: 1px solid #dcd5c7;
+  transform: translateZ(-8px);
+}
+
+/* Front Cover (Flipping Page) */
+.frontCover {
+  z-index: 10;
+  background: #eae2cf; /* warm light linen cover color */
+  border: 1px solid #cebfab;
+  transform: translateZ(0px);
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  backface-visibility: hidden;
+}
+
+.opened .frontCover {
+  transform: rotateY(-130deg);
+}
+
+.coverInner {
+  position: absolute;
+  inset: 10px;
+  border: 1px solid #cebfab;
+  border-radius: 2px 8px 8px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fdfbf7;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.branding {
+  text-align: center;
+  z-index: 2;
+  margin-bottom: 24px;
+}
+
+.logoIcon {
+  font-size: 28px;
+  color: #b45309; /* warm rust */
+  margin-bottom: 8px;
+}
+
+.mainTitle {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #2c2419;
+  margin: 0 0 4px 0;
+}
+
+.tagline {
+  font-size: 12px;
+  font-style: italic;
+  color: #8a7663;
+  margin: 0;
+}
+
+.choiceActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 80%;
+  max-width: 220px;
+  z-index: 2;
+}
+
+.loginBtn {
+  background: #b45309; /* warm rust */
+  border: none;
+  border-radius: 6px;
+  color: #fdfbf7;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(180, 83, 9, 0.25);
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
+  width: 100%;
+}
+
+.loginBtn:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+.guestBtn {
+  background: transparent;
+  border: 1px solid #cebfab;
+  border-radius: 6px;
+  color: #5e4c3a;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  width: 100%;
+}
+
+.guestBtn:hover {
+  background: rgba(180, 83, 9, 0.05);
+  color: #b45309;
+}
+
+/* Interior Pages Stack */
+.pagesStack {
+  position: absolute;
+  inset: 4px 4px 4px 0;
+  background: #fdfbf7;
+  border-radius: 0 8px 8px 0;
+  z-index: 5;
+  transform: translateZ(-4px);
+  box-shadow: 5px 5px 15px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cebfab;
+  border-left: none;
+}
+
+.pageContent {
+  padding: 20px;
+  text-align: center;
+  color: #2c2419;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.3s ease-out 0.2s, transform 0.3s ease-out 0.2s;
+}
+
+.opened .pageContent {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c2419;
+  margin-bottom: 6px;
+}
+
+.pageSubtitle {
+  font-size: 12px;
+  color: #8a7663;
+  font-style: italic;
+}
+
+.hint {
+  margin-top: 24px;
+  font-size: 12px;
+  font-style: italic;
+  color: #8a7663;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}

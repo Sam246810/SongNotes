@@ -1,5 +1,6 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import useSongsStore from '../../store/songsStore';
+import useAuth from '../../auth/useAuth';
 import SongLine from '../SongLine/SongLine';
 import Toolbar from '../Toolbar/Toolbar';
 import PianoPanel from '../PianoPanel/PianoPanel';
@@ -7,10 +8,63 @@ import DAWPanel from '../DAWPanel/DAWPanel';
 import styles from './Editor.module.css';
 
 /**
+ * Shown instead of the editor for an encrypted song when the account encryption key
+ * isn't unlocked in this session — e.g. the browser was closed and reopened, so the
+ * Supabase auth session (persisted in localStorage) survived but the DEK cached in
+ * sessionStorage didn't.
+ */
+function AccountKeyGate() {
+  const { unlockAccountKey } = useAuth();
+  const hydrate = useSongsStore((s) => s.hydrate);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await unlockAccountKey(password);
+      // Re-fetch: this unlocks every DEK-only song affected this session, not just
+      // the one currently open.
+      await hydrate();
+    } catch {
+      setError('Incorrect password.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className={styles.emptyState}>
+      <div className={styles.emptyIcon}>🔒</div>
+      <p>Enter your password to view this song.</p>
+      <form className={styles.unlockForm} onSubmit={handleSubmit}>
+        <input
+          type="password"
+          className={styles.unlockInput}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          autoFocus
+          required
+          autoComplete="current-password"
+        />
+        <button type="submit" className={styles.unlockBtn} disabled={submitting} id="account-key-unlock-btn">
+          {submitting ? 'Unlocking…' : 'Unlock'}
+        </button>
+      </form>
+      {error && <p className={styles.unlockError}>{error}</p>}
+    </div>
+  );
+}
+
+/**
  * Editor — full song editing view.
  * Manages focus state and delegates all store mutations to songsStore.
  */
-export default function Editor({ sidebarOpen, onToggleSidebar }) {
+export default function Editor() {
   const { songs, activeSongId, updateLine, addLineAfter, deleteLine, splitLine, mergeLineWithPrevious } = useSongsStore();
   const song = songs.find((s) => s.id === activeSongId) ?? null;
 
@@ -128,12 +182,18 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
     );
   }
 
+  // An undecryptable song has no real content to show (see repository placeholders)
+  // — gate before rendering the normal editor, rather than merely treating it as
+  // read-only. There's only one reason a song can be undecryptable now: the account
+  // DEK isn't unlocked in this session.
+  if (song.isUndecryptedPlaceholder) {
+    return <AccountKeyGate />;
+  }
+
   return (
-    <div className={`${styles.editorWrapper} ${song.locked ? styles.lockedMode : ''}`}>
+    <div className={styles.editorWrapper}>
       <Toolbar
         song={song}
-        sidebarOpen={sidebarOpen}
-        onToggleSidebar={onToggleSidebar}
         showScratchpad={showScratchpad}
         onToggleScratchpad={handleToggleScratchpad}
       />
@@ -148,7 +208,7 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
                 <SongLine
                   key={line.id}
                   line={line}
-                  locked={song.locked}
+                  locked={false}
                   isActive={isActive}
                   focusTarget={isFocusTarget}
                   focusCaretIndex={focusCaretIndex}
@@ -166,6 +226,8 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
         </div>
         {showScratchpad && (
           <DAWPanel
+            key={song.id}
+            songId={song.id}
             showPiano={showPiano}
             onTogglePiano={() => setShowPiano((p) => !p)}
             showDaw={showDaw}
@@ -173,11 +235,6 @@ export default function Editor({ sidebarOpen, onToggleSidebar }) {
           />
         )}
       </div>
-      {song.locked && (
-        <div className={styles.lockedBanner}>
-          <span>🔒 Document is locked — unlock from the toolbar to edit</span>
-        </div>
-      )}
     </div>
   );
 }

@@ -3,8 +3,8 @@ import useSongsStore from '../../store/songsStore';
 import { downloadText, exportToPdf } from '../../utils/export';
 import styles from './Toolbar.module.css';
 
-export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratchpad, onToggleScratchpad }) {
-  const { renameSong, toggleLock } = useSongsStore();
+export default function Toolbar({ song, showScratchpad, onToggleScratchpad }) {
+  const { renameSong } = useSongsStore();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(song.title);
   const [showExport, setShowExport] = useState(false);
@@ -75,13 +75,13 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
         ) : (
           <button
             className={styles.titleBtn}
-            onClick={() => { if (!song.locked) setEditingTitle(true); }}
-            title={song.locked ? 'Unlock to rename' : 'Click to rename'}
+            onClick={() => setEditingTitle(true)}
+            title="Click to rename"
             aria-label="Song title — click to edit"
             id="song-title-btn"
           >
             {song.title}
-            {!song.locked && <span className={styles.editIcon}>✎</span>}
+            <span className={styles.editIcon}>✎</span>
           </button>
         )}
       </div>
@@ -107,17 +107,6 @@ export default function Toolbar({ song, sidebarOpen, onToggleSidebar, showScratc
         >
           🎛️ {showScratchpad ? 'Hide Scratchpad' : 'Scratchpad'}
         </button>
-
-        {/* Lock / Unlock */}
-        <button
-          className={`${styles.btn} ${song.locked ? styles.btnWarning : ''}`}
-          onClick={() => toggleLock(song.id)}
-          title={song.locked ? 'Unlock document' : 'Lock document'}
-          id="lock-btn"
-        >
-          {song.locked ? '🔓 Unlock' : '🔒 Lock'}
-        </button>
-
 
         {/* Export dropdown */}
         <div className={styles.exportWrap} ref={exportRef}>

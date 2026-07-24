@@ -80,7 +80,7 @@ describe('createSong', () => {
     expect(song).toHaveProperty('id');
     expect(song).toHaveProperty('title', 'Hello World');
     expect(song).toHaveProperty('lines');
-    expect(song).toHaveProperty('locked', false);
+    expect(song).toHaveProperty('isReadOnly', false);
     expect(song).toHaveProperty('createdAt');
     expect(song).toHaveProperty('updatedAt');
     expect(song.lines).toHaveLength(1);
