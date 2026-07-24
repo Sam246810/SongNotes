@@ -12,7 +12,7 @@ function formatDate(iso) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function Dashboard() {
+export default function Dashboard({ onPrivacyLock }) {
   const { songs, activeSongId, addSong, deleteSong, setActiveSong } = useSongsStore();
   const { configured, user, signOut } = useAuth();
   const [confirmDelete, setConfirmDelete] = useState(null); // songId pending deletion
@@ -72,9 +72,19 @@ export default function Dashboard() {
           {user ? (
             <>
               <span className={styles.accountEmail} title={user.email}>{user.email}</span>
-              <button className={styles.accountLinkBtn} onClick={signOut} id="sign-out-btn">
-                Sign out
-              </button>
+              <div className={styles.accountActions}>
+                <button
+                  className={styles.accountLinkBtn}
+                  onClick={onPrivacyLock}
+                  title="Hide screen for privacy"
+                  id="privacy-toggle-btn"
+                >
+                  🙈 Privacy
+                </button>
+                <button className={styles.accountLinkBtn} onClick={signOut} id="sign-out-btn">
+                  Sign out
+                </button>
+              </div>
             </>
           ) : (
             <>

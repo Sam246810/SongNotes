@@ -76,19 +76,7 @@ export default function App() {
 
   return (
     <div className={styles.appLayout}>
-      {sidebarOpen && <Dashboard />}
-
-      {user && (
-        <button
-          className={styles.privacyToggle}
-          onClick={() => setPrivacyLocked(true)}
-          title="Hide screen for privacy"
-          aria-label="Hide screen for privacy"
-          id="privacy-toggle-btn"
-        >
-          🙈
-        </button>
-      )}
+      {sidebarOpen && <Dashboard onPrivacyLock={() => setPrivacyLocked(true)} />}
 
       {/* Centered vertical toggle handle on the seam */}
       <button
