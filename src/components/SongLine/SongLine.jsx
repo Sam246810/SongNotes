@@ -19,6 +19,9 @@ import styles from './SongLine.module.css';
  *   onEnter      (lineId) => void
  *   onNavigate   (lineId, direction) => void  direction: 'up' | 'down' | 'chords' | 'lyrics'
  *   onDelete     (lineId) => void
+ *   customChords     object? — this song's own voicings, keyed by normalized chord name
+ *   onSaveVoicing    fn?     — (chordName, voicing) => void — omit to disable voicing editing
+ *   onResetVoicing   fn?     — (chordName) => void
  */
 function getCharacterIndexFromClick(e, containerEl) {
   try {
@@ -95,6 +98,9 @@ const SongLine = React.forwardRef(function SongLine(
     onDelete,
     onSplit,
     onMergeWithPrevious,
+    customChords,
+    onSaveVoicing,
+    onResetVoicing,
   },
   _ref
 ) {
@@ -275,6 +281,9 @@ const SongLine = React.forwardRef(function SongLine(
             <ChordTokenDisplay
               value={line.chords}
               locked={locked}
+              customChords={customChords}
+              onSaveVoicing={onSaveVoicing}
+              onResetVoicing={onResetVoicing}
               onClick={(e) => {
                 if (!locked) {
                   const clickedIndex = getCharacterIndexFromClick(e, e.currentTarget);

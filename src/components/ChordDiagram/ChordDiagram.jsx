@@ -1,4 +1,5 @@
-import { CHORD_DB } from '../../utils/chords';
+import { useState } from 'react';
+import { CHORD_DB, formatFretsForInput, parseFretsInput } from '../../utils/chords';
 import styles from './ChordDiagram.module.css';
 
 // SVG layout constants
@@ -33,14 +34,103 @@ const COLORS = {
   fretNum: '#e8eaf6',
 };
 
-export default function ChordDiagram({ chordName }) {
-  const data = CHORD_DB[chordName];
+/**
+ * Props:
+ *   chordName        string — normalized chord name to look up/display
+ *   customChords     object? — this song's own voicings, keyed by chordName;
+ *                     takes priority over CHORD_DB (fills gaps or overrides)
+ *   onSaveVoicing     (chordName, {frets, baseFret}) => void — omit to disable editing entirely
+ *   onResetVoicing    (chordName) => void — clears a custom override, reverting to CHORD_DB
+ *   locked            boolean — song is read-only; editing controls are hidden
+ *   editing           boolean — controlled by the parent so it can keep the
+ *                     hover popup open while the user is mid-edit
+ *   onEditingChange   (boolean) => void
+ */
+export default function ChordDiagram({
+  chordName,
+  customChords,
+  onSaveVoicing,
+  onResetVoicing,
+  locked,
+  editing,
+  onEditingChange,
+}) {
+  const [draft, setDraft] = useState('');
+  const [error, setError] = useState(null);
+
+  const custom = customChords?.[chordName];
+  const data = custom || CHORD_DB[chordName];
+  const canEdit = !!onSaveVoicing && !locked;
+
+  function startEditing() {
+    setDraft(data ? formatFretsForInput(data.frets) : '');
+    setError(null);
+    onEditingChange?.(true);
+  }
+
+  function handleSave() {
+    const parsed = parseFretsInput(draft);
+    if (!parsed) {
+      setError('Enter 6 values (0–24 or x), e.g. "x 3 2 0 1 0"');
+      return;
+    }
+    onSaveVoicing(chordName, parsed);
+    onEditingChange?.(false);
+  }
+
+  function handleCancel() {
+    setError(null);
+    onEditingChange?.(false);
+  }
+
+  function handleReset() {
+    onResetVoicing?.(chordName);
+    onEditingChange?.(false);
+  }
+
+  if (editing) {
+    return (
+      <div className={styles.popup}>
+        <div className={styles.chordName}>{chordName}</div>
+        <div className={styles.editor}>
+          <input
+            className={styles.editorInput}
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSave();
+              else if (e.key === 'Escape') handleCancel();
+            }}
+            placeholder="x 3 2 0 1 0"
+            autoFocus
+            spellCheck={false}
+            autoComplete="off"
+          />
+          <div className={styles.editorHint}>low E → high E, 0 = open, x = muted</div>
+          {error && <div className={styles.editorError}>{error}</div>}
+          <div className={styles.editorActions}>
+            <button type="button" className={styles.editorBtn} onClick={handleSave}>Save</button>
+            <button type="button" className={styles.editorBtnSecondary} onClick={handleCancel}>Cancel</button>
+            {custom && (
+              <button type="button" className={styles.editorBtnSecondary} onClick={handleReset}>Reset</button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!data) {
     return (
       <div className={styles.popup}>
         <div className={styles.chordName}>{chordName}</div>
         <div className={styles.noChart}>no chord chart for this chord yet &gt;.&lt;</div>
+        {canEdit && (
+          <button type="button" className={styles.addVoicingBtn} onClick={startEditing}>
+            + Add voicing
+          </button>
+        )}
       </div>
     );
   }
@@ -164,6 +254,11 @@ export default function ChordDiagram({ chordName }) {
           >{name}</text>
         ))}
       </svg>
+      {canEdit && (
+        <button type="button" className={styles.editVoicingBtn} onClick={startEditing}>
+          {custom ? 'Edit voicing' : 'Suggest a different voicing'}
+        </button>
+      )}
     </div>
   );
 }

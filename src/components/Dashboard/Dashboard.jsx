@@ -15,7 +15,7 @@ function formatDate(iso) {
 }
 
 export default function Dashboard({ onPrivacyLock }) {
-  const { songs, activeSongId, addSong, deleteSong, setActiveSong } = useSongsStore();
+  const { songs, activeSongId, addSong, deleteSong, setActiveSong, updateSongMeta } = useSongsStore();
   const { configured, user, signOut } = useAuth();
   const [confirmDelete, setConfirmDelete] = useState(null); // songId pending deletion
   const [showNewSongDialog, setShowNewSongDialog] = useState(false);
@@ -48,9 +48,10 @@ export default function Dashboard({ onPrivacyLock }) {
 
   // Signed-in users always get every song encrypted with their account key — no
   // per-song choice. Guests never encrypt (no account, no key).
-  function handleNewSongDone({ title }) {
+  function handleNewSongDone({ title, lines, meta }) {
     setShowNewSongDialog(false);
-    addSong(title || 'Untitled Song', { encrypted: !!user });
+    const songId = addSong(title || 'Untitled Song', { encrypted: !!user, lines });
+    if (meta && Object.keys(meta).length > 0) updateSongMeta(songId, meta);
   }
 
   function handleOpen(id) {

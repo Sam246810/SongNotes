@@ -214,6 +214,11 @@ export class CloudSongsRepository {
     const content = await encryptJSON(dek, {
       title: song.title,
       lines: song.lines,
+      bpm: song.bpm,
+      key: song.key,
+      tuning: song.tuning,
+      capo: song.capo,
+      customChords: song.customChords,
       createdAt: song.createdAt,
       updatedAt: song.updatedAt,
     });

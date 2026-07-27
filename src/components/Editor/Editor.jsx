@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import useSongsStore from '../../store/songsStore';
 import useAuth from '../../auth/useAuth';
 import SongLine from '../SongLine/SongLine';
+import SongMetaBar from './SongMetaBar';
 import Toolbar from '../Toolbar/Toolbar';
 import PianoPanel from '../PianoPanel/PianoPanel';
 import DAWPanel from '../DAWPanel/DAWPanel';
@@ -65,7 +66,10 @@ function AccountKeyGate() {
  * Manages focus state and delegates all store mutations to songsStore.
  */
 export default function Editor() {
-  const { songs, activeSongId, updateLine, addLineAfter, deleteLine, splitLine, mergeLineWithPrevious } = useSongsStore();
+  const {
+    songs, activeSongId, updateLine, addLineAfter, deleteLine, splitLine, mergeLineWithPrevious,
+    updateSongMeta, transposeSong, setCustomChord, removeCustomChord,
+  } = useSongsStore();
   const song = songs.find((s) => s.id === activeSongId) ?? null;
 
   const [showScratchpad, setShowScratchpad] = useState(false);
@@ -172,6 +176,38 @@ export default function Editor() {
     [song, mergeLineWithPrevious]
   );
 
+  const handleUpdateMeta = useCallback(
+    (changes) => {
+      if (!song) return;
+      updateSongMeta(song.id, changes);
+    },
+    [song, updateSongMeta]
+  );
+
+  const handleTranspose = useCallback(
+    (semitones) => {
+      if (!song) return;
+      transposeSong(song.id, semitones);
+    },
+    [song, transposeSong]
+  );
+
+  const handleSaveVoicing = useCallback(
+    (chordName, voicing) => {
+      if (!song) return;
+      setCustomChord(song.id, chordName, voicing);
+    },
+    [song, setCustomChord]
+  );
+
+  const handleResetVoicing = useCallback(
+    (chordName) => {
+      if (!song) return;
+      removeCustomChord(song.id, chordName);
+    },
+    [song, removeCustomChord]
+  );
+
 
   if (!song) {
     return (
@@ -200,6 +236,7 @@ export default function Editor() {
       <div className={`${styles.editorBody} ${showScratchpad ? styles.hasScratchpad : ''}`}>
         <div className={styles.editorScroll}>
           <div className={styles.linesContainer}>
+            <SongMetaBar song={song} onUpdateMeta={handleUpdateMeta} onTranspose={handleTranspose} />
             {song.lines.map((line) => {
               const isActive = focusState?.lineId === line.id;
               const isFocusTarget = pendingFocus?.lineId === line.id ? pendingFocus.track : null;
@@ -219,6 +256,9 @@ export default function Editor() {
                   onDelete={handleDelete}
                   onSplit={handleSplit}
                   onMergeWithPrevious={handleMergeWithPrevious}
+                  customChords={song.customChords}
+                  onSaveVoicing={handleSaveVoicing}
+                  onResetVoicing={handleResetVoicing}
                 />
               );
             })}
