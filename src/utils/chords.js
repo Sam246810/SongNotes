@@ -78,6 +78,15 @@ export const CHORD_DB = {
   Bdim: { frets: [-1, 2, 3, 4, -1, -1], baseFret: 1 },
   Adim: { frets: [-1, 0, 1, 2, -1, -1], baseFret: 1 },
   Edim: { frets: [0, 1, 2, 3, -1, -1], baseFret: 1 },
+  // === SIXTH ===
+  C6: { frets: [-1, 0, 2, 2, 1, 3], baseFret: 1 },
+  D6: { frets: [-1, -1, 0, 2, 0, 2], baseFret: 1 },
+  G6: { frets: [3, 2, 0, 0, 0, 0], baseFret: 1 },
+  A6: { frets: [-1, 0, 2, 2, 2, 2], baseFret: 1 },
+  // === AUGMENTED ===
+  Caug: { frets: [-1, 3, 2, 1, 1, -1], baseFret: 1 },
+  // === DIMINISHED 7 ===
+  Cdim7: { frets: [2, -1, 1, 2, 1, -1], baseFret: 1 },
   // === POWER ===
   A5: { frets: [-1, 0, 2, 2, -1, -1], baseFret: 1 },
   E5: { frets: [0, 2, 2, -1, -1, -1], baseFret: 1 },
@@ -90,6 +99,11 @@ const ENHARMONIC = {
   'Gb': 'F#', 'Gbm': 'F#m', 'Gb7': 'F#7',
   'Cb': 'B', 'Cbm': 'Bm',
   'Fb': 'E', 'Fbm': 'Em',
+  // Minor chords only got one spelling each for these two roots (unlike their
+  // majors, which have both) — fill in the missing side so e.g. "A#m" isn't
+  // treated as unrecognized just because only "Bbm" had a literal DB entry.
+  'A#m': 'Bbm',
+  'Ebm': 'D#m',
 };
 
 /**
@@ -114,10 +128,18 @@ export function normalizeChordName(raw) {
 
   // Normalize quality suffixes
   rest = rest
+    // jazz/lead-sheet shorthand: "D-" = Dm, "D-7" = Dm7, "C+" = Caug, "B°" = Bdim
+    .replace(/^-/, 'm')
+    .replace(/^\+/, 'aug')
+    .replace(/^°/, 'dim')
     .replace(/^minor\b/i, 'm')
     .replace(/^min\b/i, 'm')
-    .replace(/^maj7\b/i, 'maj7')
-    .replace(/^maj9\b/i, 'maj9')
+    // "maj#7"/"maj #7" is a shorthand some songwriters use for major 7th — must
+    // be normalized before the generic bare-"maj" rule below, which would
+    // otherwise strip "maj" and leave a meaningless "#7".
+    .replace(/^maj\s*#7\b/i, 'maj7')
+    .replace(/^maj\s*7\b/i, 'maj7')
+    .replace(/^maj\s*9\b/i, 'maj9')
     .replace(/^maj\b/i, '')
     .replace(/^M\b/, '')
     .replace(/^add9\b/i, 'add9')
@@ -134,33 +156,49 @@ export function normalizeChordName(raw) {
 }
 
 /**
- * Look up a raw chord name in the DB.
+ * Look up a raw chord name. `customChords` (a song's own user-entered voicings,
+ * keyed by normalized chord name) takes priority over CHORD_DB, so a user can
+ * override a built-in voicing they think is wrong, not just fill in a gap.
  * Returns the chord data object or null.
  */
-export function lookupChord(raw) {
+export function lookupChord(raw, customChords) {
   const name = normalizeChordName(raw);
-  return name ? (CHORD_DB[name] ?? null) : null;
+  if (!name) return null;
+  if (customChords && customChords[name]) return customChords[name];
+  return CHORD_DB[name] ?? null;
 }
 
 /**
  * Tokenize a chord-track string into an array of tokens.
- * Each token: { text, isChord, chordName? }
- * Whitespace runs become isChord:false tokens.
+ * Each token: { text, isChord, looksLikeChord, chordName? }
+ * Whitespace runs become isChord:false/looksLikeChord:false tokens.
+ *
+ * isChord is strict (exact CHORD_DB, or the song's own customChords, match
+ * after normalization) — lyricsImport.js relies on this precision to tell
+ * real chord lines apart from ordinary prose (it never passes customChords,
+ * so its behavior is unaffected by any song's custom voicings).
+ * looksLikeChord is deliberately lenient (just "starts like a chord symbol"),
+ * for the editor's chords-track styling: a dedicated chords-only field should
+ * treat anything chord-shaped as recognized, even without an exact fretboard
+ * voicing on file — ChordDiagram already renders a graceful "no chart yet"
+ * popup (with an option to add one) for those instead of leaving them dimmed
+ * as unrecognized.
  */
-export function tokenizeChordLine(text) {
+export function tokenizeChordLine(text, customChords) {
   if (!text) return [];
   const tokens = [];
   const parts = text.split(/(\s+)/);
   for (const part of parts) {
     if (!part) continue;
     if (/^\s+$/.test(part)) {
-      tokens.push({ text: part, isChord: false, isWhitespace: true });
+      tokens.push({ text: part, isChord: false, looksLikeChord: false, isWhitespace: true });
     } else {
       const chordName = normalizeChordName(part);
-      const inDb = !!CHORD_DB[chordName];
+      const inDb = !!CHORD_DB[chordName] || !!(customChords && customChords[chordName]);
       tokens.push({
         text: part,
         isChord: inDb,
+        looksLikeChord: /^[A-G][#b]?/.test(part),
         isWhitespace: false,
         // Always provide chordName so even unknown words get a popup
         chordName: chordName || part,
@@ -168,6 +206,36 @@ export function tokenizeChordLine(text) {
     }
   }
   return tokens;
+}
+
+/** Formats a frets array (as stored on a chord voicing) into the compact
+ *  space-separated text a user can edit, e.g. [-1,3,2,0,1,0] -> "x 3 2 0 1 0". */
+export function formatFretsForInput(frets) {
+  return frets.map((f) => (f === -1 ? 'x' : String(f))).join(' ');
+}
+
+/**
+ * Parses a user-typed "x 3 2 0 1 0"-style string (low-E to high-E, 'x' for
+ * muted) into a voicing object, or null if it isn't exactly 6 valid values.
+ * baseFret is derived automatically: 1 if the whole shape fits in the first
+ * 4 frets (the common case), otherwise the lowest fretted position — same
+ * convention every hand-written CHORD_DB entry above already follows.
+ */
+export function parseFretsInput(raw) {
+  if (!raw) return null;
+  const parts = raw.trim().split(/\s+/);
+  if (parts.length !== 6) return null;
+  const frets = [];
+  for (const p of parts) {
+    if (/^x$/i.test(p)) { frets.push(-1); continue; }
+    if (!/^\d+$/.test(p)) return null;
+    const n = Number(p);
+    if (n > 24) return null;
+    frets.push(n);
+  }
+  const played = frets.filter((f) => f > 0);
+  const baseFret = played.length === 0 || Math.max(...played) <= 4 ? 1 : Math.min(...played);
+  return { frets, baseFret };
 }
 
 /**

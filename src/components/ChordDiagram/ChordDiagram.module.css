@@ -34,3 +34,101 @@
   line-height: 1.5;
   max-width: 130px;
 }
+
+/* === Custom voicing entry ===
+   The popup itself is pointer-events:none/user-select:none (it's a hover-only
+   diagram) — these carve out a pointer/select-enabled island for the actual
+   editing controls. */
+.addVoicingBtn,
+.editVoicingBtn {
+  pointer-events: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  text-decoration: underline dotted;
+  cursor: pointer;
+  padding: 2px 4px;
+  margin-top: 2px;
+}
+
+.addVoicingBtn:hover,
+.editVoicingBtn:hover {
+  color: var(--chord-color);
+}
+
+.editor {
+  pointer-events: auto;
+  user-select: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  width: 150px;
+  padding: 4px 2px 2px;
+}
+
+.editorInput {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 4px 6px;
+  outline: none;
+  text-align: center;
+}
+
+.editorInput:focus {
+  border-color: var(--border-focus);
+}
+
+.editorHint {
+  font-size: 9px;
+  color: var(--text-placeholder);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.editorError {
+  font-size: 10px;
+  color: var(--error, #f87171);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.editorActions {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.editorBtn,
+.editorBtnSecondary {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.editorBtn {
+  color: white;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.editorBtnSecondary {
+  color: var(--text-secondary);
+}
+
+.editorBtnSecondary:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}

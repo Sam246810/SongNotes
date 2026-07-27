@@ -21,9 +21,9 @@ describe('ChordTokenDisplay', () => {
   });
 
   it('renders unknown chord-like tokens as visible text (not invisible)', () => {
-    render(<ChordTokenDisplay value="D6 Am" onClick={() => {}} />);
-    // D6 is NOT in the chord DB — but it must still appear in the document
-    expect(screen.getByText('D6')).toBeTruthy();
+    render(<ChordTokenDisplay value="Am9 Am" onClick={() => {}} />);
+    // Am9 is NOT in the chord DB — but it must still appear in the document
+    expect(screen.getByText('Am9')).toBeTruthy();
   });
 
   it('calls onClick when the container is clicked (and not locked)', async () => {
@@ -61,9 +61,9 @@ describe('ChordTokenDisplay', () => {
 
   it('shows "no chord chart" popup on hover for unknown tokens', async () => {
     const user = userEvent.setup();
-    render(<ChordTokenDisplay value="D6" onClick={() => {}} />);
-    const d6Span = screen.getByText('D6');
-    await user.hover(d6Span);
+    render(<ChordTokenDisplay value="Am9" onClick={() => {}} />);
+    const am9Span = screen.getByText('Am9');
+    await user.hover(am9Span);
     // Should see the no-chart message in the portal
     await waitFor(() => {
       expect(document.body.textContent).toContain('no chord chart for this chord yet');
@@ -84,5 +84,75 @@ describe('ChordTokenDisplay', () => {
       },
       { timeout: 500 }
     );
+  });
+
+  describe('custom voicings', () => {
+    it('uses a customChords entry instead of the "no chart" fallback', async () => {
+      const user = userEvent.setup();
+      const customChords = { Am9: { frets: [-1, 0, 2, 0, 1, 0], baseFret: 1 } };
+      render(<ChordTokenDisplay value="Am9" onClick={() => {}} customChords={customChords} />);
+      await user.hover(screen.getByText('Am9'));
+      await waitFor(() => {
+        expect(document.body.textContent).not.toContain('no chord chart for this chord yet');
+        expect(document.body.querySelectorAll('[class*="chordName"]').length).toBeGreaterThan(0);
+      });
+    });
+
+    it('shows an "Add voicing" affordance for an unrecognized chord when onSaveVoicing is provided', async () => {
+      const user = userEvent.setup();
+      render(<ChordTokenDisplay value="Am9" onClick={() => {}} onSaveVoicing={() => {}} />);
+      await user.hover(screen.getByText('Am9'));
+      await waitFor(() => {
+        expect(screen.getByText('+ Add voicing')).toBeTruthy();
+      });
+    });
+
+    it('does not show voicing-editing controls when locked', async () => {
+      const user = userEvent.setup();
+      render(<ChordTokenDisplay value="Am9" onClick={() => {}} onSaveVoicing={() => {}} locked />);
+      await user.hover(screen.getByText('Am9'));
+      await waitFor(() => {
+        expect(document.body.textContent).toContain('no chord chart for this chord yet');
+      });
+      expect(screen.queryByText('+ Add voicing')).toBeNull();
+    });
+
+    it('saving a typed voicing calls onSaveVoicing with the normalized chord name and parsed frets', async () => {
+      const user = userEvent.setup();
+      const saved = [];
+      render(
+        <ChordTokenDisplay
+          value="Am9"
+          onClick={() => {}}
+          onSaveVoicing={(name, voicing) => saved.push([name, voicing])}
+        />
+      );
+      await user.hover(screen.getByText('Am9'));
+      await waitFor(() => expect(screen.getByText('+ Add voicing')).toBeTruthy());
+      await user.click(screen.getByText('+ Add voicing'));
+
+      const input = await screen.findByPlaceholderText('x 3 2 0 1 0');
+      await user.clear(input);
+      await user.type(input, 'x 0 2 0 1 0');
+      await user.click(screen.getByText('Save'));
+
+      expect(saved).toEqual([['Am9', { frets: [-1, 0, 2, 0, 1, 0], baseFret: 1 }]]);
+    });
+
+    it('the editor stays open across a brief mouse-leave (does not discard unsaved input)', async () => {
+      const user = userEvent.setup();
+      render(<ChordTokenDisplay value="Am9" onClick={() => {}} onSaveVoicing={() => {}} />);
+      const tokenSpan = screen.getByText('Am9'); // capture before the popup adds its own "Am9" text
+      await user.hover(tokenSpan);
+      await waitFor(() => expect(screen.getByText('+ Add voicing')).toBeTruthy());
+      await user.click(screen.getByText('+ Add voicing'));
+      await screen.findByPlaceholderText('x 3 2 0 1 0');
+
+      // Mouse leaves the token entirely, as it would while reaching for the popup below it.
+      await user.unhover(tokenSpan);
+      await new Promise((r) => setTimeout(r, 150)); // past the 80ms hide debounce
+
+      expect(screen.getByPlaceholderText('x 3 2 0 1 0')).toBeTruthy();
+    });
   });
 });

@@ -5,6 +5,8 @@ import {
   lookupChord,
   tokenizeChordLine,
   alignChordsWithLyrics,
+  formatFretsForInput,
+  parseFretsInput,
 } from '../utils/chords';
 
 // ─────────────────────────────────────────────
@@ -65,6 +67,19 @@ describe('normalizeChordName', () => {
     expect(normalizeChordName('Gb')).toBe('F#');
     expect(normalizeChordName('Gbm')).toBe('F#m');
   });
+
+  it('normalizes "maj#7"/"maj #7" shorthand to maj7', () => {
+    expect(normalizeChordName('Dmaj#7')).toBe('Dmaj7');
+    expect(normalizeChordName('Dmaj #7')).toBe('Dmaj7');
+    expect(normalizeChordName('Cmaj#7')).toBe('Cmaj7');
+  });
+
+  it('normalizes jazz/lead-sheet shorthand for minor, augmented, and diminished', () => {
+    expect(normalizeChordName('D-')).toBe('Dm');
+    expect(normalizeChordName('D-7')).toBe('Dm7');
+    expect(normalizeChordName('C+')).toBe('Caug');
+    expect(normalizeChordName('B°')).toBe('Bdim');
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -83,10 +98,33 @@ describe('lookupChord', () => {
     expect(lookupChord('AM')).not.toBeNull(); // A + M normalises to A
   });
 
-  it('returns null for unknown chords like D6', () => {
-    expect(lookupChord('D6')).toBeNull();
+  it('returns null for unknown chords like Am9', () => {
+    expect(lookupChord('Am9')).toBeNull();
     expect(lookupChord('Cadd11')).toBeNull();
     expect(lookupChord('Xyzzy')).toBeNull();
+  });
+
+  it('finds the newly added sixth/augmented/diminished-7th voicings', () => {
+    expect(lookupChord('C6')).not.toBeNull();
+    expect(lookupChord('D6')).not.toBeNull();
+    expect(lookupChord('G6')).not.toBeNull();
+    expect(lookupChord('A6')).not.toBeNull();
+    expect(lookupChord('Caug')).not.toBeNull();
+    expect(lookupChord('Cdim7')).not.toBeNull();
+  });
+
+  it('resolves jazz shorthand to a real voicing (D- -> Dm, D-7 -> Dm7)', () => {
+    expect(lookupChord('D-')).toStrictEqual(lookupChord('Dm'));
+    expect(lookupChord('D-7')).toStrictEqual(lookupChord('Dm7'));
+  });
+
+  it('honors a custom voicing override, taking priority over CHORD_DB', () => {
+    const custom = { Am9: { frets: [-1, 0, 2, 0, 1, 0], baseFret: 1 } };
+    expect(lookupChord('Am9')).toBeNull();
+    expect(lookupChord('Am9', custom)).toStrictEqual(custom.Am9);
+    // A custom voicing for a chord that IS already in CHORD_DB overrides it too.
+    const overrideC = { C: { frets: [0, 0, 0, 0, 0, 0], baseFret: 1 } };
+    expect(lookupChord('C', overrideC)).toStrictEqual(overrideC.C);
   });
 
   it('returns correct fret data shape', () => {
@@ -112,6 +150,11 @@ describe('lookupChord', () => {
   it('resolves enharmonic equivalents', () => {
     // Gb is stored as F# in the DB
     expect(lookupChord('Gb')).toStrictEqual(lookupChord('F#'));
+  });
+
+  it('resolves "Dmaj#7" to the same voicing as "Dmaj7"', () => {
+    expect(lookupChord('Dmaj#7')).not.toBeNull();
+    expect(lookupChord('Dmaj#7')).toStrictEqual(lookupChord('Dmaj7'));
   });
 });
 
@@ -140,13 +183,21 @@ describe('tokenizeChordLine', () => {
   });
 
   it('marks unknown chord-like words as isChord: false but not isWhitespace', () => {
-    const tokens = tokenizeChordLine('D6 Am');
-    const d6 = tokens.find((t) => t.text === 'D6');
-    expect(d6).toBeDefined();
-    expect(d6.isChord).toBe(false);
-    expect(d6.isWhitespace).toBe(false);
+    const tokens = tokenizeChordLine('Am9 Am');
+    const am9 = tokens.find((t) => t.text === 'Am9');
+    expect(am9).toBeDefined();
+    expect(am9.isChord).toBe(false);
+    expect(am9.isWhitespace).toBe(false);
     // chordName should still be set so popup can show 'no chart' message
-    expect(d6.chordName).toBeTruthy();
+    expect(am9.chordName).toBeTruthy();
+  });
+
+  it('honors customChords when deciding isChord', () => {
+    const custom = { Am9: { frets: [-1, 0, 2, 0, 1, 0], baseFret: 1 } };
+    const withoutCustom = tokenizeChordLine('Am9').find((t) => !t.isWhitespace);
+    expect(withoutCustom.isChord).toBe(false);
+    const withCustom = tokenizeChordLine('Am9', custom).find((t) => !t.isWhitespace);
+    expect(withCustom.isChord).toBe(true);
   });
 
   it('marks known chords as isChord: true', () => {
@@ -164,11 +215,98 @@ describe('tokenizeChordLine', () => {
   });
 
   it('all non-whitespace tokens have a chordName property', () => {
-    const tokens = tokenizeChordLine('Am D6 G Foo');
+    const tokens = tokenizeChordLine('Am Am9 G Foo');
     const words = tokens.filter((t) => !t.isWhitespace);
     for (const tok of words) {
       expect(tok.chordName).toBeTruthy();
     }
+  });
+
+  it('looksLikeChord is lenient: true for a chord-shaped word even without a DB entry', () => {
+    const tokens = tokenizeChordLine('Am9');
+    const am9 = tokens.find((t) => !t.isWhitespace);
+    expect(am9.isChord).toBe(false); // no exact CHORD_DB voicing
+    expect(am9.looksLikeChord).toBe(true); // still structurally chord-shaped
+  });
+
+  it('looksLikeChord is false for a word that does not start with a root letter', () => {
+    const tokens = tokenizeChordLine('Slow');
+    const word = tokens.find((t) => !t.isWhitespace);
+    expect(word.looksLikeChord).toBe(false);
+  });
+
+  it('looksLikeChord is true for known chords too', () => {
+    const tokens = tokenizeChordLine('Am');
+    const am = tokens.find((t) => !t.isWhitespace);
+    expect(am.isChord).toBe(true);
+    expect(am.looksLikeChord).toBe(true);
+  });
+
+  it('whitespace tokens have looksLikeChord: false', () => {
+    const tokens = tokenizeChordLine('Am  G');
+    const spaces = tokens.filter((t) => t.isWhitespace);
+    for (const sp of spaces) {
+      expect(sp.looksLikeChord).toBe(false);
+    }
+  });
+});
+
+// ─────────────────────────────────────────────
+// formatFretsForInput / parseFretsInput — custom voicing entry
+// ─────────────────────────────────────────────
+describe('formatFretsForInput', () => {
+  it('formats muted strings as x and open/fretted strings as numbers', () => {
+    expect(formatFretsForInput([-1, 0, 2, 2, 1, 0])).toBe('x 0 2 2 1 0');
+  });
+});
+
+describe('parseFretsInput', () => {
+  it('parses a valid 6-value string with x for muted', () => {
+    expect(parseFretsInput('x 3 2 0 1 0')).toEqual({
+      frets: [-1, 3, 2, 0, 1, 0],
+      baseFret: 1,
+    });
+  });
+
+  it('is case-insensitive for the muted marker', () => {
+    expect(parseFretsInput('X 0 2 2 2 0')).toEqual({
+      frets: [-1, 0, 2, 2, 2, 0],
+      baseFret: 1,
+    });
+  });
+
+  it('tolerates extra whitespace between values', () => {
+    expect(parseFretsInput('  x   3  2 0 1  0 ')).toEqual({
+      frets: [-1, 3, 2, 0, 1, 0],
+      baseFret: 1,
+    });
+  });
+
+  it('derives a higher baseFret when the shape does not fit in the first 4 frets', () => {
+    expect(parseFretsInput('x 6 8 8 7 6')).toEqual({
+      frets: [-1, 6, 8, 8, 7, 6],
+      baseFret: 6,
+    });
+  });
+
+  it('round-trips with formatFretsForInput', () => {
+    const original = CHORD_DB.Am7.frets;
+    const parsed = parseFretsInput(formatFretsForInput(original));
+    expect(parsed.frets).toEqual(original);
+  });
+
+  it('returns null for the wrong number of values', () => {
+    expect(parseFretsInput('x 3 2 0 1')).toBeNull();
+    expect(parseFretsInput('x 3 2 0 1 0 3')).toBeNull();
+  });
+
+  it('returns null for non-numeric, non-x values', () => {
+    expect(parseFretsInput('x 3 2 0 y 0')).toBeNull();
+  });
+
+  it('returns null for empty/null input', () => {
+    expect(parseFretsInput('')).toBeNull();
+    expect(parseFretsInput(null)).toBeNull();
   });
 });
 
