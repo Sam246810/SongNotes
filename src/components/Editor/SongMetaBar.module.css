@@ -1,0 +1,73 @@
+.metaBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 18px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px dashed var(--paper-border);
+}
+
+.metaField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.metaLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.metaInput {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 2px 2px 3px;
+  width: 84px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.metaInput:focus {
+  border-color: var(--border-focus);
+  color: var(--text-primary);
+}
+
+.metaInput::placeholder {
+  color: var(--text-placeholder);
+}
+
+.transposeGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.transposeBtn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  width: 26px;
+  height: 26px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.transposeBtn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}

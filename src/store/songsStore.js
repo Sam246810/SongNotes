@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { alignChordsWithLyrics } from '../utils/chords';
+import { transposeChordsLine } from '../utils/transpose';
 import { LocalSongsRepository } from './songsRepository';
 import useDawSession from '../audio/dawSession';
 
@@ -18,6 +19,16 @@ export function createSong(title = 'Untitled Song', { encrypted = false } = {}) 
     // isReadOnly: a plain UI toggle, no security implications.
     isReadOnly: false,
     encrypted,
+    // Optional reference info shown on the lyric sheet — all blank until the
+    // user fills them in; none of these affect playback or storage.
+    bpm: '',
+    key: '',
+    tuning: '',
+    capo: '',
+    // User-entered fretboard voicings for this song, keyed by normalized chord
+    // name — fills gaps in (or overrides) the built-in CHORD_DB. See
+    // setCustomChord/removeCustomChord below.
+    customChords: {},
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -54,8 +65,15 @@ const useSongsStore = create((set, get) => ({
   },
 
   // --- Song-level actions ---
-  addSong: (title, { encrypted = false } = {}) => {
+  // `lines`, when given, is a plain [{chords, lyrics}, ...] array (e.g. from
+  // parsing an imported lyrics file) — each pair is run through createLine so
+  // it gets a real id and the usual chords/lyrics length alignment. Omitted
+  // or empty falls back to createSong's single default blank line.
+  addSong: (title, { encrypted = false, lines } = {}) => {
     const song = createSong(title, { encrypted });
+    if (lines && lines.length > 0) {
+      song.lines = lines.map((l) => createLine(l.chords, l.lyrics));
+    }
     set((state) => ({ songs: [...state.songs, song], activeSongId: song.id }));
     get().repo.create(song, { encrypted }).catch(logPersistError);
     return song.id;
@@ -82,6 +100,77 @@ const useSongsStore = create((set, get) => ({
       const songs = state.songs.map((s) => {
         if (s.id !== id) return s;
         updatedSong = { ...s, title, updatedAt: new Date().toISOString() };
+        return updatedSong;
+      });
+      return { songs };
+    });
+    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
+  },
+
+  // Reference info only (bpm/key/tuning/capo) — `changes` is a partial patch,
+  // same shape/merge pattern as updateLine.
+  updateSongMeta: (id, changes) => {
+    let updatedSong = null;
+    set((state) => {
+      const songs = state.songs.map((s) => {
+        if (s.id !== id) return s;
+        updatedSong = { ...s, ...changes, updatedAt: new Date().toISOString() };
+        return updatedSong;
+      });
+      return { songs };
+    });
+    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
+  },
+
+  // User-entered fretboard voicing for one chord name, scoped to this song —
+  // fills a gap in CHORD_DB, or overrides a built-in voicing the user thinks
+  // is wrong. `voicing` is a { frets, baseFret } object (see parseFretsInput).
+  setCustomChord: (id, chordName, voicing) => {
+    let updatedSong = null;
+    set((state) => {
+      const songs = state.songs.map((s) => {
+        if (s.id !== id) return s;
+        updatedSong = {
+          ...s,
+          customChords: { ...(s.customChords || {}), [chordName]: voicing },
+          updatedAt: new Date().toISOString(),
+        };
+        return updatedSong;
+      });
+      return { songs };
+    });
+    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
+  },
+
+  // Removes a custom voicing, reverting to CHORD_DB's built-in one (if any).
+  removeCustomChord: (id, chordName) => {
+    let updatedSong = null;
+    set((state) => {
+      const songs = state.songs.map((s) => {
+        if (s.id !== id) return s;
+        const customChords = { ...(s.customChords || {}) };
+        delete customChords[chordName];
+        updatedSong = { ...s, customChords, updatedAt: new Date().toISOString() };
+        return updatedSong;
+      });
+      return { songs };
+    });
+    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
+  },
+
+  // Rewrites every recognized chord in the song by `semitones` (+/-), in one
+  // batched update rather than one updateLine call per line.
+  transposeSong: (id, semitones) => {
+    if (!semitones) return;
+    let updatedSong = null;
+    set((state) => {
+      const songs = state.songs.map((s) => {
+        if (s.id !== id) return s;
+        const lines = s.lines.map((l) => {
+          const chords = transposeChordsLine(l.chords, semitones);
+          return { ...l, chords: alignChordsWithLyrics(chords, l.lyrics) };
+        });
+        updatedSong = { ...s, lines, updatedAt: new Date().toISOString() };
         return updatedSong;
       });
       return { songs };
