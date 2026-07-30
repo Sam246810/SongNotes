@@ -1,0 +1,9577 @@
+[
+  {
+    "input": "C",
+    "semitones": -12,
+    "output": "C"
+  },
+  {
+    "input": "C",
+    "semitones": -11,
+    "output": "C#"
+  },
+  {
+    "input": "C",
+    "semitones": -10,
+    "output": "D"
+  },
+  {
+    "input": "C",
+    "semitones": -9,
+    "output": "D#"
+  },
+  {
+    "input": "C",
+    "semitones": -8,
+    "output": "E"
+  },
+  {
+    "input": "C",
+    "semitones": -7,
+    "output": "F"
+  },
+  {
+    "input": "C",
+    "semitones": -6,
+    "output": "F#"
+  },
+  {
+    "input": "C",
+    "semitones": -5,
+    "output": "G"
+  },
+  {
+    "input": "C",
+    "semitones": -4,
+    "output": "G#"
+  },
+  {
+    "input": "C",
+    "semitones": -3,
+    "output": "A"
+  },
+  {
+    "input": "C",
+    "semitones": -2,
+    "output": "A#"
+  },
+  {
+    "input": "C",
+    "semitones": -1,
+    "output": "B"
+  },
+  {
+    "input": "C",
+    "semitones": 0,
+    "output": "C"
+  },
+  {
+    "input": "C",
+    "semitones": 1,
+    "output": "C#"
+  },
+  {
+    "input": "C",
+    "semitones": 2,
+    "output": "D"
+  },
+  {
+    "input": "C",
+    "semitones": 3,
+    "output": "D#"
+  },
+  {
+    "input": "C",
+    "semitones": 4,
+    "output": "E"
+  },
+  {
+    "input": "C",
+    "semitones": 5,
+    "output": "F"
+  },
+  {
+    "input": "C",
+    "semitones": 6,
+    "output": "F#"
+  },
+  {
+    "input": "C",
+    "semitones": 7,
+    "output": "G"
+  },
+  {
+    "input": "C",
+    "semitones": 8,
+    "output": "G#"
+  },
+  {
+    "input": "C",
+    "semitones": 9,
+    "output": "A"
+  },
+  {
+    "input": "C",
+    "semitones": 10,
+    "output": "A#"
+  },
+  {
+    "input": "C",
+    "semitones": 11,
+    "output": "B"
+  },
+  {
+    "input": "C",
+    "semitones": 12,
+    "output": "C"
+  },
+  {
+    "input": "D",
+    "semitones": -12,
+    "output": "D"
+  },
+  {
+    "input": "D",
+    "semitones": -11,
+    "output": "D#"
+  },
+  {
+    "input": "D",
+    "semitones": -10,
+    "output": "E"
+  },
+  {
+    "input": "D",
+    "semitones": -9,
+    "output": "F"
+  },
+  {
+    "input": "D",
+    "semitones": -8,
+    "output": "F#"
+  },
+  {
+    "input": "D",
+    "semitones": -7,
+    "output": "G"
+  },
+  {
+    "input": "D",
+    "semitones": -6,
+    "output": "G#"
+  },
+  {
+    "input": "D",
+    "semitones": -5,
+    "output": "A"
+  },
+  {
+    "input": "D",
+    "semitones": -4,
+    "output": "A#"
+  },
+  {
+    "input": "D",
+    "semitones": -3,
+    "output": "B"
+  },
+  {
+    "input": "D",
+    "semitones": -2,
+    "output": "C"
+  },
+  {
+    "input": "D",
+    "semitones": -1,
+    "output": "C#"
+  },
+  {
+    "input": "D",
+    "semitones": 0,
+    "output": "D"
+  },
+  {
+    "input": "D",
+    "semitones": 1,
+    "output": "D#"
+  },
+  {
+    "input": "D",
+    "semitones": 2,
+    "output": "E"
+  },
+  {
+    "input": "D",
+    "semitones": 3,
+    "output": "F"
+  },
+  {
+    "input": "D",
+    "semitones": 4,
+    "output": "F#"
+  },
+  {
+    "input": "D",
+    "semitones": 5,
+    "output": "G"
+  },
+  {
+    "input": "D",
+    "semitones": 6,
+    "output": "G#"
+  },
+  {
+    "input": "D",
+    "semitones": 7,
+    "output": "A"
+  },
+  {
+    "input": "D",
+    "semitones": 8,
+    "output": "A#"
+  },
+  {
+    "input": "D",
+    "semitones": 9,
+    "output": "B"
+  },
+  {
+    "input": "D",
+    "semitones": 10,
+    "output": "C"
+  },
+  {
+    "input": "D",
+    "semitones": 11,
+    "output": "C#"
+  },
+  {
+    "input": "D",
+    "semitones": 12,
+    "output": "D"
+  },
+  {
+    "input": "E",
+    "semitones": -12,
+    "output": "E"
+  },
+  {
+    "input": "E",
+    "semitones": -11,
+    "output": "F"
+  },
+  {
+    "input": "E",
+    "semitones": -10,
+    "output": "F#"
+  },
+  {
+    "input": "E",
+    "semitones": -9,
+    "output": "G"
+  },
+  {
+    "input": "E",
+    "semitones": -8,
+    "output": "G#"
+  },
+  {
+    "input": "E",
+    "semitones": -7,
+    "output": "A"
+  },
+  {
+    "input": "E",
+    "semitones": -6,
+    "output": "A#"
+  },
+  {
+    "input": "E",
+    "semitones": -5,
+    "output": "B"
+  },
+  {
+    "input": "E",
+    "semitones": -4,
+    "output": "C"
+  },
+  {
+    "input": "E",
+    "semitones": -3,
+    "output": "C#"
+  },
+  {
+    "input": "E",
+    "semitones": -2,
+    "output": "D"
+  },
+  {
+    "input": "E",
+    "semitones": -1,
+    "output": "D#"
+  },
+  {
+    "input": "E",
+    "semitones": 0,
+    "output": "E"
+  },
+  {
+    "input": "E",
+    "semitones": 1,
+    "output": "F"
+  },
+  {
+    "input": "E",
+    "semitones": 2,
+    "output": "F#"
+  },
+  {
+    "input": "E",
+    "semitones": 3,
+    "output": "G"
+  },
+  {
+    "input": "E",
+    "semitones": 4,
+    "output": "G#"
+  },
+  {
+    "input": "E",
+    "semitones": 5,
+    "output": "A"
+  },
+  {
+    "input": "E",
+    "semitones": 6,
+    "output": "A#"
+  },
+  {
+    "input": "E",
+    "semitones": 7,
+    "output": "B"
+  },
+  {
+    "input": "E",
+    "semitones": 8,
+    "output": "C"
+  },
+  {
+    "input": "E",
+    "semitones": 9,
+    "output": "C#"
+  },
+  {
+    "input": "E",
+    "semitones": 10,
+    "output": "D"
+  },
+  {
+    "input": "E",
+    "semitones": 11,
+    "output": "D#"
+  },
+  {
+    "input": "E",
+    "semitones": 12,
+    "output": "E"
+  },
+  {
+    "input": "F",
+    "semitones": -12,
+    "output": "F"
+  },
+  {
+    "input": "F",
+    "semitones": -11,
+    "output": "F#"
+  },
+  {
+    "input": "F",
+    "semitones": -10,
+    "output": "G"
+  },
+  {
+    "input": "F",
+    "semitones": -9,
+    "output": "G#"
+  },
+  {
+    "input": "F",
+    "semitones": -8,
+    "output": "A"
+  },
+  {
+    "input": "F",
+    "semitones": -7,
+    "output": "A#"
+  },
+  {
+    "input": "F",
+    "semitones": -6,
+    "output": "B"
+  },
+  {
+    "input": "F",
+    "semitones": -5,
+    "output": "C"
+  },
+  {
+    "input": "F",
+    "semitones": -4,
+    "output": "C#"
+  },
+  {
+    "input": "F",
+    "semitones": -3,
+    "output": "D"
+  },
+  {
+    "input": "F",
+    "semitones": -2,
+    "output": "D#"
+  },
+  {
+    "input": "F",
+    "semitones": -1,
+    "output": "E"
+  },
+  {
+    "input": "F",
+    "semitones": 0,
+    "output": "F"
+  },
+  {
+    "input": "F",
+    "semitones": 1,
+    "output": "F#"
+  },
+  {
+    "input": "F",
+    "semitones": 2,
+    "output": "G"
+  },
+  {
+    "input": "F",
+    "semitones": 3,
+    "output": "G#"
+  },
+  {
+    "input": "F",
+    "semitones": 4,
+    "output": "A"
+  },
+  {
+    "input": "F",
+    "semitones": 5,
+    "output": "A#"
+  },
+  {
+    "input": "F",
+    "semitones": 6,
+    "output": "B"
+  },
+  {
+    "input": "F",
+    "semitones": 7,
+    "output": "C"
+  },
+  {
+    "input": "F",
+    "semitones": 8,
+    "output": "C#"
+  },
+  {
+    "input": "F",
+    "semitones": 9,
+    "output": "D"
+  },
+  {
+    "input": "F",
+    "semitones": 10,
+    "output": "D#"
+  },
+  {
+    "input": "F",
+    "semitones": 11,
+    "output": "E"
+  },
+  {
+    "input": "F",
+    "semitones": 12,
+    "output": "F"
+  },
+  {
+    "input": "G",
+    "semitones": -12,
+    "output": "G"
+  },
+  {
+    "input": "G",
+    "semitones": -11,
+    "output": "G#"
+  },
+  {
+    "input": "G",
+    "semitones": -10,
+    "output": "A"
+  },
+  {
+    "input": "G",
+    "semitones": -9,
+    "output": "A#"
+  },
+  {
+    "input": "G",
+    "semitones": -8,
+    "output": "B"
+  },
+  {
+    "input": "G",
+    "semitones": -7,
+    "output": "C"
+  },
+  {
+    "input": "G",
+    "semitones": -6,
+    "output": "C#"
+  },
+  {
+    "input": "G",
+    "semitones": -5,
+    "output": "D"
+  },
+  {
+    "input": "G",
+    "semitones": -4,
+    "output": "D#"
+  },
+  {
+    "input": "G",
+    "semitones": -3,
+    "output": "E"
+  },
+  {
+    "input": "G",
+    "semitones": -2,
+    "output": "F"
+  },
+  {
+    "input": "G",
+    "semitones": -1,
+    "output": "F#"
+  },
+  {
+    "input": "G",
+    "semitones": 0,
+    "output": "G"
+  },
+  {
+    "input": "G",
+    "semitones": 1,
+    "output": "G#"
+  },
+  {
+    "input": "G",
+    "semitones": 2,
+    "output": "A"
+  },
+  {
+    "input": "G",
+    "semitones": 3,
+    "output": "A#"
+  },
+  {
+    "input": "G",
+    "semitones": 4,
+    "output": "B"
+  },
+  {
+    "input": "G",
+    "semitones": 5,
+    "output": "C"
+  },
+  {
+    "input": "G",
+    "semitones": 6,
+    "output": "C#"
+  },
+  {
+    "input": "G",
+    "semitones": 7,
+    "output": "D"
+  },
+  {
+    "input": "G",
+    "semitones": 8,
+    "output": "D#"
+  },
+  {
+    "input": "G",
+    "semitones": 9,
+    "output": "E"
+  },
+  {
+    "input": "G",
+    "semitones": 10,
+    "output": "F"
+  },
+  {
+    "input": "G",
+    "semitones": 11,
+    "output": "F#"
+  },
+  {
+    "input": "G",
+    "semitones": 12,
+    "output": "G"
+  },
+  {
+    "input": "A",
+    "semitones": -12,
+    "output": "A"
+  },
+  {
+    "input": "A",
+    "semitones": -11,
+    "output": "A#"
+  },
+  {
+    "input": "A",
+    "semitones": -10,
+    "output": "B"
+  },
+  {
+    "input": "A",
+    "semitones": -9,
+    "output": "C"
+  },
+  {
+    "input": "A",
+    "semitones": -8,
+    "output": "C#"
+  },
+  {
+    "input": "A",
+    "semitones": -7,
+    "output": "D"
+  },
+  {
+    "input": "A",
+    "semitones": -6,
+    "output": "D#"
+  },
+  {
+    "input": "A",
+    "semitones": -5,
+    "output": "E"
+  },
+  {
+    "input": "A",
+    "semitones": -4,
+    "output": "F"
+  },
+  {
+    "input": "A",
+    "semitones": -3,
+    "output": "F#"
+  },
+  {
+    "input": "A",
+    "semitones": -2,
+    "output": "G"
+  },
+  {
+    "input": "A",
+    "semitones": -1,
+    "output": "G#"
+  },
+  {
+    "input": "A",
+    "semitones": 0,
+    "output": "A"
+  },
+  {
+    "input": "A",
+    "semitones": 1,
+    "output": "A#"
+  },
+  {
+    "input": "A",
+    "semitones": 2,
+    "output": "B"
+  },
+  {
+    "input": "A",
+    "semitones": 3,
+    "output": "C"
+  },
+  {
+    "input": "A",
+    "semitones": 4,
+    "output": "C#"
+  },
+  {
+    "input": "A",
+    "semitones": 5,
+    "output": "D"
+  },
+  {
+    "input": "A",
+    "semitones": 6,
+    "output": "D#"
+  },
+  {
+    "input": "A",
+    "semitones": 7,
+    "output": "E"
+  },
+  {
+    "input": "A",
+    "semitones": 8,
+    "output": "F"
+  },
+  {
+    "input": "A",
+    "semitones": 9,
+    "output": "F#"
+  },
+  {
+    "input": "A",
+    "semitones": 10,
+    "output": "G"
+  },
+  {
+    "input": "A",
+    "semitones": 11,
+    "output": "G#"
+  },
+  {
+    "input": "A",
+    "semitones": 12,
+    "output": "A"
+  },
+  {
+    "input": "B",
+    "semitones": -12,
+    "output": "B"
+  },
+  {
+    "input": "B",
+    "semitones": -11,
+    "output": "C"
+  },
+  {
+    "input": "B",
+    "semitones": -10,
+    "output": "C#"
+  },
+  {
+    "input": "B",
+    "semitones": -9,
+    "output": "D"
+  },
+  {
+    "input": "B",
+    "semitones": -8,
+    "output": "D#"
+  },
+  {
+    "input": "B",
+    "semitones": -7,
+    "output": "E"
+  },
+  {
+    "input": "B",
+    "semitones": -6,
+    "output": "F"
+  },
+  {
+    "input": "B",
+    "semitones": -5,
+    "output": "F#"
+  },
+  {
+    "input": "B",
+    "semitones": -4,
+    "output": "G"
+  },
+  {
+    "input": "B",
+    "semitones": -3,
+    "output": "G#"
+  },
+  {
+    "input": "B",
+    "semitones": -2,
+    "output": "A"
+  },
+  {
+    "input": "B",
+    "semitones": -1,
+    "output": "A#"
+  },
+  {
+    "input": "B",
+    "semitones": 0,
+    "output": "B"
+  },
+  {
+    "input": "B",
+    "semitones": 1,
+    "output": "C"
+  },
+  {
+    "input": "B",
+    "semitones": 2,
+    "output": "C#"
+  },
+  {
+    "input": "B",
+    "semitones": 3,
+    "output": "D"
+  },
+  {
+    "input": "B",
+    "semitones": 4,
+    "output": "D#"
+  },
+  {
+    "input": "B",
+    "semitones": 5,
+    "output": "E"
+  },
+  {
+    "input": "B",
+    "semitones": 6,
+    "output": "F"
+  },
+  {
+    "input": "B",
+    "semitones": 7,
+    "output": "F#"
+  },
+  {
+    "input": "B",
+    "semitones": 8,
+    "output": "G"
+  },
+  {
+    "input": "B",
+    "semitones": 9,
+    "output": "G#"
+  },
+  {
+    "input": "B",
+    "semitones": 10,
+    "output": "A"
+  },
+  {
+    "input": "B",
+    "semitones": 11,
+    "output": "A#"
+  },
+  {
+    "input": "B",
+    "semitones": 12,
+    "output": "B"
+  },
+  {
+    "input": "Bb",
+    "semitones": -12,
+    "output": "A#"
+  },
+  {
+    "input": "Bb",
+    "semitones": -11,
+    "output": "B"
+  },
+  {
+    "input": "Bb",
+    "semitones": -10,
+    "output": "C"
+  },
+  {
+    "input": "Bb",
+    "semitones": -9,
+    "output": "C#"
+  },
+  {
+    "input": "Bb",
+    "semitones": -8,
+    "output": "D"
+  },
+  {
+    "input": "Bb",
+    "semitones": -7,
+    "output": "D#"
+  },
+  {
+    "input": "Bb",
+    "semitones": -6,
+    "output": "E"
+  },
+  {
+    "input": "Bb",
+    "semitones": -5,
+    "output": "F"
+  },
+  {
+    "input": "Bb",
+    "semitones": -4,
+    "output": "F#"
+  },
+  {
+    "input": "Bb",
+    "semitones": -3,
+    "output": "G"
+  },
+  {
+    "input": "Bb",
+    "semitones": -2,
+    "output": "G#"
+  },
+  {
+    "input": "Bb",
+    "semitones": -1,
+    "output": "A"
+  },
+  {
+    "input": "Bb",
+    "semitones": 0,
+    "output": "Bb"
+  },
+  {
+    "input": "Bb",
+    "semitones": 1,
+    "output": "B"
+  },
+  {
+    "input": "Bb",
+    "semitones": 2,
+    "output": "C"
+  },
+  {
+    "input": "Bb",
+    "semitones": 3,
+    "output": "C#"
+  },
+  {
+    "input": "Bb",
+    "semitones": 4,
+    "output": "D"
+  },
+  {
+    "input": "Bb",
+    "semitones": 5,
+    "output": "D#"
+  },
+  {
+    "input": "Bb",
+    "semitones": 6,
+    "output": "E"
+  },
+  {
+    "input": "Bb",
+    "semitones": 7,
+    "output": "F"
+  },
+  {
+    "input": "Bb",
+    "semitones": 8,
+    "output": "F#"
+  },
+  {
+    "input": "Bb",
+    "semitones": 9,
+    "output": "G"
+  },
+  {
+    "input": "Bb",
+    "semitones": 10,
+    "output": "G#"
+  },
+  {
+    "input": "Bb",
+    "semitones": 11,
+    "output": "A"
+  },
+  {
+    "input": "Bb",
+    "semitones": 12,
+    "output": "A#"
+  },
+  {
+    "input": "Eb",
+    "semitones": -12,
+    "output": "D#"
+  },
+  {
+    "input": "Eb",
+    "semitones": -11,
+    "output": "E"
+  },
+  {
+    "input": "Eb",
+    "semitones": -10,
+    "output": "F"
+  },
+  {
+    "input": "Eb",
+    "semitones": -9,
+    "output": "F#"
+  },
+  {
+    "input": "Eb",
+    "semitones": -8,
+    "output": "G"
+  },
+  {
+    "input": "Eb",
+    "semitones": -7,
+    "output": "G#"
+  },
+  {
+    "input": "Eb",
+    "semitones": -6,
+    "output": "A"
+  },
+  {
+    "input": "Eb",
+    "semitones": -5,
+    "output": "A#"
+  },
+  {
+    "input": "Eb",
+    "semitones": -4,
+    "output": "B"
+  },
+  {
+    "input": "Eb",
+    "semitones": -3,
+    "output": "C"
+  },
+  {
+    "input": "Eb",
+    "semitones": -2,
+    "output": "C#"
+  },
+  {
+    "input": "Eb",
+    "semitones": -1,
+    "output": "D"
+  },
+  {
+    "input": "Eb",
+    "semitones": 0,
+    "output": "Eb"
+  },
+  {
+    "input": "Eb",
+    "semitones": 1,
+    "output": "E"
+  },
+  {
+    "input": "Eb",
+    "semitones": 2,
+    "output": "F"
+  },
+  {
+    "input": "Eb",
+    "semitones": 3,
+    "output": "F#"
+  },
+  {
+    "input": "Eb",
+    "semitones": 4,
+    "output": "G"
+  },
+  {
+    "input": "Eb",
+    "semitones": 5,
+    "output": "G#"
+  },
+  {
+    "input": "Eb",
+    "semitones": 6,
+    "output": "A"
+  },
+  {
+    "input": "Eb",
+    "semitones": 7,
+    "output": "A#"
+  },
+  {
+    "input": "Eb",
+    "semitones": 8,
+    "output": "B"
+  },
+  {
+    "input": "Eb",
+    "semitones": 9,
+    "output": "C"
+  },
+  {
+    "input": "Eb",
+    "semitones": 10,
+    "output": "C#"
+  },
+  {
+    "input": "Eb",
+    "semitones": 11,
+    "output": "D"
+  },
+  {
+    "input": "Eb",
+    "semitones": 12,
+    "output": "D#"
+  },
+  {
+    "input": "Ab",
+    "semitones": -12,
+    "output": "G#"
+  },
+  {
+    "input": "Ab",
+    "semitones": -11,
+    "output": "A"
+  },
+  {
+    "input": "Ab",
+    "semitones": -10,
+    "output": "A#"
+  },
+  {
+    "input": "Ab",
+    "semitones": -9,
+    "output": "B"
+  },
+  {
+    "input": "Ab",
+    "semitones": -8,
+    "output": "C"
+  },
+  {
+    "input": "Ab",
+    "semitones": -7,
+    "output": "C#"
+  },
+  {
+    "input": "Ab",
+    "semitones": -6,
+    "output": "D"
+  },
+  {
+    "input": "Ab",
+    "semitones": -5,
+    "output": "D#"
+  },
+  {
+    "input": "Ab",
+    "semitones": -4,
+    "output": "E"
+  },
+  {
+    "input": "Ab",
+    "semitones": -3,
+    "output": "F"
+  },
+  {
+    "input": "Ab",
+    "semitones": -2,
+    "output": "F#"
+  },
+  {
+    "input": "Ab",
+    "semitones": -1,
+    "output": "G"
+  },
+  {
+    "input": "Ab",
+    "semitones": 0,
+    "output": "Ab"
+  },
+  {
+    "input": "Ab",
+    "semitones": 1,
+    "output": "A"
+  },
+  {
+    "input": "Ab",
+    "semitones": 2,
+    "output": "A#"
+  },
+  {
+    "input": "Ab",
+    "semitones": 3,
+    "output": "B"
+  },
+  {
+    "input": "Ab",
+    "semitones": 4,
+    "output": "C"
+  },
+  {
+    "input": "Ab",
+    "semitones": 5,
+    "output": "C#"
+  },
+  {
+    "input": "Ab",
+    "semitones": 6,
+    "output": "D"
+  },
+  {
+    "input": "Ab",
+    "semitones": 7,
+    "output": "D#"
+  },
+  {
+    "input": "Ab",
+    "semitones": 8,
+    "output": "E"
+  },
+  {
+    "input": "Ab",
+    "semitones": 9,
+    "output": "F"
+  },
+  {
+    "input": "Ab",
+    "semitones": 10,
+    "output": "F#"
+  },
+  {
+    "input": "Ab",
+    "semitones": 11,
+    "output": "G"
+  },
+  {
+    "input": "Ab",
+    "semitones": 12,
+    "output": "G#"
+  },
+  {
+    "input": "Db",
+    "semitones": -12,
+    "output": "C#"
+  },
+  {
+    "input": "Db",
+    "semitones": -11,
+    "output": "D"
+  },
+  {
+    "input": "Db",
+    "semitones": -10,
+    "output": "D#"
+  },
+  {
+    "input": "Db",
+    "semitones": -9,
+    "output": "E"
+  },
+  {
+    "input": "Db",
+    "semitones": -8,
+    "output": "F"
+  },
+  {
+    "input": "Db",
+    "semitones": -7,
+    "output": "F#"
+  },
+  {
+    "input": "Db",
+    "semitones": -6,
+    "output": "G"
+  },
+  {
+    "input": "Db",
+    "semitones": -5,
+    "output": "G#"
+  },
+  {
+    "input": "Db",
+    "semitones": -4,
+    "output": "A"
+  },
+  {
+    "input": "Db",
+    "semitones": -3,
+    "output": "A#"
+  },
+  {
+    "input": "Db",
+    "semitones": -2,
+    "output": "B"
+  },
+  {
+    "input": "Db",
+    "semitones": -1,
+    "output": "C"
+  },
+  {
+    "input": "Db",
+    "semitones": 0,
+    "output": "Db"
+  },
+  {
+    "input": "Db",
+    "semitones": 1,
+    "output": "D"
+  },
+  {
+    "input": "Db",
+    "semitones": 2,
+    "output": "D#"
+  },
+  {
+    "input": "Db",
+    "semitones": 3,
+    "output": "E"
+  },
+  {
+    "input": "Db",
+    "semitones": 4,
+    "output": "F"
+  },
+  {
+    "input": "Db",
+    "semitones": 5,
+    "output": "F#"
+  },
+  {
+    "input": "Db",
+    "semitones": 6,
+    "output": "G"
+  },
+  {
+    "input": "Db",
+    "semitones": 7,
+    "output": "G#"
+  },
+  {
+    "input": "Db",
+    "semitones": 8,
+    "output": "A"
+  },
+  {
+    "input": "Db",
+    "semitones": 9,
+    "output": "A#"
+  },
+  {
+    "input": "Db",
+    "semitones": 10,
+    "output": "B"
+  },
+  {
+    "input": "Db",
+    "semitones": 11,
+    "output": "C"
+  },
+  {
+    "input": "Db",
+    "semitones": 12,
+    "output": "C#"
+  },
+  {
+    "input": "F#",
+    "semitones": -12,
+    "output": "F#"
+  },
+  {
+    "input": "F#",
+    "semitones": -11,
+    "output": "G"
+  },
+  {
+    "input": "F#",
+    "semitones": -10,
+    "output": "G#"
+  },
+  {
+    "input": "F#",
+    "semitones": -9,
+    "output": "A"
+  },
+  {
+    "input": "F#",
+    "semitones": -8,
+    "output": "A#"
+  },
+  {
+    "input": "F#",
+    "semitones": -7,
+    "output": "B"
+  },
+  {
+    "input": "F#",
+    "semitones": -6,
+    "output": "C"
+  },
+  {
+    "input": "F#",
+    "semitones": -5,
+    "output": "C#"
+  },
+  {
+    "input": "F#",
+    "semitones": -4,
+    "output": "D"
+  },
+  {
+    "input": "F#",
+    "semitones": -3,
+    "output": "D#"
+  },
+  {
+    "input": "F#",
+    "semitones": -2,
+    "output": "E"
+  },
+  {
+    "input": "F#",
+    "semitones": -1,
+    "output": "F"
+  },
+  {
+    "input": "F#",
+    "semitones": 0,
+    "output": "F#"
+  },
+  {
+    "input": "F#",
+    "semitones": 1,
+    "output": "G"
+  },
+  {
+    "input": "F#",
+    "semitones": 2,
+    "output": "G#"
+  },
+  {
+    "input": "F#",
+    "semitones": 3,
+    "output": "A"
+  },
+  {
+    "input": "F#",
+    "semitones": 4,
+    "output": "A#"
+  },
+  {
+    "input": "F#",
+    "semitones": 5,
+    "output": "B"
+  },
+  {
+    "input": "F#",
+    "semitones": 6,
+    "output": "C"
+  },
+  {
+    "input": "F#",
+    "semitones": 7,
+    "output": "C#"
+  },
+  {
+    "input": "F#",
+    "semitones": 8,
+    "output": "D"
+  },
+  {
+    "input": "F#",
+    "semitones": 9,
+    "output": "D#"
+  },
+  {
+    "input": "F#",
+    "semitones": 10,
+    "output": "E"
+  },
+  {
+    "input": "F#",
+    "semitones": 11,
+    "output": "F"
+  },
+  {
+    "input": "F#",
+    "semitones": 12,
+    "output": "F#"
+  },
+  {
+    "input": "Gb",
+    "semitones": -12,
+    "output": "F#"
+  },
+  {
+    "input": "Gb",
+    "semitones": -11,
+    "output": "G"
+  },
+  {
+    "input": "Gb",
+    "semitones": -10,
+    "output": "G#"
+  },
+  {
+    "input": "Gb",
+    "semitones": -9,
+    "output": "A"
+  },
+  {
+    "input": "Gb",
+    "semitones": -8,
+    "output": "A#"
+  },
+  {
+    "input": "Gb",
+    "semitones": -7,
+    "output": "B"
+  },
+  {
+    "input": "Gb",
+    "semitones": -6,
+    "output": "C"
+  },
+  {
+    "input": "Gb",
+    "semitones": -5,
+    "output": "C#"
+  },
+  {
+    "input": "Gb",
+    "semitones": -4,
+    "output": "D"
+  },
+  {
+    "input": "Gb",
+    "semitones": -3,
+    "output": "D#"
+  },
+  {
+    "input": "Gb",
+    "semitones": -2,
+    "output": "E"
+  },
+  {
+    "input": "Gb",
+    "semitones": -1,
+    "output": "F"
+  },
+  {
+    "input": "Gb",
+    "semitones": 0,
+    "output": "Gb"
+  },
+  {
+    "input": "Gb",
+    "semitones": 1,
+    "output": "G"
+  },
+  {
+    "input": "Gb",
+    "semitones": 2,
+    "output": "G#"
+  },
+  {
+    "input": "Gb",
+    "semitones": 3,
+    "output": "A"
+  },
+  {
+    "input": "Gb",
+    "semitones": 4,
+    "output": "A#"
+  },
+  {
+    "input": "Gb",
+    "semitones": 5,
+    "output": "B"
+  },
+  {
+    "input": "Gb",
+    "semitones": 6,
+    "output": "C"
+  },
+  {
+    "input": "Gb",
+    "semitones": 7,
+    "output": "C#"
+  },
+  {
+    "input": "Gb",
+    "semitones": 8,
+    "output": "D"
+  },
+  {
+    "input": "Gb",
+    "semitones": 9,
+    "output": "D#"
+  },
+  {
+    "input": "Gb",
+    "semitones": 10,
+    "output": "E"
+  },
+  {
+    "input": "Gb",
+    "semitones": 11,
+    "output": "F"
+  },
+  {
+    "input": "Gb",
+    "semitones": 12,
+    "output": "F#"
+  },
+  {
+    "input": "C#",
+    "semitones": -12,
+    "output": "C#"
+  },
+  {
+    "input": "C#",
+    "semitones": -11,
+    "output": "D"
+  },
+  {
+    "input": "C#",
+    "semitones": -10,
+    "output": "D#"
+  },
+  {
+    "input": "C#",
+    "semitones": -9,
+    "output": "E"
+  },
+  {
+    "input": "C#",
+    "semitones": -8,
+    "output": "F"
+  },
+  {
+    "input": "C#",
+    "semitones": -7,
+    "output": "F#"
+  },
+  {
+    "input": "C#",
+    "semitones": -6,
+    "output": "G"
+  },
+  {
+    "input": "C#",
+    "semitones": -5,
+    "output": "G#"
+  },
+  {
+    "input": "C#",
+    "semitones": -4,
+    "output": "A"
+  },
+  {
+    "input": "C#",
+    "semitones": -3,
+    "output": "A#"
+  },
+  {
+    "input": "C#",
+    "semitones": -2,
+    "output": "B"
+  },
+  {
+    "input": "C#",
+    "semitones": -1,
+    "output": "C"
+  },
+  {
+    "input": "C#",
+    "semitones": 0,
+    "output": "C#"
+  },
+  {
+    "input": "C#",
+    "semitones": 1,
+    "output": "D"
+  },
+  {
+    "input": "C#",
+    "semitones": 2,
+    "output": "D#"
+  },
+  {
+    "input": "C#",
+    "semitones": 3,
+    "output": "E"
+  },
+  {
+    "input": "C#",
+    "semitones": 4,
+    "output": "F"
+  },
+  {
+    "input": "C#",
+    "semitones": 5,
+    "output": "F#"
+  },
+  {
+    "input": "C#",
+    "semitones": 6,
+    "output": "G"
+  },
+  {
+    "input": "C#",
+    "semitones": 7,
+    "output": "G#"
+  },
+  {
+    "input": "C#",
+    "semitones": 8,
+    "output": "A"
+  },
+  {
+    "input": "C#",
+    "semitones": 9,
+    "output": "A#"
+  },
+  {
+    "input": "C#",
+    "semitones": 10,
+    "output": "B"
+  },
+  {
+    "input": "C#",
+    "semitones": 11,
+    "output": "C"
+  },
+  {
+    "input": "C#",
+    "semitones": 12,
+    "output": "C#"
+  },
+  {
+    "input": "G#",
+    "semitones": -12,
+    "output": "G#"
+  },
+  {
+    "input": "G#",
+    "semitones": -11,
+    "output": "A"
+  },
+  {
+    "input": "G#",
+    "semitones": -10,
+    "output": "A#"
+  },
+  {
+    "input": "G#",
+    "semitones": -9,
+    "output": "B"
+  },
+  {
+    "input": "G#",
+    "semitones": -8,
+    "output": "C"
+  },
+  {
+    "input": "G#",
+    "semitones": -7,
+    "output": "C#"
+  },
+  {
+    "input": "G#",
+    "semitones": -6,
+    "output": "D"
+  },
+  {
+    "input": "G#",
+    "semitones": -5,
+    "output": "D#"
+  },
+  {
+    "input": "G#",
+    "semitones": -4,
+    "output": "E"
+  },
+  {
+    "input": "G#",
+    "semitones": -3,
+    "output": "F"
+  },
+  {
+    "input": "G#",
+    "semitones": -2,
+    "output": "F#"
+  },
+  {
+    "input": "G#",
+    "semitones": -1,
+    "output": "G"
+  },
+  {
+    "input": "G#",
+    "semitones": 0,
+    "output": "G#"
+  },
+  {
+    "input": "G#",
+    "semitones": 1,
+    "output": "A"
+  },
+  {
+    "input": "G#",
+    "semitones": 2,
+    "output": "A#"
+  },
+  {
+    "input": "G#",
+    "semitones": 3,
+    "output": "B"
+  },
+  {
+    "input": "G#",
+    "semitones": 4,
+    "output": "C"
+  },
+  {
+    "input": "G#",
+    "semitones": 5,
+    "output": "C#"
+  },
+  {
+    "input": "G#",
+    "semitones": 6,
+    "output": "D"
+  },
+  {
+    "input": "G#",
+    "semitones": 7,
+    "output": "D#"
+  },
+  {
+    "input": "G#",
+    "semitones": 8,
+    "output": "E"
+  },
+  {
+    "input": "G#",
+    "semitones": 9,
+    "output": "F"
+  },
+  {
+    "input": "G#",
+    "semitones": 10,
+    "output": "F#"
+  },
+  {
+    "input": "G#",
+    "semitones": 11,
+    "output": "G"
+  },
+  {
+    "input": "G#",
+    "semitones": 12,
+    "output": "G#"
+  },
+  {
+    "input": "A#",
+    "semitones": -12,
+    "output": "A#"
+  },
+  {
+    "input": "A#",
+    "semitones": -11,
+    "output": "B"
+  },
+  {
+    "input": "A#",
+    "semitones": -10,
+    "output": "C"
+  },
+  {
+    "input": "A#",
+    "semitones": -9,
+    "output": "C#"
+  },
+  {
+    "input": "A#",
+    "semitones": -8,
+    "output": "D"
+  },
+  {
+    "input": "A#",
+    "semitones": -7,
+    "output": "D#"
+  },
+  {
+    "input": "A#",
+    "semitones": -6,
+    "output": "E"
+  },
+  {
+    "input": "A#",
+    "semitones": -5,
+    "output": "F"
+  },
+  {
+    "input": "A#",
+    "semitones": -4,
+    "output": "F#"
+  },
+  {
+    "input": "A#",
+    "semitones": -3,
+    "output": "G"
+  },
+  {
+    "input": "A#",
+    "semitones": -2,
+    "output": "G#"
+  },
+  {
+    "input": "A#",
+    "semitones": -1,
+    "output": "A"
+  },
+  {
+    "input": "A#",
+    "semitones": 0,
+    "output": "A#"
+  },
+  {
+    "input": "A#",
+    "semitones": 1,
+    "output": "B"
+  },
+  {
+    "input": "A#",
+    "semitones": 2,
+    "output": "C"
+  },
+  {
+    "input": "A#",
+    "semitones": 3,
+    "output": "C#"
+  },
+  {
+    "input": "A#",
+    "semitones": 4,
+    "output": "D"
+  },
+  {
+    "input": "A#",
+    "semitones": 5,
+    "output": "D#"
+  },
+  {
+    "input": "A#",
+    "semitones": 6,
+    "output": "E"
+  },
+  {
+    "input": "A#",
+    "semitones": 7,
+    "output": "F"
+  },
+  {
+    "input": "A#",
+    "semitones": 8,
+    "output": "F#"
+  },
+  {
+    "input": "A#",
+    "semitones": 9,
+    "output": "G"
+  },
+  {
+    "input": "A#",
+    "semitones": 10,
+    "output": "G#"
+  },
+  {
+    "input": "A#",
+    "semitones": 11,
+    "output": "A"
+  },
+  {
+    "input": "A#",
+    "semitones": 12,
+    "output": "A#"
+  },
+  {
+    "input": "D#",
+    "semitones": -12,
+    "output": "D#"
+  },
+  {
+    "input": "D#",
+    "semitones": -11,
+    "output": "E"
+  },
+  {
+    "input": "D#",
+    "semitones": -10,
+    "output": "F"
+  },
+  {
+    "input": "D#",
+    "semitones": -9,
+    "output": "F#"
+  },
+  {
+    "input": "D#",
+    "semitones": -8,
+    "output": "G"
+  },
+  {
+    "input": "D#",
+    "semitones": -7,
+    "output": "G#"
+  },
+  {
+    "input": "D#",
+    "semitones": -6,
+    "output": "A"
+  },
+  {
+    "input": "D#",
+    "semitones": -5,
+    "output": "A#"
+  },
+  {
+    "input": "D#",
+    "semitones": -4,
+    "output": "B"
+  },
+  {
+    "input": "D#",
+    "semitones": -3,
+    "output": "C"
+  },
+  {
+    "input": "D#",
+    "semitones": -2,
+    "output": "C#"
+  },
+  {
+    "input": "D#",
+    "semitones": -1,
+    "output": "D"
+  },
+  {
+    "input": "D#",
+    "semitones": 0,
+    "output": "D#"
+  },
+  {
+    "input": "D#",
+    "semitones": 1,
+    "output": "E"
+  },
+  {
+    "input": "D#",
+    "semitones": 2,
+    "output": "F"
+  },
+  {
+    "input": "D#",
+    "semitones": 3,
+    "output": "F#"
+  },
+  {
+    "input": "D#",
+    "semitones": 4,
+    "output": "G"
+  },
+  {
+    "input": "D#",
+    "semitones": 5,
+    "output": "G#"
+  },
+  {
+    "input": "D#",
+    "semitones": 6,
+    "output": "A"
+  },
+  {
+    "input": "D#",
+    "semitones": 7,
+    "output": "A#"
+  },
+  {
+    "input": "D#",
+    "semitones": 8,
+    "output": "B"
+  },
+  {
+    "input": "D#",
+    "semitones": 9,
+    "output": "C"
+  },
+  {
+    "input": "D#",
+    "semitones": 10,
+    "output": "C#"
+  },
+  {
+    "input": "D#",
+    "semitones": 11,
+    "output": "D"
+  },
+  {
+    "input": "D#",
+    "semitones": 12,
+    "output": "D#"
+  },
+  {
+    "input": "Am",
+    "semitones": -12,
+    "output": "Am"
+  },
+  {
+    "input": "Am",
+    "semitones": -11,
+    "output": "A#m"
+  },
+  {
+    "input": "Am",
+    "semitones": -10,
+    "output": "Bm"
+  },
+  {
+    "input": "Am",
+    "semitones": -9,
+    "output": "Cm"
+  },
+  {
+    "input": "Am",
+    "semitones": -8,
+    "output": "C#m"
+  },
+  {
+    "input": "Am",
+    "semitones": -7,
+    "output": "Dm"
+  },
+  {
+    "input": "Am",
+    "semitones": -6,
+    "output": "D#m"
+  },
+  {
+    "input": "Am",
+    "semitones": -5,
+    "output": "Em"
+  },
+  {
+    "input": "Am",
+    "semitones": -4,
+    "output": "Fm"
+  },
+  {
+    "input": "Am",
+    "semitones": -3,
+    "output": "F#m"
+  },
+  {
+    "input": "Am",
+    "semitones": -2,
+    "output": "Gm"
+  },
+  {
+    "input": "Am",
+    "semitones": -1,
+    "output": "G#m"
+  },
+  {
+    "input": "Am",
+    "semitones": 0,
+    "output": "Am"
+  },
+  {
+    "input": "Am",
+    "semitones": 1,
+    "output": "A#m"
+  },
+  {
+    "input": "Am",
+    "semitones": 2,
+    "output": "Bm"
+  },
+  {
+    "input": "Am",
+    "semitones": 3,
+    "output": "Cm"
+  },
+  {
+    "input": "Am",
+    "semitones": 4,
+    "output": "C#m"
+  },
+  {
+    "input": "Am",
+    "semitones": 5,
+    "output": "Dm"
+  },
+  {
+    "input": "Am",
+    "semitones": 6,
+    "output": "D#m"
+  },
+  {
+    "input": "Am",
+    "semitones": 7,
+    "output": "Em"
+  },
+  {
+    "input": "Am",
+    "semitones": 8,
+    "output": "Fm"
+  },
+  {
+    "input": "Am",
+    "semitones": 9,
+    "output": "F#m"
+  },
+  {
+    "input": "Am",
+    "semitones": 10,
+    "output": "Gm"
+  },
+  {
+    "input": "Am",
+    "semitones": 11,
+    "output": "G#m"
+  },
+  {
+    "input": "Am",
+    "semitones": 12,
+    "output": "Am"
+  },
+  {
+    "input": "Bm",
+    "semitones": -12,
+    "output": "Bm"
+  },
+  {
+    "input": "Bm",
+    "semitones": -11,
+    "output": "Cm"
+  },
+  {
+    "input": "Bm",
+    "semitones": -10,
+    "output": "C#m"
+  },
+  {
+    "input": "Bm",
+    "semitones": -9,
+    "output": "Dm"
+  },
+  {
+    "input": "Bm",
+    "semitones": -8,
+    "output": "D#m"
+  },
+  {
+    "input": "Bm",
+    "semitones": -7,
+    "output": "Em"
+  },
+  {
+    "input": "Bm",
+    "semitones": -6,
+    "output": "Fm"
+  },
+  {
+    "input": "Bm",
+    "semitones": -5,
+    "output": "F#m"
+  },
+  {
+    "input": "Bm",
+    "semitones": -4,
+    "output": "Gm"
+  },
+  {
+    "input": "Bm",
+    "semitones": -3,
+    "output": "G#m"
+  },
+  {
+    "input": "Bm",
+    "semitones": -2,
+    "output": "Am"
+  },
+  {
+    "input": "Bm",
+    "semitones": -1,
+    "output": "A#m"
+  },
+  {
+    "input": "Bm",
+    "semitones": 0,
+    "output": "Bm"
+  },
+  {
+    "input": "Bm",
+    "semitones": 1,
+    "output": "Cm"
+  },
+  {
+    "input": "Bm",
+    "semitones": 2,
+    "output": "C#m"
+  },
+  {
+    "input": "Bm",
+    "semitones": 3,
+    "output": "Dm"
+  },
+  {
+    "input": "Bm",
+    "semitones": 4,
+    "output": "D#m"
+  },
+  {
+    "input": "Bm",
+    "semitones": 5,
+    "output": "Em"
+  },
+  {
+    "input": "Bm",
+    "semitones": 6,
+    "output": "Fm"
+  },
+  {
+    "input": "Bm",
+    "semitones": 7,
+    "output": "F#m"
+  },
+  {
+    "input": "Bm",
+    "semitones": 8,
+    "output": "Gm"
+  },
+  {
+    "input": "Bm",
+    "semitones": 9,
+    "output": "G#m"
+  },
+  {
+    "input": "Bm",
+    "semitones": 10,
+    "output": "Am"
+  },
+  {
+    "input": "Bm",
+    "semitones": 11,
+    "output": "A#m"
+  },
+  {
+    "input": "Bm",
+    "semitones": 12,
+    "output": "Bm"
+  },
+  {
+    "input": "Cm",
+    "semitones": -12,
+    "output": "Cm"
+  },
+  {
+    "input": "Cm",
+    "semitones": -11,
+    "output": "C#m"
+  },
+  {
+    "input": "Cm",
+    "semitones": -10,
+    "output": "Dm"
+  },
+  {
+    "input": "Cm",
+    "semitones": -9,
+    "output": "D#m"
+  },
+  {
+    "input": "Cm",
+    "semitones": -8,
+    "output": "Em"
+  },
+  {
+    "input": "Cm",
+    "semitones": -7,
+    "output": "Fm"
+  },
+  {
+    "input": "Cm",
+    "semitones": -6,
+    "output": "F#m"
+  },
+  {
+    "input": "Cm",
+    "semitones": -5,
+    "output": "Gm"
+  },
+  {
+    "input": "Cm",
+    "semitones": -4,
+    "output": "G#m"
+  },
+  {
+    "input": "Cm",
+    "semitones": -3,
+    "output": "Am"
+  },
+  {
+    "input": "Cm",
+    "semitones": -2,
+    "output": "A#m"
+  },
+  {
+    "input": "Cm",
+    "semitones": -1,
+    "output": "Bm"
+  },
+  {
+    "input": "Cm",
+    "semitones": 0,
+    "output": "Cm"
+  },
+  {
+    "input": "Cm",
+    "semitones": 1,
+    "output": "C#m"
+  },
+  {
+    "input": "Cm",
+    "semitones": 2,
+    "output": "Dm"
+  },
+  {
+    "input": "Cm",
+    "semitones": 3,
+    "output": "D#m"
+  },
+  {
+    "input": "Cm",
+    "semitones": 4,
+    "output": "Em"
+  },
+  {
+    "input": "Cm",
+    "semitones": 5,
+    "output": "Fm"
+  },
+  {
+    "input": "Cm",
+    "semitones": 6,
+    "output": "F#m"
+  },
+  {
+    "input": "Cm",
+    "semitones": 7,
+    "output": "Gm"
+  },
+  {
+    "input": "Cm",
+    "semitones": 8,
+    "output": "G#m"
+  },
+  {
+    "input": "Cm",
+    "semitones": 9,
+    "output": "Am"
+  },
+  {
+    "input": "Cm",
+    "semitones": 10,
+    "output": "A#m"
+  },
+  {
+    "input": "Cm",
+    "semitones": 11,
+    "output": "Bm"
+  },
+  {
+    "input": "Cm",
+    "semitones": 12,
+    "output": "Cm"
+  },
+  {
+    "input": "Dm",
+    "semitones": -12,
+    "output": "Dm"
+  },
+  {
+    "input": "Dm",
+    "semitones": -11,
+    "output": "D#m"
+  },
+  {
+    "input": "Dm",
+    "semitones": -10,
+    "output": "Em"
+  },
+  {
+    "input": "Dm",
+    "semitones": -9,
+    "output": "Fm"
+  },
+  {
+    "input": "Dm",
+    "semitones": -8,
+    "output": "F#m"
+  },
+  {
+    "input": "Dm",
+    "semitones": -7,
+    "output": "Gm"
+  },
+  {
+    "input": "Dm",
+    "semitones": -6,
+    "output": "G#m"
+  },
+  {
+    "input": "Dm",
+    "semitones": -5,
+    "output": "Am"
+  },
+  {
+    "input": "Dm",
+    "semitones": -4,
+    "output": "A#m"
+  },
+  {
+    "input": "Dm",
+    "semitones": -3,
+    "output": "Bm"
+  },
+  {
+    "input": "Dm",
+    "semitones": -2,
+    "output": "Cm"
+  },
+  {
+    "input": "Dm",
+    "semitones": -1,
+    "output": "C#m"
+  },
+  {
+    "input": "Dm",
+    "semitones": 0,
+    "output": "Dm"
+  },
+  {
+    "input": "Dm",
+    "semitones": 1,
+    "output": "D#m"
+  },
+  {
+    "input": "Dm",
+    "semitones": 2,
+    "output": "Em"
+  },
+  {
+    "input": "Dm",
+    "semitones": 3,
+    "output": "Fm"
+  },
+  {
+    "input": "Dm",
+    "semitones": 4,
+    "output": "F#m"
+  },
+  {
+    "input": "Dm",
+    "semitones": 5,
+    "output": "Gm"
+  },
+  {
+    "input": "Dm",
+    "semitones": 6,
+    "output": "G#m"
+  },
+  {
+    "input": "Dm",
+    "semitones": 7,
+    "output": "Am"
+  },
+  {
+    "input": "Dm",
+    "semitones": 8,
+    "output": "A#m"
+  },
+  {
+    "input": "Dm",
+    "semitones": 9,
+    "output": "Bm"
+  },
+  {
+    "input": "Dm",
+    "semitones": 10,
+    "output": "Cm"
+  },
+  {
+    "input": "Dm",
+    "semitones": 11,
+    "output": "C#m"
+  },
+  {
+    "input": "Dm",
+    "semitones": 12,
+    "output": "Dm"
+  },
+  {
+    "input": "Em",
+    "semitones": -12,
+    "output": "Em"
+  },
+  {
+    "input": "Em",
+    "semitones": -11,
+    "output": "Fm"
+  },
+  {
+    "input": "Em",
+    "semitones": -10,
+    "output": "F#m"
+  },
+  {
+    "input": "Em",
+    "semitones": -9,
+    "output": "Gm"
+  },
+  {
+    "input": "Em",
+    "semitones": -8,
+    "output": "G#m"
+  },
+  {
+    "input": "Em",
+    "semitones": -7,
+    "output": "Am"
+  },
+  {
+    "input": "Em",
+    "semitones": -6,
+    "output": "A#m"
+  },
+  {
+    "input": "Em",
+    "semitones": -5,
+    "output": "Bm"
+  },
+  {
+    "input": "Em",
+    "semitones": -4,
+    "output": "Cm"
+  },
+  {
+    "input": "Em",
+    "semitones": -3,
+    "output": "C#m"
+  },
+  {
+    "input": "Em",
+    "semitones": -2,
+    "output": "Dm"
+  },
+  {
+    "input": "Em",
+    "semitones": -1,
+    "output": "D#m"
+  },
+  {
+    "input": "Em",
+    "semitones": 0,
+    "output": "Em"
+  },
+  {
+    "input": "Em",
+    "semitones": 1,
+    "output": "Fm"
+  },
+  {
+    "input": "Em",
+    "semitones": 2,
+    "output": "F#m"
+  },
+  {
+    "input": "Em",
+    "semitones": 3,
+    "output": "Gm"
+  },
+  {
+    "input": "Em",
+    "semitones": 4,
+    "output": "G#m"
+  },
+  {
+    "input": "Em",
+    "semitones": 5,
+    "output": "Am"
+  },
+  {
+    "input": "Em",
+    "semitones": 6,
+    "output": "A#m"
+  },
+  {
+    "input": "Em",
+    "semitones": 7,
+    "output": "Bm"
+  },
+  {
+    "input": "Em",
+    "semitones": 8,
+    "output": "Cm"
+  },
+  {
+    "input": "Em",
+    "semitones": 9,
+    "output": "C#m"
+  },
+  {
+    "input": "Em",
+    "semitones": 10,
+    "output": "Dm"
+  },
+  {
+    "input": "Em",
+    "semitones": 11,
+    "output": "D#m"
+  },
+  {
+    "input": "Em",
+    "semitones": 12,
+    "output": "Em"
+  },
+  {
+    "input": "Fm",
+    "semitones": -12,
+    "output": "Fm"
+  },
+  {
+    "input": "Fm",
+    "semitones": -11,
+    "output": "F#m"
+  },
+  {
+    "input": "Fm",
+    "semitones": -10,
+    "output": "Gm"
+  },
+  {
+    "input": "Fm",
+    "semitones": -9,
+    "output": "G#m"
+  },
+  {
+    "input": "Fm",
+    "semitones": -8,
+    "output": "Am"
+  },
+  {
+    "input": "Fm",
+    "semitones": -7,
+    "output": "A#m"
+  },
+  {
+    "input": "Fm",
+    "semitones": -6,
+    "output": "Bm"
+  },
+  {
+    "input": "Fm",
+    "semitones": -5,
+    "output": "Cm"
+  },
+  {
+    "input": "Fm",
+    "semitones": -4,
+    "output": "C#m"
+  },
+  {
+    "input": "Fm",
+    "semitones": -3,
+    "output": "Dm"
+  },
+  {
+    "input": "Fm",
+    "semitones": -2,
+    "output": "D#m"
+  },
+  {
+    "input": "Fm",
+    "semitones": -1,
+    "output": "Em"
+  },
+  {
+    "input": "Fm",
+    "semitones": 0,
+    "output": "Fm"
+  },
+  {
+    "input": "Fm",
+    "semitones": 1,
+    "output": "F#m"
+  },
+  {
+    "input": "Fm",
+    "semitones": 2,
+    "output": "Gm"
+  },
+  {
+    "input": "Fm",
+    "semitones": 3,
+    "output": "G#m"
+  },
+  {
+    "input": "Fm",
+    "semitones": 4,
+    "output": "Am"
+  },
+  {
+    "input": "Fm",
+    "semitones": 5,
+    "output": "A#m"
+  },
+  {
+    "input": "Fm",
+    "semitones": 6,
+    "output": "Bm"
+  },
+  {
+    "input": "Fm",
+    "semitones": 7,
+    "output": "Cm"
+  },
+  {
+    "input": "Fm",
+    "semitones": 8,
+    "output": "C#m"
+  },
+  {
+    "input": "Fm",
+    "semitones": 9,
+    "output": "Dm"
+  },
+  {
+    "input": "Fm",
+    "semitones": 10,
+    "output": "D#m"
+  },
+  {
+    "input": "Fm",
+    "semitones": 11,
+    "output": "Em"
+  },
+  {
+    "input": "Fm",
+    "semitones": 12,
+    "output": "Fm"
+  },
+  {
+    "input": "Gm",
+    "semitones": -12,
+    "output": "Gm"
+  },
+  {
+    "input": "Gm",
+    "semitones": -11,
+    "output": "G#m"
+  },
+  {
+    "input": "Gm",
+    "semitones": -10,
+    "output": "Am"
+  },
+  {
+    "input": "Gm",
+    "semitones": -9,
+    "output": "A#m"
+  },
+  {
+    "input": "Gm",
+    "semitones": -8,
+    "output": "Bm"
+  },
+  {
+    "input": "Gm",
+    "semitones": -7,
+    "output": "Cm"
+  },
+  {
+    "input": "Gm",
+    "semitones": -6,
+    "output": "C#m"
+  },
+  {
+    "input": "Gm",
+    "semitones": -5,
+    "output": "Dm"
+  },
+  {
+    "input": "Gm",
+    "semitones": -4,
+    "output": "D#m"
+  },
+  {
+    "input": "Gm",
+    "semitones": -3,
+    "output": "Em"
+  },
+  {
+    "input": "Gm",
+    "semitones": -2,
+    "output": "Fm"
+  },
+  {
+    "input": "Gm",
+    "semitones": -1,
+    "output": "F#m"
+  },
+  {
+    "input": "Gm",
+    "semitones": 0,
+    "output": "Gm"
+  },
+  {
+    "input": "Gm",
+    "semitones": 1,
+    "output": "G#m"
+  },
+  {
+    "input": "Gm",
+    "semitones": 2,
+    "output": "Am"
+  },
+  {
+    "input": "Gm",
+    "semitones": 3,
+    "output": "A#m"
+  },
+  {
+    "input": "Gm",
+    "semitones": 4,
+    "output": "Bm"
+  },
+  {
+    "input": "Gm",
+    "semitones": 5,
+    "output": "Cm"
+  },
+  {
+    "input": "Gm",
+    "semitones": 6,
+    "output": "C#m"
+  },
+  {
+    "input": "Gm",
+    "semitones": 7,
+    "output": "Dm"
+  },
+  {
+    "input": "Gm",
+    "semitones": 8,
+    "output": "D#m"
+  },
+  {
+    "input": "Gm",
+    "semitones": 9,
+    "output": "Em"
+  },
+  {
+    "input": "Gm",
+    "semitones": 10,
+    "output": "Fm"
+  },
+  {
+    "input": "Gm",
+    "semitones": 11,
+    "output": "F#m"
+  },
+  {
+    "input": "Gm",
+    "semitones": 12,
+    "output": "Gm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -12,
+    "output": "A#m"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -11,
+    "output": "Bm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -10,
+    "output": "Cm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -9,
+    "output": "C#m"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -8,
+    "output": "Dm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -7,
+    "output": "D#m"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -6,
+    "output": "Em"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -5,
+    "output": "Fm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -4,
+    "output": "F#m"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -3,
+    "output": "Gm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -2,
+    "output": "G#m"
+  },
+  {
+    "input": "Bbm",
+    "semitones": -1,
+    "output": "Am"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 0,
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 1,
+    "output": "Bm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 2,
+    "output": "Cm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 3,
+    "output": "C#m"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 4,
+    "output": "Dm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 5,
+    "output": "D#m"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 6,
+    "output": "Em"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 7,
+    "output": "Fm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 8,
+    "output": "F#m"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 9,
+    "output": "Gm"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 10,
+    "output": "G#m"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 11,
+    "output": "Am"
+  },
+  {
+    "input": "Bbm",
+    "semitones": 12,
+    "output": "A#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": -12,
+    "output": "F#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": -11,
+    "output": "Gm"
+  },
+  {
+    "input": "F#m",
+    "semitones": -10,
+    "output": "G#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": -9,
+    "output": "Am"
+  },
+  {
+    "input": "F#m",
+    "semitones": -8,
+    "output": "A#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": -7,
+    "output": "Bm"
+  },
+  {
+    "input": "F#m",
+    "semitones": -6,
+    "output": "Cm"
+  },
+  {
+    "input": "F#m",
+    "semitones": -5,
+    "output": "C#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": -4,
+    "output": "Dm"
+  },
+  {
+    "input": "F#m",
+    "semitones": -3,
+    "output": "D#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": -2,
+    "output": "Em"
+  },
+  {
+    "input": "F#m",
+    "semitones": -1,
+    "output": "Fm"
+  },
+  {
+    "input": "F#m",
+    "semitones": 0,
+    "output": "F#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": 1,
+    "output": "Gm"
+  },
+  {
+    "input": "F#m",
+    "semitones": 2,
+    "output": "G#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": 3,
+    "output": "Am"
+  },
+  {
+    "input": "F#m",
+    "semitones": 4,
+    "output": "A#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": 5,
+    "output": "Bm"
+  },
+  {
+    "input": "F#m",
+    "semitones": 6,
+    "output": "Cm"
+  },
+  {
+    "input": "F#m",
+    "semitones": 7,
+    "output": "C#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": 8,
+    "output": "Dm"
+  },
+  {
+    "input": "F#m",
+    "semitones": 9,
+    "output": "D#m"
+  },
+  {
+    "input": "F#m",
+    "semitones": 10,
+    "output": "Em"
+  },
+  {
+    "input": "F#m",
+    "semitones": 11,
+    "output": "Fm"
+  },
+  {
+    "input": "F#m",
+    "semitones": 12,
+    "output": "F#m"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -12,
+    "output": "F#m"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -11,
+    "output": "Gm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -10,
+    "output": "G#m"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -9,
+    "output": "Am"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -8,
+    "output": "A#m"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -7,
+    "output": "Bm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -6,
+    "output": "Cm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -5,
+    "output": "C#m"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -4,
+    "output": "Dm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -3,
+    "output": "D#m"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -2,
+    "output": "Em"
+  },
+  {
+    "input": "Gbm",
+    "semitones": -1,
+    "output": "Fm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 0,
+    "output": "Gbm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 1,
+    "output": "Gm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 2,
+    "output": "G#m"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 3,
+    "output": "Am"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 4,
+    "output": "A#m"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 5,
+    "output": "Bm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 6,
+    "output": "Cm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 7,
+    "output": "C#m"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 8,
+    "output": "Dm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 9,
+    "output": "D#m"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 10,
+    "output": "Em"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 11,
+    "output": "Fm"
+  },
+  {
+    "input": "Gbm",
+    "semitones": 12,
+    "output": "F#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": -12,
+    "output": "C#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": -11,
+    "output": "Dm"
+  },
+  {
+    "input": "C#m",
+    "semitones": -10,
+    "output": "D#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": -9,
+    "output": "Em"
+  },
+  {
+    "input": "C#m",
+    "semitones": -8,
+    "output": "Fm"
+  },
+  {
+    "input": "C#m",
+    "semitones": -7,
+    "output": "F#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": -6,
+    "output": "Gm"
+  },
+  {
+    "input": "C#m",
+    "semitones": -5,
+    "output": "G#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": -4,
+    "output": "Am"
+  },
+  {
+    "input": "C#m",
+    "semitones": -3,
+    "output": "A#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": -2,
+    "output": "Bm"
+  },
+  {
+    "input": "C#m",
+    "semitones": -1,
+    "output": "Cm"
+  },
+  {
+    "input": "C#m",
+    "semitones": 0,
+    "output": "C#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": 1,
+    "output": "Dm"
+  },
+  {
+    "input": "C#m",
+    "semitones": 2,
+    "output": "D#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": 3,
+    "output": "Em"
+  },
+  {
+    "input": "C#m",
+    "semitones": 4,
+    "output": "Fm"
+  },
+  {
+    "input": "C#m",
+    "semitones": 5,
+    "output": "F#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": 6,
+    "output": "Gm"
+  },
+  {
+    "input": "C#m",
+    "semitones": 7,
+    "output": "G#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": 8,
+    "output": "Am"
+  },
+  {
+    "input": "C#m",
+    "semitones": 9,
+    "output": "A#m"
+  },
+  {
+    "input": "C#m",
+    "semitones": 10,
+    "output": "Bm"
+  },
+  {
+    "input": "C#m",
+    "semitones": 11,
+    "output": "Cm"
+  },
+  {
+    "input": "C#m",
+    "semitones": 12,
+    "output": "C#m"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -12,
+    "output": "C#m"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -11,
+    "output": "Dm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -10,
+    "output": "D#m"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -9,
+    "output": "Em"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -8,
+    "output": "Fm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -7,
+    "output": "F#m"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -6,
+    "output": "Gm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -5,
+    "output": "G#m"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -4,
+    "output": "Am"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -3,
+    "output": "A#m"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -2,
+    "output": "Bm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": -1,
+    "output": "Cm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 0,
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 1,
+    "output": "Dm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 2,
+    "output": "D#m"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 3,
+    "output": "Em"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 4,
+    "output": "Fm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 5,
+    "output": "F#m"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 6,
+    "output": "Gm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 7,
+    "output": "G#m"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 8,
+    "output": "Am"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 9,
+    "output": "A#m"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 10,
+    "output": "Bm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 11,
+    "output": "Cm"
+  },
+  {
+    "input": "Dbm",
+    "semitones": 12,
+    "output": "C#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": -12,
+    "output": "G#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": -11,
+    "output": "Am"
+  },
+  {
+    "input": "G#m",
+    "semitones": -10,
+    "output": "A#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": -9,
+    "output": "Bm"
+  },
+  {
+    "input": "G#m",
+    "semitones": -8,
+    "output": "Cm"
+  },
+  {
+    "input": "G#m",
+    "semitones": -7,
+    "output": "C#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": -6,
+    "output": "Dm"
+  },
+  {
+    "input": "G#m",
+    "semitones": -5,
+    "output": "D#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": -4,
+    "output": "Em"
+  },
+  {
+    "input": "G#m",
+    "semitones": -3,
+    "output": "Fm"
+  },
+  {
+    "input": "G#m",
+    "semitones": -2,
+    "output": "F#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": -1,
+    "output": "Gm"
+  },
+  {
+    "input": "G#m",
+    "semitones": 0,
+    "output": "G#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": 1,
+    "output": "Am"
+  },
+  {
+    "input": "G#m",
+    "semitones": 2,
+    "output": "A#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": 3,
+    "output": "Bm"
+  },
+  {
+    "input": "G#m",
+    "semitones": 4,
+    "output": "Cm"
+  },
+  {
+    "input": "G#m",
+    "semitones": 5,
+    "output": "C#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": 6,
+    "output": "Dm"
+  },
+  {
+    "input": "G#m",
+    "semitones": 7,
+    "output": "D#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": 8,
+    "output": "Em"
+  },
+  {
+    "input": "G#m",
+    "semitones": 9,
+    "output": "Fm"
+  },
+  {
+    "input": "G#m",
+    "semitones": 10,
+    "output": "F#m"
+  },
+  {
+    "input": "G#m",
+    "semitones": 11,
+    "output": "Gm"
+  },
+  {
+    "input": "G#m",
+    "semitones": 12,
+    "output": "G#m"
+  },
+  {
+    "input": "Abm",
+    "semitones": -12,
+    "output": "G#m"
+  },
+  {
+    "input": "Abm",
+    "semitones": -11,
+    "output": "Am"
+  },
+  {
+    "input": "Abm",
+    "semitones": -10,
+    "output": "A#m"
+  },
+  {
+    "input": "Abm",
+    "semitones": -9,
+    "output": "Bm"
+  },
+  {
+    "input": "Abm",
+    "semitones": -8,
+    "output": "Cm"
+  },
+  {
+    "input": "Abm",
+    "semitones": -7,
+    "output": "C#m"
+  },
+  {
+    "input": "Abm",
+    "semitones": -6,
+    "output": "Dm"
+  },
+  {
+    "input": "Abm",
+    "semitones": -5,
+    "output": "D#m"
+  },
+  {
+    "input": "Abm",
+    "semitones": -4,
+    "output": "Em"
+  },
+  {
+    "input": "Abm",
+    "semitones": -3,
+    "output": "Fm"
+  },
+  {
+    "input": "Abm",
+    "semitones": -2,
+    "output": "F#m"
+  },
+  {
+    "input": "Abm",
+    "semitones": -1,
+    "output": "Gm"
+  },
+  {
+    "input": "Abm",
+    "semitones": 0,
+    "output": "Abm"
+  },
+  {
+    "input": "Abm",
+    "semitones": 1,
+    "output": "Am"
+  },
+  {
+    "input": "Abm",
+    "semitones": 2,
+    "output": "A#m"
+  },
+  {
+    "input": "Abm",
+    "semitones": 3,
+    "output": "Bm"
+  },
+  {
+    "input": "Abm",
+    "semitones": 4,
+    "output": "Cm"
+  },
+  {
+    "input": "Abm",
+    "semitones": 5,
+    "output": "C#m"
+  },
+  {
+    "input": "Abm",
+    "semitones": 6,
+    "output": "Dm"
+  },
+  {
+    "input": "Abm",
+    "semitones": 7,
+    "output": "D#m"
+  },
+  {
+    "input": "Abm",
+    "semitones": 8,
+    "output": "Em"
+  },
+  {
+    "input": "Abm",
+    "semitones": 9,
+    "output": "Fm"
+  },
+  {
+    "input": "Abm",
+    "semitones": 10,
+    "output": "F#m"
+  },
+  {
+    "input": "Abm",
+    "semitones": 11,
+    "output": "Gm"
+  },
+  {
+    "input": "Abm",
+    "semitones": 12,
+    "output": "G#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": -12,
+    "output": "D#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": -11,
+    "output": "Em"
+  },
+  {
+    "input": "D#m",
+    "semitones": -10,
+    "output": "Fm"
+  },
+  {
+    "input": "D#m",
+    "semitones": -9,
+    "output": "F#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": -8,
+    "output": "Gm"
+  },
+  {
+    "input": "D#m",
+    "semitones": -7,
+    "output": "G#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": -6,
+    "output": "Am"
+  },
+  {
+    "input": "D#m",
+    "semitones": -5,
+    "output": "A#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": -4,
+    "output": "Bm"
+  },
+  {
+    "input": "D#m",
+    "semitones": -3,
+    "output": "Cm"
+  },
+  {
+    "input": "D#m",
+    "semitones": -2,
+    "output": "C#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": -1,
+    "output": "Dm"
+  },
+  {
+    "input": "D#m",
+    "semitones": 0,
+    "output": "D#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": 1,
+    "output": "Em"
+  },
+  {
+    "input": "D#m",
+    "semitones": 2,
+    "output": "Fm"
+  },
+  {
+    "input": "D#m",
+    "semitones": 3,
+    "output": "F#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": 4,
+    "output": "Gm"
+  },
+  {
+    "input": "D#m",
+    "semitones": 5,
+    "output": "G#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": 6,
+    "output": "Am"
+  },
+  {
+    "input": "D#m",
+    "semitones": 7,
+    "output": "A#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": 8,
+    "output": "Bm"
+  },
+  {
+    "input": "D#m",
+    "semitones": 9,
+    "output": "Cm"
+  },
+  {
+    "input": "D#m",
+    "semitones": 10,
+    "output": "C#m"
+  },
+  {
+    "input": "D#m",
+    "semitones": 11,
+    "output": "Dm"
+  },
+  {
+    "input": "D#m",
+    "semitones": 12,
+    "output": "D#m"
+  },
+  {
+    "input": "C7",
+    "semitones": -12,
+    "output": "C7"
+  },
+  {
+    "input": "C7",
+    "semitones": -11,
+    "output": "C#7"
+  },
+  {
+    "input": "C7",
+    "semitones": -10,
+    "output": "D7"
+  },
+  {
+    "input": "C7",
+    "semitones": -9,
+    "output": "D#7"
+  },
+  {
+    "input": "C7",
+    "semitones": -8,
+    "output": "E7"
+  },
+  {
+    "input": "C7",
+    "semitones": -7,
+    "output": "F7"
+  },
+  {
+    "input": "C7",
+    "semitones": -6,
+    "output": "F#7"
+  },
+  {
+    "input": "C7",
+    "semitones": -5,
+    "output": "G7"
+  },
+  {
+    "input": "C7",
+    "semitones": -4,
+    "output": "G#7"
+  },
+  {
+    "input": "C7",
+    "semitones": -3,
+    "output": "A7"
+  },
+  {
+    "input": "C7",
+    "semitones": -2,
+    "output": "A#7"
+  },
+  {
+    "input": "C7",
+    "semitones": -1,
+    "output": "B7"
+  },
+  {
+    "input": "C7",
+    "semitones": 0,
+    "output": "C7"
+  },
+  {
+    "input": "C7",
+    "semitones": 1,
+    "output": "C#7"
+  },
+  {
+    "input": "C7",
+    "semitones": 2,
+    "output": "D7"
+  },
+  {
+    "input": "C7",
+    "semitones": 3,
+    "output": "D#7"
+  },
+  {
+    "input": "C7",
+    "semitones": 4,
+    "output": "E7"
+  },
+  {
+    "input": "C7",
+    "semitones": 5,
+    "output": "F7"
+  },
+  {
+    "input": "C7",
+    "semitones": 6,
+    "output": "F#7"
+  },
+  {
+    "input": "C7",
+    "semitones": 7,
+    "output": "G7"
+  },
+  {
+    "input": "C7",
+    "semitones": 8,
+    "output": "G#7"
+  },
+  {
+    "input": "C7",
+    "semitones": 9,
+    "output": "A7"
+  },
+  {
+    "input": "C7",
+    "semitones": 10,
+    "output": "A#7"
+  },
+  {
+    "input": "C7",
+    "semitones": 11,
+    "output": "B7"
+  },
+  {
+    "input": "C7",
+    "semitones": 12,
+    "output": "C7"
+  },
+  {
+    "input": "D7",
+    "semitones": -12,
+    "output": "D7"
+  },
+  {
+    "input": "D7",
+    "semitones": -11,
+    "output": "D#7"
+  },
+  {
+    "input": "D7",
+    "semitones": -10,
+    "output": "E7"
+  },
+  {
+    "input": "D7",
+    "semitones": -9,
+    "output": "F7"
+  },
+  {
+    "input": "D7",
+    "semitones": -8,
+    "output": "F#7"
+  },
+  {
+    "input": "D7",
+    "semitones": -7,
+    "output": "G7"
+  },
+  {
+    "input": "D7",
+    "semitones": -6,
+    "output": "G#7"
+  },
+  {
+    "input": "D7",
+    "semitones": -5,
+    "output": "A7"
+  },
+  {
+    "input": "D7",
+    "semitones": -4,
+    "output": "A#7"
+  },
+  {
+    "input": "D7",
+    "semitones": -3,
+    "output": "B7"
+  },
+  {
+    "input": "D7",
+    "semitones": -2,
+    "output": "C7"
+  },
+  {
+    "input": "D7",
+    "semitones": -1,
+    "output": "C#7"
+  },
+  {
+    "input": "D7",
+    "semitones": 0,
+    "output": "D7"
+  },
+  {
+    "input": "D7",
+    "semitones": 1,
+    "output": "D#7"
+  },
+  {
+    "input": "D7",
+    "semitones": 2,
+    "output": "E7"
+  },
+  {
+    "input": "D7",
+    "semitones": 3,
+    "output": "F7"
+  },
+  {
+    "input": "D7",
+    "semitones": 4,
+    "output": "F#7"
+  },
+  {
+    "input": "D7",
+    "semitones": 5,
+    "output": "G7"
+  },
+  {
+    "input": "D7",
+    "semitones": 6,
+    "output": "G#7"
+  },
+  {
+    "input": "D7",
+    "semitones": 7,
+    "output": "A7"
+  },
+  {
+    "input": "D7",
+    "semitones": 8,
+    "output": "A#7"
+  },
+  {
+    "input": "D7",
+    "semitones": 9,
+    "output": "B7"
+  },
+  {
+    "input": "D7",
+    "semitones": 10,
+    "output": "C7"
+  },
+  {
+    "input": "D7",
+    "semitones": 11,
+    "output": "C#7"
+  },
+  {
+    "input": "D7",
+    "semitones": 12,
+    "output": "D7"
+  },
+  {
+    "input": "E7",
+    "semitones": -12,
+    "output": "E7"
+  },
+  {
+    "input": "E7",
+    "semitones": -11,
+    "output": "F7"
+  },
+  {
+    "input": "E7",
+    "semitones": -10,
+    "output": "F#7"
+  },
+  {
+    "input": "E7",
+    "semitones": -9,
+    "output": "G7"
+  },
+  {
+    "input": "E7",
+    "semitones": -8,
+    "output": "G#7"
+  },
+  {
+    "input": "E7",
+    "semitones": -7,
+    "output": "A7"
+  },
+  {
+    "input": "E7",
+    "semitones": -6,
+    "output": "A#7"
+  },
+  {
+    "input": "E7",
+    "semitones": -5,
+    "output": "B7"
+  },
+  {
+    "input": "E7",
+    "semitones": -4,
+    "output": "C7"
+  },
+  {
+    "input": "E7",
+    "semitones": -3,
+    "output": "C#7"
+  },
+  {
+    "input": "E7",
+    "semitones": -2,
+    "output": "D7"
+  },
+  {
+    "input": "E7",
+    "semitones": -1,
+    "output": "D#7"
+  },
+  {
+    "input": "E7",
+    "semitones": 0,
+    "output": "E7"
+  },
+  {
+    "input": "E7",
+    "semitones": 1,
+    "output": "F7"
+  },
+  {
+    "input": "E7",
+    "semitones": 2,
+    "output": "F#7"
+  },
+  {
+    "input": "E7",
+    "semitones": 3,
+    "output": "G7"
+  },
+  {
+    "input": "E7",
+    "semitones": 4,
+    "output": "G#7"
+  },
+  {
+    "input": "E7",
+    "semitones": 5,
+    "output": "A7"
+  },
+  {
+    "input": "E7",
+    "semitones": 6,
+    "output": "A#7"
+  },
+  {
+    "input": "E7",
+    "semitones": 7,
+    "output": "B7"
+  },
+  {
+    "input": "E7",
+    "semitones": 8,
+    "output": "C7"
+  },
+  {
+    "input": "E7",
+    "semitones": 9,
+    "output": "C#7"
+  },
+  {
+    "input": "E7",
+    "semitones": 10,
+    "output": "D7"
+  },
+  {
+    "input": "E7",
+    "semitones": 11,
+    "output": "D#7"
+  },
+  {
+    "input": "E7",
+    "semitones": 12,
+    "output": "E7"
+  },
+  {
+    "input": "F7",
+    "semitones": -12,
+    "output": "F7"
+  },
+  {
+    "input": "F7",
+    "semitones": -11,
+    "output": "F#7"
+  },
+  {
+    "input": "F7",
+    "semitones": -10,
+    "output": "G7"
+  },
+  {
+    "input": "F7",
+    "semitones": -9,
+    "output": "G#7"
+  },
+  {
+    "input": "F7",
+    "semitones": -8,
+    "output": "A7"
+  },
+  {
+    "input": "F7",
+    "semitones": -7,
+    "output": "A#7"
+  },
+  {
+    "input": "F7",
+    "semitones": -6,
+    "output": "B7"
+  },
+  {
+    "input": "F7",
+    "semitones": -5,
+    "output": "C7"
+  },
+  {
+    "input": "F7",
+    "semitones": -4,
+    "output": "C#7"
+  },
+  {
+    "input": "F7",
+    "semitones": -3,
+    "output": "D7"
+  },
+  {
+    "input": "F7",
+    "semitones": -2,
+    "output": "D#7"
+  },
+  {
+    "input": "F7",
+    "semitones": -1,
+    "output": "E7"
+  },
+  {
+    "input": "F7",
+    "semitones": 0,
+    "output": "F7"
+  },
+  {
+    "input": "F7",
+    "semitones": 1,
+    "output": "F#7"
+  },
+  {
+    "input": "F7",
+    "semitones": 2,
+    "output": "G7"
+  },
+  {
+    "input": "F7",
+    "semitones": 3,
+    "output": "G#7"
+  },
+  {
+    "input": "F7",
+    "semitones": 4,
+    "output": "A7"
+  },
+  {
+    "input": "F7",
+    "semitones": 5,
+    "output": "A#7"
+  },
+  {
+    "input": "F7",
+    "semitones": 6,
+    "output": "B7"
+  },
+  {
+    "input": "F7",
+    "semitones": 7,
+    "output": "C7"
+  },
+  {
+    "input": "F7",
+    "semitones": 8,
+    "output": "C#7"
+  },
+  {
+    "input": "F7",
+    "semitones": 9,
+    "output": "D7"
+  },
+  {
+    "input": "F7",
+    "semitones": 10,
+    "output": "D#7"
+  },
+  {
+    "input": "F7",
+    "semitones": 11,
+    "output": "E7"
+  },
+  {
+    "input": "F7",
+    "semitones": 12,
+    "output": "F7"
+  },
+  {
+    "input": "G7",
+    "semitones": -12,
+    "output": "G7"
+  },
+  {
+    "input": "G7",
+    "semitones": -11,
+    "output": "G#7"
+  },
+  {
+    "input": "G7",
+    "semitones": -10,
+    "output": "A7"
+  },
+  {
+    "input": "G7",
+    "semitones": -9,
+    "output": "A#7"
+  },
+  {
+    "input": "G7",
+    "semitones": -8,
+    "output": "B7"
+  },
+  {
+    "input": "G7",
+    "semitones": -7,
+    "output": "C7"
+  },
+  {
+    "input": "G7",
+    "semitones": -6,
+    "output": "C#7"
+  },
+  {
+    "input": "G7",
+    "semitones": -5,
+    "output": "D7"
+  },
+  {
+    "input": "G7",
+    "semitones": -4,
+    "output": "D#7"
+  },
+  {
+    "input": "G7",
+    "semitones": -3,
+    "output": "E7"
+  },
+  {
+    "input": "G7",
+    "semitones": -2,
+    "output": "F7"
+  },
+  {
+    "input": "G7",
+    "semitones": -1,
+    "output": "F#7"
+  },
+  {
+    "input": "G7",
+    "semitones": 0,
+    "output": "G7"
+  },
+  {
+    "input": "G7",
+    "semitones": 1,
+    "output": "G#7"
+  },
+  {
+    "input": "G7",
+    "semitones": 2,
+    "output": "A7"
+  },
+  {
+    "input": "G7",
+    "semitones": 3,
+    "output": "A#7"
+  },
+  {
+    "input": "G7",
+    "semitones": 4,
+    "output": "B7"
+  },
+  {
+    "input": "G7",
+    "semitones": 5,
+    "output": "C7"
+  },
+  {
+    "input": "G7",
+    "semitones": 6,
+    "output": "C#7"
+  },
+  {
+    "input": "G7",
+    "semitones": 7,
+    "output": "D7"
+  },
+  {
+    "input": "G7",
+    "semitones": 8,
+    "output": "D#7"
+  },
+  {
+    "input": "G7",
+    "semitones": 9,
+    "output": "E7"
+  },
+  {
+    "input": "G7",
+    "semitones": 10,
+    "output": "F7"
+  },
+  {
+    "input": "G7",
+    "semitones": 11,
+    "output": "F#7"
+  },
+  {
+    "input": "G7",
+    "semitones": 12,
+    "output": "G7"
+  },
+  {
+    "input": "A7",
+    "semitones": -12,
+    "output": "A7"
+  },
+  {
+    "input": "A7",
+    "semitones": -11,
+    "output": "A#7"
+  },
+  {
+    "input": "A7",
+    "semitones": -10,
+    "output": "B7"
+  },
+  {
+    "input": "A7",
+    "semitones": -9,
+    "output": "C7"
+  },
+  {
+    "input": "A7",
+    "semitones": -8,
+    "output": "C#7"
+  },
+  {
+    "input": "A7",
+    "semitones": -7,
+    "output": "D7"
+  },
+  {
+    "input": "A7",
+    "semitones": -6,
+    "output": "D#7"
+  },
+  {
+    "input": "A7",
+    "semitones": -5,
+    "output": "E7"
+  },
+  {
+    "input": "A7",
+    "semitones": -4,
+    "output": "F7"
+  },
+  {
+    "input": "A7",
+    "semitones": -3,
+    "output": "F#7"
+  },
+  {
+    "input": "A7",
+    "semitones": -2,
+    "output": "G7"
+  },
+  {
+    "input": "A7",
+    "semitones": -1,
+    "output": "G#7"
+  },
+  {
+    "input": "A7",
+    "semitones": 0,
+    "output": "A7"
+  },
+  {
+    "input": "A7",
+    "semitones": 1,
+    "output": "A#7"
+  },
+  {
+    "input": "A7",
+    "semitones": 2,
+    "output": "B7"
+  },
+  {
+    "input": "A7",
+    "semitones": 3,
+    "output": "C7"
+  },
+  {
+    "input": "A7",
+    "semitones": 4,
+    "output": "C#7"
+  },
+  {
+    "input": "A7",
+    "semitones": 5,
+    "output": "D7"
+  },
+  {
+    "input": "A7",
+    "semitones": 6,
+    "output": "D#7"
+  },
+  {
+    "input": "A7",
+    "semitones": 7,
+    "output": "E7"
+  },
+  {
+    "input": "A7",
+    "semitones": 8,
+    "output": "F7"
+  },
+  {
+    "input": "A7",
+    "semitones": 9,
+    "output": "F#7"
+  },
+  {
+    "input": "A7",
+    "semitones": 10,
+    "output": "G7"
+  },
+  {
+    "input": "A7",
+    "semitones": 11,
+    "output": "G#7"
+  },
+  {
+    "input": "A7",
+    "semitones": 12,
+    "output": "A7"
+  },
+  {
+    "input": "B7",
+    "semitones": -12,
+    "output": "B7"
+  },
+  {
+    "input": "B7",
+    "semitones": -11,
+    "output": "C7"
+  },
+  {
+    "input": "B7",
+    "semitones": -10,
+    "output": "C#7"
+  },
+  {
+    "input": "B7",
+    "semitones": -9,
+    "output": "D7"
+  },
+  {
+    "input": "B7",
+    "semitones": -8,
+    "output": "D#7"
+  },
+  {
+    "input": "B7",
+    "semitones": -7,
+    "output": "E7"
+  },
+  {
+    "input": "B7",
+    "semitones": -6,
+    "output": "F7"
+  },
+  {
+    "input": "B7",
+    "semitones": -5,
+    "output": "F#7"
+  },
+  {
+    "input": "B7",
+    "semitones": -4,
+    "output": "G7"
+  },
+  {
+    "input": "B7",
+    "semitones": -3,
+    "output": "G#7"
+  },
+  {
+    "input": "B7",
+    "semitones": -2,
+    "output": "A7"
+  },
+  {
+    "input": "B7",
+    "semitones": -1,
+    "output": "A#7"
+  },
+  {
+    "input": "B7",
+    "semitones": 0,
+    "output": "B7"
+  },
+  {
+    "input": "B7",
+    "semitones": 1,
+    "output": "C7"
+  },
+  {
+    "input": "B7",
+    "semitones": 2,
+    "output": "C#7"
+  },
+  {
+    "input": "B7",
+    "semitones": 3,
+    "output": "D7"
+  },
+  {
+    "input": "B7",
+    "semitones": 4,
+    "output": "D#7"
+  },
+  {
+    "input": "B7",
+    "semitones": 5,
+    "output": "E7"
+  },
+  {
+    "input": "B7",
+    "semitones": 6,
+    "output": "F7"
+  },
+  {
+    "input": "B7",
+    "semitones": 7,
+    "output": "F#7"
+  },
+  {
+    "input": "B7",
+    "semitones": 8,
+    "output": "G7"
+  },
+  {
+    "input": "B7",
+    "semitones": 9,
+    "output": "G#7"
+  },
+  {
+    "input": "B7",
+    "semitones": 10,
+    "output": "A7"
+  },
+  {
+    "input": "B7",
+    "semitones": 11,
+    "output": "A#7"
+  },
+  {
+    "input": "B7",
+    "semitones": 12,
+    "output": "B7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -12,
+    "output": "A#7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -11,
+    "output": "B7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -10,
+    "output": "C7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -9,
+    "output": "C#7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -8,
+    "output": "D7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -7,
+    "output": "D#7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -6,
+    "output": "E7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -5,
+    "output": "F7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -4,
+    "output": "F#7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -3,
+    "output": "G7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -2,
+    "output": "G#7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": -1,
+    "output": "A7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 0,
+    "output": "Bb7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 1,
+    "output": "B7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 2,
+    "output": "C7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 3,
+    "output": "C#7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 4,
+    "output": "D7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 5,
+    "output": "D#7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 6,
+    "output": "E7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 7,
+    "output": "F7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 8,
+    "output": "F#7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 9,
+    "output": "G7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 10,
+    "output": "G#7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 11,
+    "output": "A7"
+  },
+  {
+    "input": "Bb7",
+    "semitones": 12,
+    "output": "A#7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -12,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -11,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -10,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -9,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -8,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -7,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -6,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -5,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -4,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -3,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -2,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": -1,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 0,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 1,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 2,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 3,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 4,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 5,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 6,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 7,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 8,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 9,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 10,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 11,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Cmaj7",
+    "semitones": 12,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -12,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -11,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -10,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -9,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -8,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -7,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -6,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -5,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -4,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -3,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -2,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": -1,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 0,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 1,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 2,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 3,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 4,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 5,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 6,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 7,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 8,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 9,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 10,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 11,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Dmaj7",
+    "semitones": 12,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -12,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -11,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -10,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -9,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -8,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -7,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -6,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -5,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -4,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -3,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -2,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": -1,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 0,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 1,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 2,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 3,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 4,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 5,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 6,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 7,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 8,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 9,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 10,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 11,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Emaj7",
+    "semitones": 12,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -12,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -11,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -10,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -9,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -8,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -7,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -6,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -5,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -4,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -3,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -2,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": -1,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 0,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 1,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 2,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 3,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 4,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 5,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 6,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 7,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 8,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 9,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 10,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 11,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Fmaj7",
+    "semitones": 12,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -12,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -11,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -10,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -9,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -8,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -7,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -6,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -5,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -4,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -3,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -2,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": -1,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 0,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 1,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 2,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 3,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 4,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 5,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 6,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 7,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 8,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 9,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 10,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 11,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Gmaj7",
+    "semitones": 12,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -12,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -11,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -10,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -9,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -8,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -7,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -6,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -5,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -4,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -3,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -2,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": -1,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 0,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 1,
+    "output": "A#maj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 2,
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 3,
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 4,
+    "output": "C#maj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 5,
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 6,
+    "output": "D#maj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 7,
+    "output": "Emaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 8,
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 9,
+    "output": "F#maj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 10,
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 11,
+    "output": "G#maj7"
+  },
+  {
+    "input": "Amaj7",
+    "semitones": 12,
+    "output": "Amaj7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -12,
+    "output": "Am7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -11,
+    "output": "A#m7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -10,
+    "output": "Bm7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -9,
+    "output": "Cm7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -8,
+    "output": "C#m7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -7,
+    "output": "Dm7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -6,
+    "output": "D#m7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -5,
+    "output": "Em7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -4,
+    "output": "Fm7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -3,
+    "output": "F#m7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -2,
+    "output": "Gm7"
+  },
+  {
+    "input": "Am7",
+    "semitones": -1,
+    "output": "G#m7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 0,
+    "output": "Am7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 1,
+    "output": "A#m7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 2,
+    "output": "Bm7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 3,
+    "output": "Cm7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 4,
+    "output": "C#m7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 5,
+    "output": "Dm7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 6,
+    "output": "D#m7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 7,
+    "output": "Em7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 8,
+    "output": "Fm7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 9,
+    "output": "F#m7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 10,
+    "output": "Gm7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 11,
+    "output": "G#m7"
+  },
+  {
+    "input": "Am7",
+    "semitones": 12,
+    "output": "Am7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -12,
+    "output": "Bm7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -11,
+    "output": "Cm7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -10,
+    "output": "C#m7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -9,
+    "output": "Dm7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -8,
+    "output": "D#m7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -7,
+    "output": "Em7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -6,
+    "output": "Fm7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -5,
+    "output": "F#m7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -4,
+    "output": "Gm7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -3,
+    "output": "G#m7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -2,
+    "output": "Am7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": -1,
+    "output": "A#m7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 0,
+    "output": "Bm7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 1,
+    "output": "Cm7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 2,
+    "output": "C#m7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 3,
+    "output": "Dm7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 4,
+    "output": "D#m7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 5,
+    "output": "Em7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 6,
+    "output": "Fm7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 7,
+    "output": "F#m7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 8,
+    "output": "Gm7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 9,
+    "output": "G#m7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 10,
+    "output": "Am7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 11,
+    "output": "A#m7"
+  },
+  {
+    "input": "Bm7",
+    "semitones": 12,
+    "output": "Bm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -12,
+    "output": "Cm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -11,
+    "output": "C#m7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -10,
+    "output": "Dm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -9,
+    "output": "D#m7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -8,
+    "output": "Em7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -7,
+    "output": "Fm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -6,
+    "output": "F#m7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -5,
+    "output": "Gm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -4,
+    "output": "G#m7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -3,
+    "output": "Am7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -2,
+    "output": "A#m7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": -1,
+    "output": "Bm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 0,
+    "output": "Cm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 1,
+    "output": "C#m7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 2,
+    "output": "Dm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 3,
+    "output": "D#m7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 4,
+    "output": "Em7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 5,
+    "output": "Fm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 6,
+    "output": "F#m7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 7,
+    "output": "Gm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 8,
+    "output": "G#m7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 9,
+    "output": "Am7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 10,
+    "output": "A#m7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 11,
+    "output": "Bm7"
+  },
+  {
+    "input": "Cm7",
+    "semitones": 12,
+    "output": "Cm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -12,
+    "output": "Dm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -11,
+    "output": "D#m7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -10,
+    "output": "Em7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -9,
+    "output": "Fm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -8,
+    "output": "F#m7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -7,
+    "output": "Gm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -6,
+    "output": "G#m7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -5,
+    "output": "Am7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -4,
+    "output": "A#m7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -3,
+    "output": "Bm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -2,
+    "output": "Cm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": -1,
+    "output": "C#m7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 0,
+    "output": "Dm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 1,
+    "output": "D#m7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 2,
+    "output": "Em7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 3,
+    "output": "Fm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 4,
+    "output": "F#m7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 5,
+    "output": "Gm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 6,
+    "output": "G#m7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 7,
+    "output": "Am7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 8,
+    "output": "A#m7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 9,
+    "output": "Bm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 10,
+    "output": "Cm7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 11,
+    "output": "C#m7"
+  },
+  {
+    "input": "Dm7",
+    "semitones": 12,
+    "output": "Dm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -12,
+    "output": "Em7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -11,
+    "output": "Fm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -10,
+    "output": "F#m7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -9,
+    "output": "Gm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -8,
+    "output": "G#m7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -7,
+    "output": "Am7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -6,
+    "output": "A#m7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -5,
+    "output": "Bm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -4,
+    "output": "Cm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -3,
+    "output": "C#m7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -2,
+    "output": "Dm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": -1,
+    "output": "D#m7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 0,
+    "output": "Em7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 1,
+    "output": "Fm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 2,
+    "output": "F#m7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 3,
+    "output": "Gm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 4,
+    "output": "G#m7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 5,
+    "output": "Am7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 6,
+    "output": "A#m7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 7,
+    "output": "Bm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 8,
+    "output": "Cm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 9,
+    "output": "C#m7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 10,
+    "output": "Dm7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 11,
+    "output": "D#m7"
+  },
+  {
+    "input": "Em7",
+    "semitones": 12,
+    "output": "Em7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -12,
+    "output": "Fm7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -11,
+    "output": "F#m7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -10,
+    "output": "Gm7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -9,
+    "output": "G#m7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -8,
+    "output": "Am7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -7,
+    "output": "A#m7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -6,
+    "output": "Bm7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -5,
+    "output": "Cm7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -4,
+    "output": "C#m7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -3,
+    "output": "Dm7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -2,
+    "output": "D#m7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": -1,
+    "output": "Em7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 0,
+    "output": "Fm7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 1,
+    "output": "F#m7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 2,
+    "output": "Gm7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 3,
+    "output": "G#m7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 4,
+    "output": "Am7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 5,
+    "output": "A#m7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 6,
+    "output": "Bm7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 7,
+    "output": "Cm7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 8,
+    "output": "C#m7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 9,
+    "output": "Dm7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 10,
+    "output": "D#m7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 11,
+    "output": "Em7"
+  },
+  {
+    "input": "Fm7",
+    "semitones": 12,
+    "output": "Fm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -12,
+    "output": "Gm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -11,
+    "output": "G#m7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -10,
+    "output": "Am7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -9,
+    "output": "A#m7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -8,
+    "output": "Bm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -7,
+    "output": "Cm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -6,
+    "output": "C#m7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -5,
+    "output": "Dm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -4,
+    "output": "D#m7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -3,
+    "output": "Em7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -2,
+    "output": "Fm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": -1,
+    "output": "F#m7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 0,
+    "output": "Gm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 1,
+    "output": "G#m7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 2,
+    "output": "Am7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 3,
+    "output": "A#m7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 4,
+    "output": "Bm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 5,
+    "output": "Cm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 6,
+    "output": "C#m7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 7,
+    "output": "Dm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 8,
+    "output": "D#m7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 9,
+    "output": "Em7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 10,
+    "output": "Fm7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 11,
+    "output": "F#m7"
+  },
+  {
+    "input": "Gm7",
+    "semitones": 12,
+    "output": "Gm7"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -12,
+    "output": "Asus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -11,
+    "output": "A#sus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -10,
+    "output": "Bsus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -9,
+    "output": "Csus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -8,
+    "output": "C#sus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -7,
+    "output": "Dsus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -6,
+    "output": "D#sus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -5,
+    "output": "Esus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -4,
+    "output": "Fsus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -3,
+    "output": "F#sus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -2,
+    "output": "Gsus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": -1,
+    "output": "G#sus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 0,
+    "output": "Asus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 1,
+    "output": "A#sus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 2,
+    "output": "Bsus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 3,
+    "output": "Csus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 4,
+    "output": "C#sus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 5,
+    "output": "Dsus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 6,
+    "output": "D#sus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 7,
+    "output": "Esus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 8,
+    "output": "Fsus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 9,
+    "output": "F#sus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 10,
+    "output": "Gsus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 11,
+    "output": "G#sus2"
+  },
+  {
+    "input": "Asus2",
+    "semitones": 12,
+    "output": "Asus2"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -12,
+    "output": "Asus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -11,
+    "output": "A#sus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -10,
+    "output": "Bsus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -9,
+    "output": "Csus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -8,
+    "output": "C#sus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -7,
+    "output": "Dsus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -6,
+    "output": "D#sus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -5,
+    "output": "Esus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -4,
+    "output": "Fsus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -3,
+    "output": "F#sus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -2,
+    "output": "Gsus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": -1,
+    "output": "G#sus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 0,
+    "output": "Asus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 1,
+    "output": "A#sus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 2,
+    "output": "Bsus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 3,
+    "output": "Csus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 4,
+    "output": "C#sus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 5,
+    "output": "Dsus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 6,
+    "output": "D#sus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 7,
+    "output": "Esus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 8,
+    "output": "Fsus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 9,
+    "output": "F#sus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 10,
+    "output": "Gsus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 11,
+    "output": "G#sus4"
+  },
+  {
+    "input": "Asus4",
+    "semitones": 12,
+    "output": "Asus4"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -12,
+    "output": "Dsus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -11,
+    "output": "D#sus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -10,
+    "output": "Esus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -9,
+    "output": "Fsus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -8,
+    "output": "F#sus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -7,
+    "output": "Gsus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -6,
+    "output": "G#sus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -5,
+    "output": "Asus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -4,
+    "output": "A#sus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -3,
+    "output": "Bsus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -2,
+    "output": "Csus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": -1,
+    "output": "C#sus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 0,
+    "output": "Dsus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 1,
+    "output": "D#sus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 2,
+    "output": "Esus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 3,
+    "output": "Fsus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 4,
+    "output": "F#sus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 5,
+    "output": "Gsus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 6,
+    "output": "G#sus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 7,
+    "output": "Asus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 8,
+    "output": "A#sus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 9,
+    "output": "Bsus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 10,
+    "output": "Csus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 11,
+    "output": "C#sus2"
+  },
+  {
+    "input": "Dsus2",
+    "semitones": 12,
+    "output": "Dsus2"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -12,
+    "output": "Dsus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -11,
+    "output": "D#sus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -10,
+    "output": "Esus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -9,
+    "output": "Fsus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -8,
+    "output": "F#sus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -7,
+    "output": "Gsus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -6,
+    "output": "G#sus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -5,
+    "output": "Asus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -4,
+    "output": "A#sus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -3,
+    "output": "Bsus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -2,
+    "output": "Csus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": -1,
+    "output": "C#sus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 0,
+    "output": "Dsus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 1,
+    "output": "D#sus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 2,
+    "output": "Esus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 3,
+    "output": "Fsus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 4,
+    "output": "F#sus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 5,
+    "output": "Gsus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 6,
+    "output": "G#sus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 7,
+    "output": "Asus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 8,
+    "output": "A#sus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 9,
+    "output": "Bsus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 10,
+    "output": "Csus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 11,
+    "output": "C#sus4"
+  },
+  {
+    "input": "Dsus4",
+    "semitones": 12,
+    "output": "Dsus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -12,
+    "output": "Esus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -11,
+    "output": "Fsus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -10,
+    "output": "F#sus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -9,
+    "output": "Gsus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -8,
+    "output": "G#sus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -7,
+    "output": "Asus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -6,
+    "output": "A#sus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -5,
+    "output": "Bsus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -4,
+    "output": "Csus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -3,
+    "output": "C#sus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -2,
+    "output": "Dsus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": -1,
+    "output": "D#sus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 0,
+    "output": "Esus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 1,
+    "output": "Fsus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 2,
+    "output": "F#sus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 3,
+    "output": "Gsus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 4,
+    "output": "G#sus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 5,
+    "output": "Asus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 6,
+    "output": "A#sus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 7,
+    "output": "Bsus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 8,
+    "output": "Csus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 9,
+    "output": "C#sus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 10,
+    "output": "Dsus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 11,
+    "output": "D#sus4"
+  },
+  {
+    "input": "Esus4",
+    "semitones": 12,
+    "output": "Esus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -12,
+    "output": "Gsus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -11,
+    "output": "G#sus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -10,
+    "output": "Asus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -9,
+    "output": "A#sus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -8,
+    "output": "Bsus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -7,
+    "output": "Csus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -6,
+    "output": "C#sus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -5,
+    "output": "Dsus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -4,
+    "output": "D#sus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -3,
+    "output": "Esus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -2,
+    "output": "Fsus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": -1,
+    "output": "F#sus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 0,
+    "output": "Gsus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 1,
+    "output": "G#sus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 2,
+    "output": "Asus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 3,
+    "output": "A#sus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 4,
+    "output": "Bsus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 5,
+    "output": "Csus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 6,
+    "output": "C#sus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 7,
+    "output": "Dsus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 8,
+    "output": "D#sus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 9,
+    "output": "Esus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 10,
+    "output": "Fsus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 11,
+    "output": "F#sus4"
+  },
+  {
+    "input": "Gsus4",
+    "semitones": 12,
+    "output": "Gsus4"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -12,
+    "output": "Cadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -11,
+    "output": "C#add9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -10,
+    "output": "Dadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -9,
+    "output": "D#add9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -8,
+    "output": "Eadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -7,
+    "output": "Fadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -6,
+    "output": "F#add9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -5,
+    "output": "Gadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -4,
+    "output": "G#add9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -3,
+    "output": "Aadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -2,
+    "output": "A#add9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": -1,
+    "output": "Badd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 0,
+    "output": "Cadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 1,
+    "output": "C#add9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 2,
+    "output": "Dadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 3,
+    "output": "D#add9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 4,
+    "output": "Eadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 5,
+    "output": "Fadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 6,
+    "output": "F#add9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 7,
+    "output": "Gadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 8,
+    "output": "G#add9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 9,
+    "output": "Aadd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 10,
+    "output": "A#add9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 11,
+    "output": "Badd9"
+  },
+  {
+    "input": "Cadd9",
+    "semitones": 12,
+    "output": "Cadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -12,
+    "output": "Gadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -11,
+    "output": "G#add9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -10,
+    "output": "Aadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -9,
+    "output": "A#add9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -8,
+    "output": "Badd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -7,
+    "output": "Cadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -6,
+    "output": "C#add9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -5,
+    "output": "Dadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -4,
+    "output": "D#add9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -3,
+    "output": "Eadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -2,
+    "output": "Fadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": -1,
+    "output": "F#add9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 0,
+    "output": "Gadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 1,
+    "output": "G#add9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 2,
+    "output": "Aadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 3,
+    "output": "A#add9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 4,
+    "output": "Badd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 5,
+    "output": "Cadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 6,
+    "output": "C#add9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 7,
+    "output": "Dadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 8,
+    "output": "D#add9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 9,
+    "output": "Eadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 10,
+    "output": "Fadd9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 11,
+    "output": "F#add9"
+  },
+  {
+    "input": "Gadd9",
+    "semitones": 12,
+    "output": "Gadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -12,
+    "output": "Dadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -11,
+    "output": "D#add9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -10,
+    "output": "Eadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -9,
+    "output": "Fadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -8,
+    "output": "F#add9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -7,
+    "output": "Gadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -6,
+    "output": "G#add9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -5,
+    "output": "Aadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -4,
+    "output": "A#add9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -3,
+    "output": "Badd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -2,
+    "output": "Cadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": -1,
+    "output": "C#add9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 0,
+    "output": "Dadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 1,
+    "output": "D#add9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 2,
+    "output": "Eadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 3,
+    "output": "Fadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 4,
+    "output": "F#add9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 5,
+    "output": "Gadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 6,
+    "output": "G#add9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 7,
+    "output": "Aadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 8,
+    "output": "A#add9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 9,
+    "output": "Badd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 10,
+    "output": "Cadd9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 11,
+    "output": "C#add9"
+  },
+  {
+    "input": "Dadd9",
+    "semitones": 12,
+    "output": "Dadd9"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -12,
+    "output": "Bdim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -11,
+    "output": "Cdim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -10,
+    "output": "C#dim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -9,
+    "output": "Ddim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -8,
+    "output": "D#dim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -7,
+    "output": "Edim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -6,
+    "output": "Fdim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -5,
+    "output": "F#dim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -4,
+    "output": "Gdim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -3,
+    "output": "G#dim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -2,
+    "output": "Adim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": -1,
+    "output": "A#dim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 0,
+    "output": "Bdim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 1,
+    "output": "Cdim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 2,
+    "output": "C#dim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 3,
+    "output": "Ddim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 4,
+    "output": "D#dim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 5,
+    "output": "Edim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 6,
+    "output": "Fdim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 7,
+    "output": "F#dim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 8,
+    "output": "Gdim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 9,
+    "output": "G#dim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 10,
+    "output": "Adim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 11,
+    "output": "A#dim"
+  },
+  {
+    "input": "Bdim",
+    "semitones": 12,
+    "output": "Bdim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -12,
+    "output": "Adim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -11,
+    "output": "A#dim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -10,
+    "output": "Bdim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -9,
+    "output": "Cdim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -8,
+    "output": "C#dim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -7,
+    "output": "Ddim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -6,
+    "output": "D#dim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -5,
+    "output": "Edim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -4,
+    "output": "Fdim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -3,
+    "output": "F#dim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -2,
+    "output": "Gdim"
+  },
+  {
+    "input": "Adim",
+    "semitones": -1,
+    "output": "G#dim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 0,
+    "output": "Adim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 1,
+    "output": "A#dim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 2,
+    "output": "Bdim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 3,
+    "output": "Cdim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 4,
+    "output": "C#dim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 5,
+    "output": "Ddim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 6,
+    "output": "D#dim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 7,
+    "output": "Edim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 8,
+    "output": "Fdim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 9,
+    "output": "F#dim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 10,
+    "output": "Gdim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 11,
+    "output": "G#dim"
+  },
+  {
+    "input": "Adim",
+    "semitones": 12,
+    "output": "Adim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -12,
+    "output": "Edim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -11,
+    "output": "Fdim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -10,
+    "output": "F#dim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -9,
+    "output": "Gdim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -8,
+    "output": "G#dim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -7,
+    "output": "Adim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -6,
+    "output": "A#dim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -5,
+    "output": "Bdim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -4,
+    "output": "Cdim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -3,
+    "output": "C#dim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -2,
+    "output": "Ddim"
+  },
+  {
+    "input": "Edim",
+    "semitones": -1,
+    "output": "D#dim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 0,
+    "output": "Edim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 1,
+    "output": "Fdim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 2,
+    "output": "F#dim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 3,
+    "output": "Gdim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 4,
+    "output": "G#dim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 5,
+    "output": "Adim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 6,
+    "output": "A#dim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 7,
+    "output": "Bdim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 8,
+    "output": "Cdim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 9,
+    "output": "C#dim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 10,
+    "output": "Ddim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 11,
+    "output": "D#dim"
+  },
+  {
+    "input": "Edim",
+    "semitones": 12,
+    "output": "Edim"
+  },
+  {
+    "input": "C6",
+    "semitones": -12,
+    "output": "C6"
+  },
+  {
+    "input": "C6",
+    "semitones": -11,
+    "output": "C#6"
+  },
+  {
+    "input": "C6",
+    "semitones": -10,
+    "output": "D6"
+  },
+  {
+    "input": "C6",
+    "semitones": -9,
+    "output": "D#6"
+  },
+  {
+    "input": "C6",
+    "semitones": -8,
+    "output": "E6"
+  },
+  {
+    "input": "C6",
+    "semitones": -7,
+    "output": "F6"
+  },
+  {
+    "input": "C6",
+    "semitones": -6,
+    "output": "F#6"
+  },
+  {
+    "input": "C6",
+    "semitones": -5,
+    "output": "G6"
+  },
+  {
+    "input": "C6",
+    "semitones": -4,
+    "output": "G#6"
+  },
+  {
+    "input": "C6",
+    "semitones": -3,
+    "output": "A6"
+  },
+  {
+    "input": "C6",
+    "semitones": -2,
+    "output": "A#6"
+  },
+  {
+    "input": "C6",
+    "semitones": -1,
+    "output": "B6"
+  },
+  {
+    "input": "C6",
+    "semitones": 0,
+    "output": "C6"
+  },
+  {
+    "input": "C6",
+    "semitones": 1,
+    "output": "C#6"
+  },
+  {
+    "input": "C6",
+    "semitones": 2,
+    "output": "D6"
+  },
+  {
+    "input": "C6",
+    "semitones": 3,
+    "output": "D#6"
+  },
+  {
+    "input": "C6",
+    "semitones": 4,
+    "output": "E6"
+  },
+  {
+    "input": "C6",
+    "semitones": 5,
+    "output": "F6"
+  },
+  {
+    "input": "C6",
+    "semitones": 6,
+    "output": "F#6"
+  },
+  {
+    "input": "C6",
+    "semitones": 7,
+    "output": "G6"
+  },
+  {
+    "input": "C6",
+    "semitones": 8,
+    "output": "G#6"
+  },
+  {
+    "input": "C6",
+    "semitones": 9,
+    "output": "A6"
+  },
+  {
+    "input": "C6",
+    "semitones": 10,
+    "output": "A#6"
+  },
+  {
+    "input": "C6",
+    "semitones": 11,
+    "output": "B6"
+  },
+  {
+    "input": "C6",
+    "semitones": 12,
+    "output": "C6"
+  },
+  {
+    "input": "D6",
+    "semitones": -12,
+    "output": "D6"
+  },
+  {
+    "input": "D6",
+    "semitones": -11,
+    "output": "D#6"
+  },
+  {
+    "input": "D6",
+    "semitones": -10,
+    "output": "E6"
+  },
+  {
+    "input": "D6",
+    "semitones": -9,
+    "output": "F6"
+  },
+  {
+    "input": "D6",
+    "semitones": -8,
+    "output": "F#6"
+  },
+  {
+    "input": "D6",
+    "semitones": -7,
+    "output": "G6"
+  },
+  {
+    "input": "D6",
+    "semitones": -6,
+    "output": "G#6"
+  },
+  {
+    "input": "D6",
+    "semitones": -5,
+    "output": "A6"
+  },
+  {
+    "input": "D6",
+    "semitones": -4,
+    "output": "A#6"
+  },
+  {
+    "input": "D6",
+    "semitones": -3,
+    "output": "B6"
+  },
+  {
+    "input": "D6",
+    "semitones": -2,
+    "output": "C6"
+  },
+  {
+    "input": "D6",
+    "semitones": -1,
+    "output": "C#6"
+  },
+  {
+    "input": "D6",
+    "semitones": 0,
+    "output": "D6"
+  },
+  {
+    "input": "D6",
+    "semitones": 1,
+    "output": "D#6"
+  },
+  {
+    "input": "D6",
+    "semitones": 2,
+    "output": "E6"
+  },
+  {
+    "input": "D6",
+    "semitones": 3,
+    "output": "F6"
+  },
+  {
+    "input": "D6",
+    "semitones": 4,
+    "output": "F#6"
+  },
+  {
+    "input": "D6",
+    "semitones": 5,
+    "output": "G6"
+  },
+  {
+    "input": "D6",
+    "semitones": 6,
+    "output": "G#6"
+  },
+  {
+    "input": "D6",
+    "semitones": 7,
+    "output": "A6"
+  },
+  {
+    "input": "D6",
+    "semitones": 8,
+    "output": "A#6"
+  },
+  {
+    "input": "D6",
+    "semitones": 9,
+    "output": "B6"
+  },
+  {
+    "input": "D6",
+    "semitones": 10,
+    "output": "C6"
+  },
+  {
+    "input": "D6",
+    "semitones": 11,
+    "output": "C#6"
+  },
+  {
+    "input": "D6",
+    "semitones": 12,
+    "output": "D6"
+  },
+  {
+    "input": "G6",
+    "semitones": -12,
+    "output": "G6"
+  },
+  {
+    "input": "G6",
+    "semitones": -11,
+    "output": "G#6"
+  },
+  {
+    "input": "G6",
+    "semitones": -10,
+    "output": "A6"
+  },
+  {
+    "input": "G6",
+    "semitones": -9,
+    "output": "A#6"
+  },
+  {
+    "input": "G6",
+    "semitones": -8,
+    "output": "B6"
+  },
+  {
+    "input": "G6",
+    "semitones": -7,
+    "output": "C6"
+  },
+  {
+    "input": "G6",
+    "semitones": -6,
+    "output": "C#6"
+  },
+  {
+    "input": "G6",
+    "semitones": -5,
+    "output": "D6"
+  },
+  {
+    "input": "G6",
+    "semitones": -4,
+    "output": "D#6"
+  },
+  {
+    "input": "G6",
+    "semitones": -3,
+    "output": "E6"
+  },
+  {
+    "input": "G6",
+    "semitones": -2,
+    "output": "F6"
+  },
+  {
+    "input": "G6",
+    "semitones": -1,
+    "output": "F#6"
+  },
+  {
+    "input": "G6",
+    "semitones": 0,
+    "output": "G6"
+  },
+  {
+    "input": "G6",
+    "semitones": 1,
+    "output": "G#6"
+  },
+  {
+    "input": "G6",
+    "semitones": 2,
+    "output": "A6"
+  },
+  {
+    "input": "G6",
+    "semitones": 3,
+    "output": "A#6"
+  },
+  {
+    "input": "G6",
+    "semitones": 4,
+    "output": "B6"
+  },
+  {
+    "input": "G6",
+    "semitones": 5,
+    "output": "C6"
+  },
+  {
+    "input": "G6",
+    "semitones": 6,
+    "output": "C#6"
+  },
+  {
+    "input": "G6",
+    "semitones": 7,
+    "output": "D6"
+  },
+  {
+    "input": "G6",
+    "semitones": 8,
+    "output": "D#6"
+  },
+  {
+    "input": "G6",
+    "semitones": 9,
+    "output": "E6"
+  },
+  {
+    "input": "G6",
+    "semitones": 10,
+    "output": "F6"
+  },
+  {
+    "input": "G6",
+    "semitones": 11,
+    "output": "F#6"
+  },
+  {
+    "input": "G6",
+    "semitones": 12,
+    "output": "G6"
+  },
+  {
+    "input": "A6",
+    "semitones": -12,
+    "output": "A6"
+  },
+  {
+    "input": "A6",
+    "semitones": -11,
+    "output": "A#6"
+  },
+  {
+    "input": "A6",
+    "semitones": -10,
+    "output": "B6"
+  },
+  {
+    "input": "A6",
+    "semitones": -9,
+    "output": "C6"
+  },
+  {
+    "input": "A6",
+    "semitones": -8,
+    "output": "C#6"
+  },
+  {
+    "input": "A6",
+    "semitones": -7,
+    "output": "D6"
+  },
+  {
+    "input": "A6",
+    "semitones": -6,
+    "output": "D#6"
+  },
+  {
+    "input": "A6",
+    "semitones": -5,
+    "output": "E6"
+  },
+  {
+    "input": "A6",
+    "semitones": -4,
+    "output": "F6"
+  },
+  {
+    "input": "A6",
+    "semitones": -3,
+    "output": "F#6"
+  },
+  {
+    "input": "A6",
+    "semitones": -2,
+    "output": "G6"
+  },
+  {
+    "input": "A6",
+    "semitones": -1,
+    "output": "G#6"
+  },
+  {
+    "input": "A6",
+    "semitones": 0,
+    "output": "A6"
+  },
+  {
+    "input": "A6",
+    "semitones": 1,
+    "output": "A#6"
+  },
+  {
+    "input": "A6",
+    "semitones": 2,
+    "output": "B6"
+  },
+  {
+    "input": "A6",
+    "semitones": 3,
+    "output": "C6"
+  },
+  {
+    "input": "A6",
+    "semitones": 4,
+    "output": "C#6"
+  },
+  {
+    "input": "A6",
+    "semitones": 5,
+    "output": "D6"
+  },
+  {
+    "input": "A6",
+    "semitones": 6,
+    "output": "D#6"
+  },
+  {
+    "input": "A6",
+    "semitones": 7,
+    "output": "E6"
+  },
+  {
+    "input": "A6",
+    "semitones": 8,
+    "output": "F6"
+  },
+  {
+    "input": "A6",
+    "semitones": 9,
+    "output": "F#6"
+  },
+  {
+    "input": "A6",
+    "semitones": 10,
+    "output": "G6"
+  },
+  {
+    "input": "A6",
+    "semitones": 11,
+    "output": "G#6"
+  },
+  {
+    "input": "A6",
+    "semitones": 12,
+    "output": "A6"
+  },
+  {
+    "input": "Caug",
+    "semitones": -12,
+    "output": "Caug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -11,
+    "output": "C#aug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -10,
+    "output": "Daug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -9,
+    "output": "D#aug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -8,
+    "output": "Eaug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -7,
+    "output": "Faug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -6,
+    "output": "F#aug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -5,
+    "output": "Gaug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -4,
+    "output": "G#aug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -3,
+    "output": "Aaug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -2,
+    "output": "A#aug"
+  },
+  {
+    "input": "Caug",
+    "semitones": -1,
+    "output": "Baug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 0,
+    "output": "Caug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 1,
+    "output": "C#aug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 2,
+    "output": "Daug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 3,
+    "output": "D#aug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 4,
+    "output": "Eaug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 5,
+    "output": "Faug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 6,
+    "output": "F#aug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 7,
+    "output": "Gaug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 8,
+    "output": "G#aug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 9,
+    "output": "Aaug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 10,
+    "output": "A#aug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 11,
+    "output": "Baug"
+  },
+  {
+    "input": "Caug",
+    "semitones": 12,
+    "output": "Caug"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -12,
+    "output": "Cdim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -11,
+    "output": "C#dim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -10,
+    "output": "Ddim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -9,
+    "output": "D#dim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -8,
+    "output": "Edim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -7,
+    "output": "Fdim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -6,
+    "output": "F#dim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -5,
+    "output": "Gdim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -4,
+    "output": "G#dim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -3,
+    "output": "Adim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -2,
+    "output": "A#dim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": -1,
+    "output": "Bdim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 0,
+    "output": "Cdim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 1,
+    "output": "C#dim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 2,
+    "output": "Ddim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 3,
+    "output": "D#dim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 4,
+    "output": "Edim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 5,
+    "output": "Fdim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 6,
+    "output": "F#dim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 7,
+    "output": "Gdim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 8,
+    "output": "G#dim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 9,
+    "output": "Adim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 10,
+    "output": "A#dim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 11,
+    "output": "Bdim7"
+  },
+  {
+    "input": "Cdim7",
+    "semitones": 12,
+    "output": "Cdim7"
+  },
+  {
+    "input": "A5",
+    "semitones": -12,
+    "output": "A5"
+  },
+  {
+    "input": "A5",
+    "semitones": -11,
+    "output": "A#5"
+  },
+  {
+    "input": "A5",
+    "semitones": -10,
+    "output": "B5"
+  },
+  {
+    "input": "A5",
+    "semitones": -9,
+    "output": "C5"
+  },
+  {
+    "input": "A5",
+    "semitones": -8,
+    "output": "C#5"
+  },
+  {
+    "input": "A5",
+    "semitones": -7,
+    "output": "D5"
+  },
+  {
+    "input": "A5",
+    "semitones": -6,
+    "output": "D#5"
+  },
+  {
+    "input": "A5",
+    "semitones": -5,
+    "output": "E5"
+  },
+  {
+    "input": "A5",
+    "semitones": -4,
+    "output": "F5"
+  },
+  {
+    "input": "A5",
+    "semitones": -3,
+    "output": "F#5"
+  },
+  {
+    "input": "A5",
+    "semitones": -2,
+    "output": "G5"
+  },
+  {
+    "input": "A5",
+    "semitones": -1,
+    "output": "G#5"
+  },
+  {
+    "input": "A5",
+    "semitones": 0,
+    "output": "A5"
+  },
+  {
+    "input": "A5",
+    "semitones": 1,
+    "output": "A#5"
+  },
+  {
+    "input": "A5",
+    "semitones": 2,
+    "output": "B5"
+  },
+  {
+    "input": "A5",
+    "semitones": 3,
+    "output": "C5"
+  },
+  {
+    "input": "A5",
+    "semitones": 4,
+    "output": "C#5"
+  },
+  {
+    "input": "A5",
+    "semitones": 5,
+    "output": "D5"
+  },
+  {
+    "input": "A5",
+    "semitones": 6,
+    "output": "D#5"
+  },
+  {
+    "input": "A5",
+    "semitones": 7,
+    "output": "E5"
+  },
+  {
+    "input": "A5",
+    "semitones": 8,
+    "output": "F5"
+  },
+  {
+    "input": "A5",
+    "semitones": 9,
+    "output": "F#5"
+  },
+  {
+    "input": "A5",
+    "semitones": 10,
+    "output": "G5"
+  },
+  {
+    "input": "A5",
+    "semitones": 11,
+    "output": "G#5"
+  },
+  {
+    "input": "A5",
+    "semitones": 12,
+    "output": "A5"
+  },
+  {
+    "input": "E5",
+    "semitones": -12,
+    "output": "E5"
+  },
+  {
+    "input": "E5",
+    "semitones": -11,
+    "output": "F5"
+  },
+  {
+    "input": "E5",
+    "semitones": -10,
+    "output": "F#5"
+  },
+  {
+    "input": "E5",
+    "semitones": -9,
+    "output": "G5"
+  },
+  {
+    "input": "E5",
+    "semitones": -8,
+    "output": "G#5"
+  },
+  {
+    "input": "E5",
+    "semitones": -7,
+    "output": "A5"
+  },
+  {
+    "input": "E5",
+    "semitones": -6,
+    "output": "A#5"
+  },
+  {
+    "input": "E5",
+    "semitones": -5,
+    "output": "B5"
+  },
+  {
+    "input": "E5",
+    "semitones": -4,
+    "output": "C5"
+  },
+  {
+    "input": "E5",
+    "semitones": -3,
+    "output": "C#5"
+  },
+  {
+    "input": "E5",
+    "semitones": -2,
+    "output": "D5"
+  },
+  {
+    "input": "E5",
+    "semitones": -1,
+    "output": "D#5"
+  },
+  {
+    "input": "E5",
+    "semitones": 0,
+    "output": "E5"
+  },
+  {
+    "input": "E5",
+    "semitones": 1,
+    "output": "F5"
+  },
+  {
+    "input": "E5",
+    "semitones": 2,
+    "output": "F#5"
+  },
+  {
+    "input": "E5",
+    "semitones": 3,
+    "output": "G5"
+  },
+  {
+    "input": "E5",
+    "semitones": 4,
+    "output": "G#5"
+  },
+  {
+    "input": "E5",
+    "semitones": 5,
+    "output": "A5"
+  },
+  {
+    "input": "E5",
+    "semitones": 6,
+    "output": "A#5"
+  },
+  {
+    "input": "E5",
+    "semitones": 7,
+    "output": "B5"
+  },
+  {
+    "input": "E5",
+    "semitones": 8,
+    "output": "C5"
+  },
+  {
+    "input": "E5",
+    "semitones": 9,
+    "output": "C#5"
+  },
+  {
+    "input": "E5",
+    "semitones": 10,
+    "output": "D5"
+  },
+  {
+    "input": "E5",
+    "semitones": 11,
+    "output": "D#5"
+  },
+  {
+    "input": "E5",
+    "semitones": 12,
+    "output": "E5"
+  },
+  {
+    "input": "G5",
+    "semitones": -12,
+    "output": "G5"
+  },
+  {
+    "input": "G5",
+    "semitones": -11,
+    "output": "G#5"
+  },
+  {
+    "input": "G5",
+    "semitones": -10,
+    "output": "A5"
+  },
+  {
+    "input": "G5",
+    "semitones": -9,
+    "output": "A#5"
+  },
+  {
+    "input": "G5",
+    "semitones": -8,
+    "output": "B5"
+  },
+  {
+    "input": "G5",
+    "semitones": -7,
+    "output": "C5"
+  },
+  {
+    "input": "G5",
+    "semitones": -6,
+    "output": "C#5"
+  },
+  {
+    "input": "G5",
+    "semitones": -5,
+    "output": "D5"
+  },
+  {
+    "input": "G5",
+    "semitones": -4,
+    "output": "D#5"
+  },
+  {
+    "input": "G5",
+    "semitones": -3,
+    "output": "E5"
+  },
+  {
+    "input": "G5",
+    "semitones": -2,
+    "output": "F5"
+  },
+  {
+    "input": "G5",
+    "semitones": -1,
+    "output": "F#5"
+  },
+  {
+    "input": "G5",
+    "semitones": 0,
+    "output": "G5"
+  },
+  {
+    "input": "G5",
+    "semitones": 1,
+    "output": "G#5"
+  },
+  {
+    "input": "G5",
+    "semitones": 2,
+    "output": "A5"
+  },
+  {
+    "input": "G5",
+    "semitones": 3,
+    "output": "A#5"
+  },
+  {
+    "input": "G5",
+    "semitones": 4,
+    "output": "B5"
+  },
+  {
+    "input": "G5",
+    "semitones": 5,
+    "output": "C5"
+  },
+  {
+    "input": "G5",
+    "semitones": 6,
+    "output": "C#5"
+  },
+  {
+    "input": "G5",
+    "semitones": 7,
+    "output": "D5"
+  },
+  {
+    "input": "G5",
+    "semitones": 8,
+    "output": "D#5"
+  },
+  {
+    "input": "G5",
+    "semitones": 9,
+    "output": "E5"
+  },
+  {
+    "input": "G5",
+    "semitones": 10,
+    "output": "F5"
+  },
+  {
+    "input": "G5",
+    "semitones": 11,
+    "output": "F#5"
+  },
+  {
+    "input": "G5",
+    "semitones": 12,
+    "output": "G5"
+  },
+  {
+    "input": "D5",
+    "semitones": -12,
+    "output": "D5"
+  },
+  {
+    "input": "D5",
+    "semitones": -11,
+    "output": "D#5"
+  },
+  {
+    "input": "D5",
+    "semitones": -10,
+    "output": "E5"
+  },
+  {
+    "input": "D5",
+    "semitones": -9,
+    "output": "F5"
+  },
+  {
+    "input": "D5",
+    "semitones": -8,
+    "output": "F#5"
+  },
+  {
+    "input": "D5",
+    "semitones": -7,
+    "output": "G5"
+  },
+  {
+    "input": "D5",
+    "semitones": -6,
+    "output": "G#5"
+  },
+  {
+    "input": "D5",
+    "semitones": -5,
+    "output": "A5"
+  },
+  {
+    "input": "D5",
+    "semitones": -4,
+    "output": "A#5"
+  },
+  {
+    "input": "D5",
+    "semitones": -3,
+    "output": "B5"
+  },
+  {
+    "input": "D5",
+    "semitones": -2,
+    "output": "C5"
+  },
+  {
+    "input": "D5",
+    "semitones": -1,
+    "output": "C#5"
+  },
+  {
+    "input": "D5",
+    "semitones": 0,
+    "output": "D5"
+  },
+  {
+    "input": "D5",
+    "semitones": 1,
+    "output": "D#5"
+  },
+  {
+    "input": "D5",
+    "semitones": 2,
+    "output": "E5"
+  },
+  {
+    "input": "D5",
+    "semitones": 3,
+    "output": "F5"
+  },
+  {
+    "input": "D5",
+    "semitones": 4,
+    "output": "F#5"
+  },
+  {
+    "input": "D5",
+    "semitones": 5,
+    "output": "G5"
+  },
+  {
+    "input": "D5",
+    "semitones": 6,
+    "output": "G#5"
+  },
+  {
+    "input": "D5",
+    "semitones": 7,
+    "output": "A5"
+  },
+  {
+    "input": "D5",
+    "semitones": 8,
+    "output": "A#5"
+  },
+  {
+    "input": "D5",
+    "semitones": 9,
+    "output": "B5"
+  },
+  {
+    "input": "D5",
+    "semitones": 10,
+    "output": "C5"
+  },
+  {
+    "input": "D5",
+    "semitones": 11,
+    "output": "C#5"
+  },
+  {
+    "input": "D5",
+    "semitones": 12,
+    "output": "D5"
+  },
+  {
+    "input": "D/F#",
+    "semitones": -12,
+    "output": "D/F#"
+  },
+  {
+    "input": "D/F#",
+    "semitones": -7,
+    "output": "G/B"
+  },
+  {
+    "input": "D/F#",
+    "semitones": -1,
+    "output": "C#/F"
+  },
+  {
+    "input": "D/F#",
+    "semitones": 0,
+    "output": "D/F#"
+  },
+  {
+    "input": "D/F#",
+    "semitones": 1,
+    "output": "D#/G"
+  },
+  {
+    "input": "D/F#",
+    "semitones": 5,
+    "output": "G/B"
+  },
+  {
+    "input": "D/F#",
+    "semitones": 7,
+    "output": "A/C#"
+  },
+  {
+    "input": "D/F#",
+    "semitones": 12,
+    "output": "D/F#"
+  },
+  {
+    "input": "G/B",
+    "semitones": -12,
+    "output": "G/B"
+  },
+  {
+    "input": "G/B",
+    "semitones": -7,
+    "output": "C/E"
+  },
+  {
+    "input": "G/B",
+    "semitones": -1,
+    "output": "F#/A#"
+  },
+  {
+    "input": "G/B",
+    "semitones": 0,
+    "output": "G/B"
+  },
+  {
+    "input": "G/B",
+    "semitones": 1,
+    "output": "G#/C"
+  },
+  {
+    "input": "G/B",
+    "semitones": 5,
+    "output": "C/E"
+  },
+  {
+    "input": "G/B",
+    "semitones": 7,
+    "output": "D/F#"
+  },
+  {
+    "input": "G/B",
+    "semitones": 12,
+    "output": "G/B"
+  },
+  {
+    "input": "C/E",
+    "semitones": -12,
+    "output": "C/E"
+  },
+  {
+    "input": "C/E",
+    "semitones": -7,
+    "output": "F/A"
+  },
+  {
+    "input": "C/E",
+    "semitones": -1,
+    "output": "B/D#"
+  },
+  {
+    "input": "C/E",
+    "semitones": 0,
+    "output": "C/E"
+  },
+  {
+    "input": "C/E",
+    "semitones": 1,
+    "output": "C#/F"
+  },
+  {
+    "input": "C/E",
+    "semitones": 5,
+    "output": "F/A"
+  },
+  {
+    "input": "C/E",
+    "semitones": 7,
+    "output": "G/B"
+  },
+  {
+    "input": "C/E",
+    "semitones": 12,
+    "output": "C/E"
+  },
+  {
+    "input": "Am/C",
+    "semitones": -12,
+    "output": "Am/C"
+  },
+  {
+    "input": "Am/C",
+    "semitones": -7,
+    "output": "Dm/F"
+  },
+  {
+    "input": "Am/C",
+    "semitones": -1,
+    "output": "G#m/B"
+  },
+  {
+    "input": "Am/C",
+    "semitones": 0,
+    "output": "Am/C"
+  },
+  {
+    "input": "Am/C",
+    "semitones": 1,
+    "output": "A#m/C#"
+  },
+  {
+    "input": "Am/C",
+    "semitones": 5,
+    "output": "Dm/F"
+  },
+  {
+    "input": "Am/C",
+    "semitones": 7,
+    "output": "Em/G"
+  },
+  {
+    "input": "Am/C",
+    "semitones": 12,
+    "output": "Am/C"
+  },
+  {
+    "input": "F#m7/A",
+    "semitones": -12,
+    "output": "F#m7/A"
+  },
+  {
+    "input": "F#m7/A",
+    "semitones": -7,
+    "output": "Bm7/D"
+  },
+  {
+    "input": "F#m7/A",
+    "semitones": -1,
+    "output": "Fm7/G#"
+  },
+  {
+    "input": "F#m7/A",
+    "semitones": 0,
+    "output": "F#m7/A"
+  },
+  {
+    "input": "F#m7/A",
+    "semitones": 1,
+    "output": "Gm7/A#"
+  },
+  {
+    "input": "F#m7/A",
+    "semitones": 5,
+    "output": "Bm7/D"
+  },
+  {
+    "input": "F#m7/A",
+    "semitones": 7,
+    "output": "C#m7/E"
+  },
+  {
+    "input": "F#m7/A",
+    "semitones": 12,
+    "output": "F#m7/A"
+  }
+]

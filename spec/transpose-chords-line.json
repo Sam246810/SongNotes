@@ -1,0 +1,247 @@
+[
+  {
+    "input": "C       G       Am      F",
+    "semitones": -12,
+    "output": "C       G       Am      F"
+  },
+  {
+    "input": "C       G       Am      F",
+    "semitones": -5,
+    "output": "G       D       Em      C"
+  },
+  {
+    "input": "C       G       Am      F",
+    "semitones": -1,
+    "output": "B       F#       G#m      E"
+  },
+  {
+    "input": "C       G       Am      F",
+    "semitones": 0,
+    "output": "C       G       Am      F"
+  },
+  {
+    "input": "C       G       Am      F",
+    "semitones": 1,
+    "output": "C#       G#       A#m      F#"
+  },
+  {
+    "input": "C       G       Am      F",
+    "semitones": 5,
+    "output": "F       C       Dm      A#"
+  },
+  {
+    "input": "C       G       Am      F",
+    "semitones": 12,
+    "output": "C       G       Am      F"
+  },
+  {
+    "input": "D  A  Bm  G",
+    "semitones": -12,
+    "output": "D  A  Bm  G"
+  },
+  {
+    "input": "D  A  Bm  G",
+    "semitones": -5,
+    "output": "A  E  F#m  D"
+  },
+  {
+    "input": "D  A  Bm  G",
+    "semitones": -1,
+    "output": "C#  G#  A#m  F#"
+  },
+  {
+    "input": "D  A  Bm  G",
+    "semitones": 0,
+    "output": "D  A  Bm  G"
+  },
+  {
+    "input": "D  A  Bm  G",
+    "semitones": 1,
+    "output": "D#  A#  Cm  G#"
+  },
+  {
+    "input": "D  A  Bm  G",
+    "semitones": 5,
+    "output": "G  D  Em  C"
+  },
+  {
+    "input": "D  A  Bm  G",
+    "semitones": 12,
+    "output": "D  A  Bm  G"
+  },
+  {
+    "input": "Em7  Cmaj7  D  G",
+    "semitones": -12,
+    "output": "Em7  Cmaj7  D  G"
+  },
+  {
+    "input": "Em7  Cmaj7  D  G",
+    "semitones": -5,
+    "output": "Bm7  Gmaj7  A  D"
+  },
+  {
+    "input": "Em7  Cmaj7  D  G",
+    "semitones": -1,
+    "output": "D#m7  Bmaj7  C#  F#"
+  },
+  {
+    "input": "Em7  Cmaj7  D  G",
+    "semitones": 0,
+    "output": "Em7  Cmaj7  D  G"
+  },
+  {
+    "input": "Em7  Cmaj7  D  G",
+    "semitones": 1,
+    "output": "Fm7  C#maj7  D#  G#"
+  },
+  {
+    "input": "Em7  Cmaj7  D  G",
+    "semitones": 5,
+    "output": "Am7  Fmaj7  G  C"
+  },
+  {
+    "input": "Em7  Cmaj7  D  G",
+    "semitones": 12,
+    "output": "Em7  Cmaj7  D  G"
+  },
+  {
+    "input": "   ",
+    "semitones": -12,
+    "output": "   "
+  },
+  {
+    "input": "   ",
+    "semitones": -5,
+    "output": "   "
+  },
+  {
+    "input": "   ",
+    "semitones": -1,
+    "output": "   "
+  },
+  {
+    "input": "   ",
+    "semitones": 0,
+    "output": "   "
+  },
+  {
+    "input": "   ",
+    "semitones": 1,
+    "output": "   "
+  },
+  {
+    "input": "   ",
+    "semitones": 5,
+    "output": "   "
+  },
+  {
+    "input": "   ",
+    "semitones": 12,
+    "output": "   "
+  },
+  {
+    "input": "C/E   F   G/B   C",
+    "semitones": -12,
+    "output": "C/E   F   G/B   C"
+  },
+  {
+    "input": "C/E   F   G/B   C",
+    "semitones": -5,
+    "output": "G/B   C   D/F#   G"
+  },
+  {
+    "input": "C/E   F   G/B   C",
+    "semitones": -1,
+    "output": "B/D#   E   F#/A#   B"
+  },
+  {
+    "input": "C/E   F   G/B   C",
+    "semitones": 0,
+    "output": "C/E   F   G/B   C"
+  },
+  {
+    "input": "C/E   F   G/B   C",
+    "semitones": 1,
+    "output": "C#/F   F#   G#/C   C#"
+  },
+  {
+    "input": "C/E   F   G/B   C",
+    "semitones": 5,
+    "output": "F/A   A#   C/E   F"
+  },
+  {
+    "input": "C/E   F   G/B   C",
+    "semitones": 12,
+    "output": "C/E   F   G/B   C"
+  },
+  {
+    "input": "IntroSection C G Am F",
+    "semitones": -12,
+    "output": "IntroSection C G Am F"
+  },
+  {
+    "input": "IntroSection C G Am F",
+    "semitones": -5,
+    "output": "IntroSection G D Em C"
+  },
+  {
+    "input": "IntroSection C G Am F",
+    "semitones": -1,
+    "output": "IntroSection B F# G#m E"
+  },
+  {
+    "input": "IntroSection C G Am F",
+    "semitones": 0,
+    "output": "IntroSection C G Am F"
+  },
+  {
+    "input": "IntroSection C G Am F",
+    "semitones": 1,
+    "output": "IntroSection C# G# A#m F#"
+  },
+  {
+    "input": "IntroSection C G Am F",
+    "semitones": 5,
+    "output": "IntroSection F C Dm A#"
+  },
+  {
+    "input": "IntroSection C G Am F",
+    "semitones": 12,
+    "output": "IntroSection C G Am F"
+  },
+  {
+    "input": "F#m  A  E  B",
+    "semitones": -12,
+    "output": "F#m  A  E  B"
+  },
+  {
+    "input": "F#m  A  E  B",
+    "semitones": -5,
+    "output": "C#m  E  B  F#"
+  },
+  {
+    "input": "F#m  A  E  B",
+    "semitones": -1,
+    "output": "Fm  G#  D#  A#"
+  },
+  {
+    "input": "F#m  A  E  B",
+    "semitones": 0,
+    "output": "F#m  A  E  B"
+  },
+  {
+    "input": "F#m  A  E  B",
+    "semitones": 1,
+    "output": "Gm  A#  F  C"
+  },
+  {
+    "input": "F#m  A  E  B",
+    "semitones": 5,
+    "output": "Bm  D  A  E"
+  },
+  {
+    "input": "F#m  A  E  B",
+    "semitones": 12,
+    "output": "F#m  A  E  B"
+  }
+]

@@ -1,0 +1,5278 @@
+[
+  {
+    "input": "",
+    "output": ""
+  },
+  {
+    "input": "\t",
+    "output": ""
+  },
+  {
+    "input": "   ",
+    "output": ""
+  },
+  {
+    "input": "  A",
+    "output": "A"
+  },
+  {
+    "input": "  A#",
+    "output": "A#"
+  },
+  {
+    "input": "  A5",
+    "output": "A5"
+  },
+  {
+    "input": "  A6",
+    "output": "A6"
+  },
+  {
+    "input": "  A7",
+    "output": "A7"
+  },
+  {
+    "input": "  Ab",
+    "output": "Ab"
+  },
+  {
+    "input": "  Abm",
+    "output": "Abm"
+  },
+  {
+    "input": "  Adim",
+    "output": "Adim"
+  },
+  {
+    "input": "  Am",
+    "output": "Am"
+  },
+  {
+    "input": "  Am7",
+    "output": "Am7"
+  },
+  {
+    "input": "  Amaj7",
+    "output": "Amaj7"
+  },
+  {
+    "input": "  Asus2",
+    "output": "Asus2"
+  },
+  {
+    "input": "  Asus4",
+    "output": "Asus4"
+  },
+  {
+    "input": "  B",
+    "output": "B"
+  },
+  {
+    "input": "  B7",
+    "output": "B7"
+  },
+  {
+    "input": "  Bb",
+    "output": "Bb"
+  },
+  {
+    "input": "  Bb7",
+    "output": "Bb7"
+  },
+  {
+    "input": "  Bbm",
+    "output": "Bbm"
+  },
+  {
+    "input": "  Bdim",
+    "output": "Bdim"
+  },
+  {
+    "input": "  Bm",
+    "output": "Bm"
+  },
+  {
+    "input": "  Bm7",
+    "output": "Bm7"
+  },
+  {
+    "input": "  C",
+    "output": "C"
+  },
+  {
+    "input": "  C#",
+    "output": "C#"
+  },
+  {
+    "input": "  C#m",
+    "output": "C#m"
+  },
+  {
+    "input": "  C6",
+    "output": "C6"
+  },
+  {
+    "input": "  C7",
+    "output": "C7"
+  },
+  {
+    "input": "  Cadd9",
+    "output": "Cadd9"
+  },
+  {
+    "input": "  Caug",
+    "output": "Caug"
+  },
+  {
+    "input": "  Cdim7",
+    "output": "Cdim7"
+  },
+  {
+    "input": "  Cm",
+    "output": "Cm"
+  },
+  {
+    "input": "  Cm7",
+    "output": "Cm7"
+  },
+  {
+    "input": "  Cmaj7",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "  D",
+    "output": "D"
+  },
+  {
+    "input": "  D#",
+    "output": "D#"
+  },
+  {
+    "input": "  D#m",
+    "output": "D#m"
+  },
+  {
+    "input": "  D5",
+    "output": "D5"
+  },
+  {
+    "input": "  D6",
+    "output": "D6"
+  },
+  {
+    "input": "  D7",
+    "output": "D7"
+  },
+  {
+    "input": "  Dadd9",
+    "output": "Dadd9"
+  },
+  {
+    "input": "  Db",
+    "output": "Db"
+  },
+  {
+    "input": "  Dbm",
+    "output": "Dbm"
+  },
+  {
+    "input": "  Dm",
+    "output": "Dm"
+  },
+  {
+    "input": "  Dm7",
+    "output": "Dm7"
+  },
+  {
+    "input": "  Dmaj7",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "  Dsus2",
+    "output": "Dsus2"
+  },
+  {
+    "input": "  Dsus4",
+    "output": "Dsus4"
+  },
+  {
+    "input": "  E",
+    "output": "E"
+  },
+  {
+    "input": "  E5",
+    "output": "E5"
+  },
+  {
+    "input": "  E7",
+    "output": "E7"
+  },
+  {
+    "input": "  Eb",
+    "output": "Eb"
+  },
+  {
+    "input": "  Edim",
+    "output": "Edim"
+  },
+  {
+    "input": "  Em",
+    "output": "Em"
+  },
+  {
+    "input": "  Em7",
+    "output": "Em7"
+  },
+  {
+    "input": "  Emaj7",
+    "output": "Emaj7"
+  },
+  {
+    "input": "  Esus4",
+    "output": "Esus4"
+  },
+  {
+    "input": "  F",
+    "output": "F"
+  },
+  {
+    "input": "  F#",
+    "output": "F#"
+  },
+  {
+    "input": "  F#m",
+    "output": "F#m"
+  },
+  {
+    "input": "  F7",
+    "output": "F7"
+  },
+  {
+    "input": "  Fm",
+    "output": "Fm"
+  },
+  {
+    "input": "  Fm7",
+    "output": "Fm7"
+  },
+  {
+    "input": "  Fmaj7",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "  G",
+    "output": "G"
+  },
+  {
+    "input": "  G#",
+    "output": "G#"
+  },
+  {
+    "input": "  G#m",
+    "output": "G#m"
+  },
+  {
+    "input": "  G5",
+    "output": "G5"
+  },
+  {
+    "input": "  G6",
+    "output": "G6"
+  },
+  {
+    "input": "  G7",
+    "output": "G7"
+  },
+  {
+    "input": "  Gadd9",
+    "output": "Gadd9"
+  },
+  {
+    "input": "  Gb",
+    "output": "F#"
+  },
+  {
+    "input": "  Gbm",
+    "output": "F#m"
+  },
+  {
+    "input": "  Gm",
+    "output": "Gm"
+  },
+  {
+    "input": "  Gm7",
+    "output": "Gm7"
+  },
+  {
+    "input": "  Gmaj7",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "  Gsus4",
+    "output": "Gsus4"
+  },
+  {
+    "input": " A ",
+    "output": "A"
+  },
+  {
+    "input": " A# ",
+    "output": "A#"
+  },
+  {
+    "input": " A5 ",
+    "output": "A5"
+  },
+  {
+    "input": " A6 ",
+    "output": "A6"
+  },
+  {
+    "input": " A7 ",
+    "output": "A7"
+  },
+  {
+    "input": " Ab ",
+    "output": "Ab"
+  },
+  {
+    "input": " Abm ",
+    "output": "Abm"
+  },
+  {
+    "input": " Adim ",
+    "output": "Adim"
+  },
+  {
+    "input": " Am ",
+    "output": "Am"
+  },
+  {
+    "input": " Am7 ",
+    "output": "Am7"
+  },
+  {
+    "input": " Amaj7 ",
+    "output": "Amaj7"
+  },
+  {
+    "input": " Asus2 ",
+    "output": "Asus2"
+  },
+  {
+    "input": " Asus4 ",
+    "output": "Asus4"
+  },
+  {
+    "input": " B ",
+    "output": "B"
+  },
+  {
+    "input": " B7 ",
+    "output": "B7"
+  },
+  {
+    "input": " Bb ",
+    "output": "Bb"
+  },
+  {
+    "input": " Bb7 ",
+    "output": "Bb7"
+  },
+  {
+    "input": " Bbm ",
+    "output": "Bbm"
+  },
+  {
+    "input": " Bdim ",
+    "output": "Bdim"
+  },
+  {
+    "input": " Bm ",
+    "output": "Bm"
+  },
+  {
+    "input": " Bm7 ",
+    "output": "Bm7"
+  },
+  {
+    "input": " C ",
+    "output": "C"
+  },
+  {
+    "input": " C# ",
+    "output": "C#"
+  },
+  {
+    "input": " C#m ",
+    "output": "C#m"
+  },
+  {
+    "input": " C6 ",
+    "output": "C6"
+  },
+  {
+    "input": " C7 ",
+    "output": "C7"
+  },
+  {
+    "input": " Cadd9 ",
+    "output": "Cadd9"
+  },
+  {
+    "input": " Caug ",
+    "output": "Caug"
+  },
+  {
+    "input": " Cdim7 ",
+    "output": "Cdim7"
+  },
+  {
+    "input": " Cm ",
+    "output": "Cm"
+  },
+  {
+    "input": " Cm7 ",
+    "output": "Cm7"
+  },
+  {
+    "input": " Cmaj7 ",
+    "output": "Cmaj7"
+  },
+  {
+    "input": " D ",
+    "output": "D"
+  },
+  {
+    "input": " D# ",
+    "output": "D#"
+  },
+  {
+    "input": " D#m ",
+    "output": "D#m"
+  },
+  {
+    "input": " D5 ",
+    "output": "D5"
+  },
+  {
+    "input": " D6 ",
+    "output": "D6"
+  },
+  {
+    "input": " D7 ",
+    "output": "D7"
+  },
+  {
+    "input": " Dadd9 ",
+    "output": "Dadd9"
+  },
+  {
+    "input": " Db ",
+    "output": "Db"
+  },
+  {
+    "input": " Dbm ",
+    "output": "Dbm"
+  },
+  {
+    "input": " Dm ",
+    "output": "Dm"
+  },
+  {
+    "input": " Dm7 ",
+    "output": "Dm7"
+  },
+  {
+    "input": " Dmaj7 ",
+    "output": "Dmaj7"
+  },
+  {
+    "input": " Dsus2 ",
+    "output": "Dsus2"
+  },
+  {
+    "input": " Dsus4 ",
+    "output": "Dsus4"
+  },
+  {
+    "input": " E ",
+    "output": "E"
+  },
+  {
+    "input": " E5 ",
+    "output": "E5"
+  },
+  {
+    "input": " E7 ",
+    "output": "E7"
+  },
+  {
+    "input": " Eb ",
+    "output": "Eb"
+  },
+  {
+    "input": " Edim ",
+    "output": "Edim"
+  },
+  {
+    "input": " Em ",
+    "output": "Em"
+  },
+  {
+    "input": " Em7 ",
+    "output": "Em7"
+  },
+  {
+    "input": " Emaj7 ",
+    "output": "Emaj7"
+  },
+  {
+    "input": " Esus4 ",
+    "output": "Esus4"
+  },
+  {
+    "input": " F ",
+    "output": "F"
+  },
+  {
+    "input": " F# ",
+    "output": "F#"
+  },
+  {
+    "input": " F#m ",
+    "output": "F#m"
+  },
+  {
+    "input": " F7 ",
+    "output": "F7"
+  },
+  {
+    "input": " Fm ",
+    "output": "Fm"
+  },
+  {
+    "input": " Fm7 ",
+    "output": "Fm7"
+  },
+  {
+    "input": " Fmaj7 ",
+    "output": "Fmaj7"
+  },
+  {
+    "input": " G ",
+    "output": "G"
+  },
+  {
+    "input": " G# ",
+    "output": "G#"
+  },
+  {
+    "input": " G#m ",
+    "output": "G#m"
+  },
+  {
+    "input": " G5 ",
+    "output": "G5"
+  },
+  {
+    "input": " G6 ",
+    "output": "G6"
+  },
+  {
+    "input": " G7 ",
+    "output": "G7"
+  },
+  {
+    "input": " Gadd9 ",
+    "output": "Gadd9"
+  },
+  {
+    "input": " Gb ",
+    "output": "F#"
+  },
+  {
+    "input": " Gbm ",
+    "output": "F#m"
+  },
+  {
+    "input": " Gm ",
+    "output": "Gm"
+  },
+  {
+    "input": " Gm7 ",
+    "output": "Gm7"
+  },
+  {
+    "input": " Gmaj7 ",
+    "output": "Gmaj7"
+  },
+  {
+    "input": " Gsus4 ",
+    "output": "Gsus4"
+  },
+  {
+    "input": "/C",
+    "output": "/C"
+  },
+  {
+    "input": "1234",
+    "output": "1234"
+  },
+  {
+    "input": "A",
+    "output": "A"
+  },
+  {
+    "input": "A\t",
+    "output": "A"
+  },
+  {
+    "input": "A  ",
+    "output": "A"
+  },
+  {
+    "input": "A / B",
+    "output": "A/ B"
+  },
+  {
+    "input": "A#",
+    "output": "A#"
+  },
+  {
+    "input": "A#\t",
+    "output": "A#"
+  },
+  {
+    "input": "A#  ",
+    "output": "A#"
+  },
+  {
+    "input": "A#+",
+    "output": "A#aug"
+  },
+  {
+    "input": "A#-",
+    "output": "Bbm"
+  },
+  {
+    "input": "A#-7",
+    "output": "A#m7"
+  },
+  {
+    "input": "A#/A",
+    "output": "A#"
+  },
+  {
+    "input": "A#/C",
+    "output": "A#"
+  },
+  {
+    "input": "A#/D",
+    "output": "A#"
+  },
+  {
+    "input": "A#/G",
+    "output": "A#"
+  },
+  {
+    "input": "A#5",
+    "output": "A#5"
+  },
+  {
+    "input": "A#6",
+    "output": "A#6"
+  },
+  {
+    "input": "A#7",
+    "output": "A#7"
+  },
+  {
+    "input": "A#M",
+    "output": "A#"
+  },
+  {
+    "input": "A#MIN",
+    "output": "Bbm"
+  },
+  {
+    "input": "A#Maj",
+    "output": "A#"
+  },
+  {
+    "input": "A#add11",
+    "output": "A#add11"
+  },
+  {
+    "input": "A#add9",
+    "output": "A#add9"
+  },
+  {
+    "input": "A#aug",
+    "output": "A#aug"
+  },
+  {
+    "input": "A#dim",
+    "output": "A#dim"
+  },
+  {
+    "input": "A#dim7",
+    "output": "A#dim7"
+  },
+  {
+    "input": "A#m",
+    "output": "Bbm"
+  },
+  {
+    "input": "A#m7",
+    "output": "A#m7"
+  },
+  {
+    "input": "A#maj",
+    "output": "A#"
+  },
+  {
+    "input": "A#maj7",
+    "output": "A#maj7"
+  },
+  {
+    "input": "A#maj9",
+    "output": "A#maj9"
+  },
+  {
+    "input": "A#min",
+    "output": "Bbm"
+  },
+  {
+    "input": "A#minor",
+    "output": "Bbm"
+  },
+  {
+    "input": "A#sus",
+    "output": "A#sus4"
+  },
+  {
+    "input": "A#sus2",
+    "output": "A#sus2"
+  },
+  {
+    "input": "A#sus4",
+    "output": "A#sus4"
+  },
+  {
+    "input": "A#°",
+    "output": "A#dim"
+  },
+  {
+    "input": "A+",
+    "output": "Aaug"
+  },
+  {
+    "input": "A-",
+    "output": "Am"
+  },
+  {
+    "input": "A-7",
+    "output": "Am7"
+  },
+  {
+    "input": "A-aj7",
+    "output": "Amaj7"
+  },
+  {
+    "input": "A/A",
+    "output": "A"
+  },
+  {
+    "input": "A/C",
+    "output": "A"
+  },
+  {
+    "input": "A/D",
+    "output": "A"
+  },
+  {
+    "input": "A/G",
+    "output": "A"
+  },
+  {
+    "input": "A5",
+    "output": "A5"
+  },
+  {
+    "input": "A5\t",
+    "output": "A5"
+  },
+  {
+    "input": "A5  ",
+    "output": "A5"
+  },
+  {
+    "input": "A5/A",
+    "output": "A5"
+  },
+  {
+    "input": "A5/C",
+    "output": "A5"
+  },
+  {
+    "input": "A5/D",
+    "output": "A5"
+  },
+  {
+    "input": "A5/G",
+    "output": "A5"
+  },
+  {
+    "input": "A6",
+    "output": "A6"
+  },
+  {
+    "input": "A6\t",
+    "output": "A6"
+  },
+  {
+    "input": "A6  ",
+    "output": "A6"
+  },
+  {
+    "input": "A6/A",
+    "output": "A6"
+  },
+  {
+    "input": "A6/C",
+    "output": "A6"
+  },
+  {
+    "input": "A6/D",
+    "output": "A6"
+  },
+  {
+    "input": "A6/G",
+    "output": "A6"
+  },
+  {
+    "input": "A7",
+    "output": "A7"
+  },
+  {
+    "input": "A7\t",
+    "output": "A7"
+  },
+  {
+    "input": "A7  ",
+    "output": "A7"
+  },
+  {
+    "input": "A7/A",
+    "output": "A7"
+  },
+  {
+    "input": "A7/C",
+    "output": "A7"
+  },
+  {
+    "input": "A7/D",
+    "output": "A7"
+  },
+  {
+    "input": "A7/G",
+    "output": "A7"
+  },
+  {
+    "input": "AB",
+    "output": "AB"
+  },
+  {
+    "input": "ABM",
+    "output": "ABM"
+  },
+  {
+    "input": "ADIM",
+    "output": "ADIM"
+  },
+  {
+    "input": "AM",
+    "output": "A"
+  },
+  {
+    "input": "AM7",
+    "output": "AM7"
+  },
+  {
+    "input": "AMAJ7",
+    "output": "Amaj7"
+  },
+  {
+    "input": "AMIN",
+    "output": "Am"
+  },
+  {
+    "input": "AMINOR",
+    "output": "Am"
+  },
+  {
+    "input": "AMaj",
+    "output": "A"
+  },
+  {
+    "input": "AMin",
+    "output": "Am"
+  },
+  {
+    "input": "ASUS",
+    "output": "Asus4"
+  },
+  {
+    "input": "ASUS2",
+    "output": "Asus2"
+  },
+  {
+    "input": "ASUS4",
+    "output": "Asus4"
+  },
+  {
+    "input": "ASus2",
+    "output": "Asus2"
+  },
+  {
+    "input": "ASus4",
+    "output": "Asus4"
+  },
+  {
+    "input": "Aadd11",
+    "output": "Aadd11"
+  },
+  {
+    "input": "Aadd9",
+    "output": "Aadd9"
+  },
+  {
+    "input": "Aaug",
+    "output": "Aaug"
+  },
+  {
+    "input": "Ab",
+    "output": "Ab"
+  },
+  {
+    "input": "Ab\t",
+    "output": "Ab"
+  },
+  {
+    "input": "Ab  ",
+    "output": "Ab"
+  },
+  {
+    "input": "Ab+",
+    "output": "Abaug"
+  },
+  {
+    "input": "Ab-",
+    "output": "Abm"
+  },
+  {
+    "input": "Ab-7",
+    "output": "Abm7"
+  },
+  {
+    "input": "Ab/A",
+    "output": "Ab"
+  },
+  {
+    "input": "Ab/C",
+    "output": "Ab"
+  },
+  {
+    "input": "Ab/D",
+    "output": "Ab"
+  },
+  {
+    "input": "Ab/G",
+    "output": "Ab"
+  },
+  {
+    "input": "Ab5",
+    "output": "Ab5"
+  },
+  {
+    "input": "Ab6",
+    "output": "Ab6"
+  },
+  {
+    "input": "Ab7",
+    "output": "Ab7"
+  },
+  {
+    "input": "AbM",
+    "output": "Ab"
+  },
+  {
+    "input": "AbMIN",
+    "output": "Abm"
+  },
+  {
+    "input": "AbMINOR",
+    "output": "Abm"
+  },
+  {
+    "input": "AbMaj",
+    "output": "Ab"
+  },
+  {
+    "input": "AbMin",
+    "output": "Abm"
+  },
+  {
+    "input": "Abadd11",
+    "output": "Abadd11"
+  },
+  {
+    "input": "Abadd9",
+    "output": "Abadd9"
+  },
+  {
+    "input": "Abaug",
+    "output": "Abaug"
+  },
+  {
+    "input": "Abdim",
+    "output": "Abdim"
+  },
+  {
+    "input": "Abdim7",
+    "output": "Abdim7"
+  },
+  {
+    "input": "Abm",
+    "output": "Abm"
+  },
+  {
+    "input": "Abm\t",
+    "output": "Abm"
+  },
+  {
+    "input": "Abm  ",
+    "output": "Abm"
+  },
+  {
+    "input": "Abm/A",
+    "output": "Abm"
+  },
+  {
+    "input": "Abm/C",
+    "output": "Abm"
+  },
+  {
+    "input": "Abm/D",
+    "output": "Abm"
+  },
+  {
+    "input": "Abm/G",
+    "output": "Abm"
+  },
+  {
+    "input": "Abm7",
+    "output": "Abm7"
+  },
+  {
+    "input": "Abmaj",
+    "output": "Ab"
+  },
+  {
+    "input": "Abmaj7",
+    "output": "Abmaj7"
+  },
+  {
+    "input": "Abmaj9",
+    "output": "Abmaj9"
+  },
+  {
+    "input": "Abmin",
+    "output": "Abm"
+  },
+  {
+    "input": "Abminor",
+    "output": "Abm"
+  },
+  {
+    "input": "Absus",
+    "output": "Absus4"
+  },
+  {
+    "input": "Absus2",
+    "output": "Absus2"
+  },
+  {
+    "input": "Absus4",
+    "output": "Absus4"
+  },
+  {
+    "input": "Ab°",
+    "output": "Abdim"
+  },
+  {
+    "input": "Adim",
+    "output": "Adim"
+  },
+  {
+    "input": "Adim\t",
+    "output": "Adim"
+  },
+  {
+    "input": "Adim  ",
+    "output": "Adim"
+  },
+  {
+    "input": "Adim/A",
+    "output": "Adim"
+  },
+  {
+    "input": "Adim/C",
+    "output": "Adim"
+  },
+  {
+    "input": "Adim/D",
+    "output": "Adim"
+  },
+  {
+    "input": "Adim/G",
+    "output": "Adim"
+  },
+  {
+    "input": "Adim7",
+    "output": "Adim7"
+  },
+  {
+    "input": "Am",
+    "output": "Am"
+  },
+  {
+    "input": "Am\t",
+    "output": "Am"
+  },
+  {
+    "input": "Am  ",
+    "output": "Am"
+  },
+  {
+    "input": "Am/A",
+    "output": "Am"
+  },
+  {
+    "input": "Am/C",
+    "output": "Am"
+  },
+  {
+    "input": "Am/D",
+    "output": "Am"
+  },
+  {
+    "input": "Am/G",
+    "output": "Am"
+  },
+  {
+    "input": "Am7",
+    "output": "Am7"
+  },
+  {
+    "input": "Am7\t",
+    "output": "Am7"
+  },
+  {
+    "input": "Am7  ",
+    "output": "Am7"
+  },
+  {
+    "input": "Am7/A",
+    "output": "Am7"
+  },
+  {
+    "input": "Am7/C",
+    "output": "Am7"
+  },
+  {
+    "input": "Am7/D",
+    "output": "Am7"
+  },
+  {
+    "input": "Am7/G",
+    "output": "Am7"
+  },
+  {
+    "input": "Am9",
+    "output": "Am9"
+  },
+  {
+    "input": "Amaj",
+    "output": "A"
+  },
+  {
+    "input": "Amaj7",
+    "output": "Amaj7"
+  },
+  {
+    "input": "Amaj7\t",
+    "output": "Amaj7"
+  },
+  {
+    "input": "Amaj7  ",
+    "output": "Amaj7"
+  },
+  {
+    "input": "Amaj7/A",
+    "output": "Amaj7"
+  },
+  {
+    "input": "Amaj7/C",
+    "output": "Amaj7"
+  },
+  {
+    "input": "Amaj7/D",
+    "output": "Amaj7"
+  },
+  {
+    "input": "Amaj7/G",
+    "output": "Amaj7"
+  },
+  {
+    "input": "Amaj9",
+    "output": "Amaj9"
+  },
+  {
+    "input": "Amin",
+    "output": "Am"
+  },
+  {
+    "input": "Aminor",
+    "output": "Am"
+  },
+  {
+    "input": "Asus",
+    "output": "Asus4"
+  },
+  {
+    "input": "Asus2",
+    "output": "Asus2"
+  },
+  {
+    "input": "Asus2\t",
+    "output": "Asus2"
+  },
+  {
+    "input": "Asus2  ",
+    "output": "Asus2"
+  },
+  {
+    "input": "Asus2/A",
+    "output": "Asus2"
+  },
+  {
+    "input": "Asus2/C",
+    "output": "Asus2"
+  },
+  {
+    "input": "Asus2/D",
+    "output": "Asus2"
+  },
+  {
+    "input": "Asus2/G",
+    "output": "Asus2"
+  },
+  {
+    "input": "Asus4",
+    "output": "Asus4"
+  },
+  {
+    "input": "Asus4\t",
+    "output": "Asus4"
+  },
+  {
+    "input": "Asus4  ",
+    "output": "Asus4"
+  },
+  {
+    "input": "Asus4/A",
+    "output": "Asus4"
+  },
+  {
+    "input": "Asus4/C",
+    "output": "Asus4"
+  },
+  {
+    "input": "Asus4/D",
+    "output": "Asus4"
+  },
+  {
+    "input": "Asus4/G",
+    "output": "Asus4"
+  },
+  {
+    "input": "A°",
+    "output": "Adim"
+  },
+  {
+    "input": "B",
+    "output": "B"
+  },
+  {
+    "input": "B\t",
+    "output": "B"
+  },
+  {
+    "input": "B  ",
+    "output": "B"
+  },
+  {
+    "input": "B#",
+    "output": "B#"
+  },
+  {
+    "input": "B#+",
+    "output": "B#aug"
+  },
+  {
+    "input": "B#-",
+    "output": "B#m"
+  },
+  {
+    "input": "B#-7",
+    "output": "B#m7"
+  },
+  {
+    "input": "B#5",
+    "output": "B#5"
+  },
+  {
+    "input": "B#6",
+    "output": "B#6"
+  },
+  {
+    "input": "B#7",
+    "output": "B#7"
+  },
+  {
+    "input": "B#M",
+    "output": "B#"
+  },
+  {
+    "input": "B#MIN",
+    "output": "B#m"
+  },
+  {
+    "input": "B#Maj",
+    "output": "B#"
+  },
+  {
+    "input": "B#add11",
+    "output": "B#add11"
+  },
+  {
+    "input": "B#add9",
+    "output": "B#add9"
+  },
+  {
+    "input": "B#aug",
+    "output": "B#aug"
+  },
+  {
+    "input": "B#dim",
+    "output": "B#dim"
+  },
+  {
+    "input": "B#dim7",
+    "output": "B#dim7"
+  },
+  {
+    "input": "B#m",
+    "output": "B#m"
+  },
+  {
+    "input": "B#m7",
+    "output": "B#m7"
+  },
+  {
+    "input": "B#maj7",
+    "output": "B#maj7"
+  },
+  {
+    "input": "B#maj9",
+    "output": "B#maj9"
+  },
+  {
+    "input": "B#min",
+    "output": "B#m"
+  },
+  {
+    "input": "B#minor",
+    "output": "B#m"
+  },
+  {
+    "input": "B#sus",
+    "output": "B#sus4"
+  },
+  {
+    "input": "B#sus2",
+    "output": "B#sus2"
+  },
+  {
+    "input": "B#sus4",
+    "output": "B#sus4"
+  },
+  {
+    "input": "B#°",
+    "output": "B#dim"
+  },
+  {
+    "input": "B+",
+    "output": "Baug"
+  },
+  {
+    "input": "B-",
+    "output": "Bm"
+  },
+  {
+    "input": "B-7",
+    "output": "Bm7"
+  },
+  {
+    "input": "B/A",
+    "output": "B"
+  },
+  {
+    "input": "B/C",
+    "output": "B"
+  },
+  {
+    "input": "B/D",
+    "output": "B"
+  },
+  {
+    "input": "B/G",
+    "output": "B"
+  },
+  {
+    "input": "B5",
+    "output": "B5"
+  },
+  {
+    "input": "B6",
+    "output": "B6"
+  },
+  {
+    "input": "B7",
+    "output": "B7"
+  },
+  {
+    "input": "B7\t",
+    "output": "B7"
+  },
+  {
+    "input": "B7  ",
+    "output": "B7"
+  },
+  {
+    "input": "B7/A",
+    "output": "B7"
+  },
+  {
+    "input": "B7/C",
+    "output": "B7"
+  },
+  {
+    "input": "B7/D",
+    "output": "B7"
+  },
+  {
+    "input": "B7/G",
+    "output": "B7"
+  },
+  {
+    "input": "BB",
+    "output": "BB"
+  },
+  {
+    "input": "BB7",
+    "output": "BB7"
+  },
+  {
+    "input": "BBM",
+    "output": "BBM"
+  },
+  {
+    "input": "BDIM",
+    "output": "BDIM"
+  },
+  {
+    "input": "BM",
+    "output": "B"
+  },
+  {
+    "input": "BM7",
+    "output": "BM7"
+  },
+  {
+    "input": "BMIN",
+    "output": "Bm"
+  },
+  {
+    "input": "BMINOR",
+    "output": "Bm"
+  },
+  {
+    "input": "BMaj",
+    "output": "B"
+  },
+  {
+    "input": "BMin",
+    "output": "Bm"
+  },
+  {
+    "input": "Badd11",
+    "output": "Badd11"
+  },
+  {
+    "input": "Badd9",
+    "output": "Badd9"
+  },
+  {
+    "input": "Baug",
+    "output": "Baug"
+  },
+  {
+    "input": "Bb",
+    "output": "Bb"
+  },
+  {
+    "input": "Bb\t",
+    "output": "Bb"
+  },
+  {
+    "input": "Bb  ",
+    "output": "Bb"
+  },
+  {
+    "input": "Bb+",
+    "output": "Bbaug"
+  },
+  {
+    "input": "Bb-",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bb-7",
+    "output": "Bbm7"
+  },
+  {
+    "input": "Bb/A",
+    "output": "Bb"
+  },
+  {
+    "input": "Bb/C",
+    "output": "Bb"
+  },
+  {
+    "input": "Bb/D",
+    "output": "Bb"
+  },
+  {
+    "input": "Bb/G",
+    "output": "Bb"
+  },
+  {
+    "input": "Bb5",
+    "output": "Bb5"
+  },
+  {
+    "input": "Bb6",
+    "output": "Bb6"
+  },
+  {
+    "input": "Bb7",
+    "output": "Bb7"
+  },
+  {
+    "input": "Bb7\t",
+    "output": "Bb7"
+  },
+  {
+    "input": "Bb7  ",
+    "output": "Bb7"
+  },
+  {
+    "input": "Bb7/A",
+    "output": "Bb7"
+  },
+  {
+    "input": "Bb7/C",
+    "output": "Bb7"
+  },
+  {
+    "input": "Bb7/D",
+    "output": "Bb7"
+  },
+  {
+    "input": "Bb7/G",
+    "output": "Bb7"
+  },
+  {
+    "input": "BbM",
+    "output": "Bb"
+  },
+  {
+    "input": "BbMIN",
+    "output": "Bbm"
+  },
+  {
+    "input": "BbMINOR",
+    "output": "Bbm"
+  },
+  {
+    "input": "BbMaj",
+    "output": "Bb"
+  },
+  {
+    "input": "BbMin",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbadd11",
+    "output": "Bbadd11"
+  },
+  {
+    "input": "Bbadd9",
+    "output": "Bbadd9"
+  },
+  {
+    "input": "Bbaug",
+    "output": "Bbaug"
+  },
+  {
+    "input": "Bbdim",
+    "output": "Bbdim"
+  },
+  {
+    "input": "Bbdim7",
+    "output": "Bbdim7"
+  },
+  {
+    "input": "Bbm",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbm\t",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbm  ",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbm/A",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbm/C",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbm/D",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbm/G",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbm7",
+    "output": "Bbm7"
+  },
+  {
+    "input": "Bbmaj",
+    "output": "Bb"
+  },
+  {
+    "input": "Bbmaj7",
+    "output": "Bbmaj7"
+  },
+  {
+    "input": "Bbmaj9",
+    "output": "Bbmaj9"
+  },
+  {
+    "input": "Bbmin",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbminor",
+    "output": "Bbm"
+  },
+  {
+    "input": "Bbsus",
+    "output": "Bbsus4"
+  },
+  {
+    "input": "Bbsus2",
+    "output": "Bbsus2"
+  },
+  {
+    "input": "Bbsus4",
+    "output": "Bbsus4"
+  },
+  {
+    "input": "Bb°",
+    "output": "Bbdim"
+  },
+  {
+    "input": "Bdim",
+    "output": "Bdim"
+  },
+  {
+    "input": "Bdim\t",
+    "output": "Bdim"
+  },
+  {
+    "input": "Bdim  ",
+    "output": "Bdim"
+  },
+  {
+    "input": "Bdim/A",
+    "output": "Bdim"
+  },
+  {
+    "input": "Bdim/C",
+    "output": "Bdim"
+  },
+  {
+    "input": "Bdim/D",
+    "output": "Bdim"
+  },
+  {
+    "input": "Bdim/G",
+    "output": "Bdim"
+  },
+  {
+    "input": "Bdim7",
+    "output": "Bdim7"
+  },
+  {
+    "input": "Bm",
+    "output": "Bm"
+  },
+  {
+    "input": "Bm\t",
+    "output": "Bm"
+  },
+  {
+    "input": "Bm  ",
+    "output": "Bm"
+  },
+  {
+    "input": "Bm/A",
+    "output": "Bm"
+  },
+  {
+    "input": "Bm/C",
+    "output": "Bm"
+  },
+  {
+    "input": "Bm/D",
+    "output": "Bm"
+  },
+  {
+    "input": "Bm/G",
+    "output": "Bm"
+  },
+  {
+    "input": "Bm7",
+    "output": "Bm7"
+  },
+  {
+    "input": "Bm7\t",
+    "output": "Bm7"
+  },
+  {
+    "input": "Bm7  ",
+    "output": "Bm7"
+  },
+  {
+    "input": "Bm7/A",
+    "output": "Bm7"
+  },
+  {
+    "input": "Bm7/C",
+    "output": "Bm7"
+  },
+  {
+    "input": "Bm7/D",
+    "output": "Bm7"
+  },
+  {
+    "input": "Bm7/G",
+    "output": "Bm7"
+  },
+  {
+    "input": "Bmaj",
+    "output": "B"
+  },
+  {
+    "input": "Bmaj7",
+    "output": "Bmaj7"
+  },
+  {
+    "input": "Bmaj9",
+    "output": "Bmaj9"
+  },
+  {
+    "input": "Bmin",
+    "output": "Bm"
+  },
+  {
+    "input": "Bminor",
+    "output": "Bm"
+  },
+  {
+    "input": "Bsus",
+    "output": "Bsus4"
+  },
+  {
+    "input": "Bsus2",
+    "output": "Bsus2"
+  },
+  {
+    "input": "Bsus4",
+    "output": "Bsus4"
+  },
+  {
+    "input": "B°",
+    "output": "Bdim"
+  },
+  {
+    "input": "C",
+    "output": "C"
+  },
+  {
+    "input": "C\t",
+    "output": "C"
+  },
+  {
+    "input": "C  ",
+    "output": "C"
+  },
+  {
+    "input": "C#",
+    "output": "C#"
+  },
+  {
+    "input": "C#\t",
+    "output": "C#"
+  },
+  {
+    "input": "C#  ",
+    "output": "C#"
+  },
+  {
+    "input": "C#+",
+    "output": "C#aug"
+  },
+  {
+    "input": "C#-",
+    "output": "C#m"
+  },
+  {
+    "input": "C#-7",
+    "output": "C#m7"
+  },
+  {
+    "input": "C#/A",
+    "output": "C#"
+  },
+  {
+    "input": "C#/C",
+    "output": "C#"
+  },
+  {
+    "input": "C#/D",
+    "output": "C#"
+  },
+  {
+    "input": "C#/G",
+    "output": "C#"
+  },
+  {
+    "input": "C#5",
+    "output": "C#5"
+  },
+  {
+    "input": "C#6",
+    "output": "C#6"
+  },
+  {
+    "input": "C#7",
+    "output": "C#7"
+  },
+  {
+    "input": "C#M",
+    "output": "C#"
+  },
+  {
+    "input": "C#MIN",
+    "output": "C#m"
+  },
+  {
+    "input": "C#MINOR",
+    "output": "C#m"
+  },
+  {
+    "input": "C#Maj",
+    "output": "C#"
+  },
+  {
+    "input": "C#Min",
+    "output": "C#m"
+  },
+  {
+    "input": "C#add11",
+    "output": "C#add11"
+  },
+  {
+    "input": "C#add9",
+    "output": "C#add9"
+  },
+  {
+    "input": "C#aug",
+    "output": "C#aug"
+  },
+  {
+    "input": "C#dim",
+    "output": "C#dim"
+  },
+  {
+    "input": "C#dim7",
+    "output": "C#dim7"
+  },
+  {
+    "input": "C#m",
+    "output": "C#m"
+  },
+  {
+    "input": "C#m\t",
+    "output": "C#m"
+  },
+  {
+    "input": "C#m  ",
+    "output": "C#m"
+  },
+  {
+    "input": "C#m/A",
+    "output": "C#m"
+  },
+  {
+    "input": "C#m/C",
+    "output": "C#m"
+  },
+  {
+    "input": "C#m/D",
+    "output": "C#m"
+  },
+  {
+    "input": "C#m/G",
+    "output": "C#m"
+  },
+  {
+    "input": "C#m7",
+    "output": "C#m7"
+  },
+  {
+    "input": "C#maj",
+    "output": "C#"
+  },
+  {
+    "input": "C#maj7",
+    "output": "C#maj7"
+  },
+  {
+    "input": "C#maj9",
+    "output": "C#maj9"
+  },
+  {
+    "input": "C#min",
+    "output": "C#m"
+  },
+  {
+    "input": "C#minor",
+    "output": "C#m"
+  },
+  {
+    "input": "C#sus",
+    "output": "C#sus4"
+  },
+  {
+    "input": "C#sus2",
+    "output": "C#sus2"
+  },
+  {
+    "input": "C#sus4",
+    "output": "C#sus4"
+  },
+  {
+    "input": "C#°",
+    "output": "C#dim"
+  },
+  {
+    "input": "C+",
+    "output": "Caug"
+  },
+  {
+    "input": "C-",
+    "output": "Cm"
+  },
+  {
+    "input": "C-7",
+    "output": "Cm7"
+  },
+  {
+    "input": "C-aj7",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "C/",
+    "output": "C/"
+  },
+  {
+    "input": "C/A",
+    "output": "C"
+  },
+  {
+    "input": "C/C",
+    "output": "C"
+  },
+  {
+    "input": "C/D",
+    "output": "C"
+  },
+  {
+    "input": "C/G",
+    "output": "C"
+  },
+  {
+    "input": "C11",
+    "output": "C11"
+  },
+  {
+    "input": "C13",
+    "output": "C13"
+  },
+  {
+    "input": "C5",
+    "output": "C5"
+  },
+  {
+    "input": "C6",
+    "output": "C6"
+  },
+  {
+    "input": "C6\t",
+    "output": "C6"
+  },
+  {
+    "input": "C6  ",
+    "output": "C6"
+  },
+  {
+    "input": "C6/A",
+    "output": "C6"
+  },
+  {
+    "input": "C6/C",
+    "output": "C6"
+  },
+  {
+    "input": "C6/D",
+    "output": "C6"
+  },
+  {
+    "input": "C6/G",
+    "output": "C6"
+  },
+  {
+    "input": "C7",
+    "output": "C7"
+  },
+  {
+    "input": "C7\t",
+    "output": "C7"
+  },
+  {
+    "input": "C7  ",
+    "output": "C7"
+  },
+  {
+    "input": "C7/A",
+    "output": "C7"
+  },
+  {
+    "input": "C7/C",
+    "output": "C7"
+  },
+  {
+    "input": "C7/D",
+    "output": "C7"
+  },
+  {
+    "input": "C7/G",
+    "output": "C7"
+  },
+  {
+    "input": "CADD9",
+    "output": "Cadd9"
+  },
+  {
+    "input": "CAUG",
+    "output": "CAUG"
+  },
+  {
+    "input": "CAdd9",
+    "output": "Cadd9"
+  },
+  {
+    "input": "CDIM7",
+    "output": "CDIM7"
+  },
+  {
+    "input": "CM",
+    "output": "C"
+  },
+  {
+    "input": "CM7",
+    "output": "CM7"
+  },
+  {
+    "input": "CMAJ7",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "CMIN",
+    "output": "Cm"
+  },
+  {
+    "input": "CMINOR",
+    "output": "Cm"
+  },
+  {
+    "input": "CMaj",
+    "output": "C"
+  },
+  {
+    "input": "CMin",
+    "output": "Cm"
+  },
+  {
+    "input": "Cadd11",
+    "output": "Cadd11"
+  },
+  {
+    "input": "Cadd9",
+    "output": "Cadd9"
+  },
+  {
+    "input": "Cadd9\t",
+    "output": "Cadd9"
+  },
+  {
+    "input": "Cadd9  ",
+    "output": "Cadd9"
+  },
+  {
+    "input": "Cadd9/A",
+    "output": "Cadd9"
+  },
+  {
+    "input": "Cadd9/C",
+    "output": "Cadd9"
+  },
+  {
+    "input": "Cadd9/D",
+    "output": "Cadd9"
+  },
+  {
+    "input": "Cadd9/G",
+    "output": "Cadd9"
+  },
+  {
+    "input": "Caug",
+    "output": "Caug"
+  },
+  {
+    "input": "Caug\t",
+    "output": "Caug"
+  },
+  {
+    "input": "Caug  ",
+    "output": "Caug"
+  },
+  {
+    "input": "Caug/A",
+    "output": "Caug"
+  },
+  {
+    "input": "Caug/C",
+    "output": "Caug"
+  },
+  {
+    "input": "Caug/D",
+    "output": "Caug"
+  },
+  {
+    "input": "Caug/G",
+    "output": "Caug"
+  },
+  {
+    "input": "Cb",
+    "output": "B"
+  },
+  {
+    "input": "Cb+",
+    "output": "Cbaug"
+  },
+  {
+    "input": "Cb-",
+    "output": "Bm"
+  },
+  {
+    "input": "Cb-7",
+    "output": "Cbm7"
+  },
+  {
+    "input": "Cb5",
+    "output": "Cb5"
+  },
+  {
+    "input": "Cb6",
+    "output": "Cb6"
+  },
+  {
+    "input": "Cb7",
+    "output": "Cb7"
+  },
+  {
+    "input": "CbM",
+    "output": "B"
+  },
+  {
+    "input": "CbMIN",
+    "output": "Bm"
+  },
+  {
+    "input": "CbMaj",
+    "output": "B"
+  },
+  {
+    "input": "Cbadd11",
+    "output": "Cbadd11"
+  },
+  {
+    "input": "Cbadd9",
+    "output": "Cbadd9"
+  },
+  {
+    "input": "Cbaug",
+    "output": "Cbaug"
+  },
+  {
+    "input": "Cbdim",
+    "output": "Cbdim"
+  },
+  {
+    "input": "Cbdim7",
+    "output": "Cbdim7"
+  },
+  {
+    "input": "Cbm",
+    "output": "Bm"
+  },
+  {
+    "input": "Cbm7",
+    "output": "Cbm7"
+  },
+  {
+    "input": "Cbmaj7",
+    "output": "Cbmaj7"
+  },
+  {
+    "input": "Cbmaj9",
+    "output": "Cbmaj9"
+  },
+  {
+    "input": "Cbmin",
+    "output": "Bm"
+  },
+  {
+    "input": "Cbminor",
+    "output": "Bm"
+  },
+  {
+    "input": "Cbsus",
+    "output": "Cbsus4"
+  },
+  {
+    "input": "Cbsus2",
+    "output": "Cbsus2"
+  },
+  {
+    "input": "Cbsus4",
+    "output": "Cbsus4"
+  },
+  {
+    "input": "Cb°",
+    "output": "Cbdim"
+  },
+  {
+    "input": "Cdim",
+    "output": "Cdim"
+  },
+  {
+    "input": "Cdim7",
+    "output": "Cdim7"
+  },
+  {
+    "input": "Cdim7\t",
+    "output": "Cdim7"
+  },
+  {
+    "input": "Cdim7  ",
+    "output": "Cdim7"
+  },
+  {
+    "input": "Cdim7/A",
+    "output": "Cdim7"
+  },
+  {
+    "input": "Cdim7/C",
+    "output": "Cdim7"
+  },
+  {
+    "input": "Cdim7/D",
+    "output": "Cdim7"
+  },
+  {
+    "input": "Cdim7/G",
+    "output": "Cdim7"
+  },
+  {
+    "input": "Cm",
+    "output": "Cm"
+  },
+  {
+    "input": "Cm\t",
+    "output": "Cm"
+  },
+  {
+    "input": "Cm  ",
+    "output": "Cm"
+  },
+  {
+    "input": "Cm/A",
+    "output": "Cm"
+  },
+  {
+    "input": "Cm/C",
+    "output": "Cm"
+  },
+  {
+    "input": "Cm/D",
+    "output": "Cm"
+  },
+  {
+    "input": "Cm/G",
+    "output": "Cm"
+  },
+  {
+    "input": "Cm7",
+    "output": "Cm7"
+  },
+  {
+    "input": "Cm7\t",
+    "output": "Cm7"
+  },
+  {
+    "input": "Cm7  ",
+    "output": "Cm7"
+  },
+  {
+    "input": "Cm7/A",
+    "output": "Cm7"
+  },
+  {
+    "input": "Cm7/C",
+    "output": "Cm7"
+  },
+  {
+    "input": "Cm7/D",
+    "output": "Cm7"
+  },
+  {
+    "input": "Cm7/G",
+    "output": "Cm7"
+  },
+  {
+    "input": "Cmaj",
+    "output": "C"
+  },
+  {
+    "input": "Cmaj7",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Cmaj7\t",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Cmaj7  ",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Cmaj7/A",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Cmaj7/C",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Cmaj7/D",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Cmaj7/G",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "Cmaj9",
+    "output": "Cmaj9"
+  },
+  {
+    "input": "Cmin",
+    "output": "Cm"
+  },
+  {
+    "input": "Cminor",
+    "output": "Cm"
+  },
+  {
+    "input": "Csus",
+    "output": "Csus4"
+  },
+  {
+    "input": "Csus2",
+    "output": "Csus2"
+  },
+  {
+    "input": "Csus4",
+    "output": "Csus4"
+  },
+  {
+    "input": "C°",
+    "output": "Cdim"
+  },
+  {
+    "input": "D",
+    "output": "D"
+  },
+  {
+    "input": "D\t",
+    "output": "D"
+  },
+  {
+    "input": "D  ",
+    "output": "D"
+  },
+  {
+    "input": "D#",
+    "output": "D#"
+  },
+  {
+    "input": "D#\t",
+    "output": "D#"
+  },
+  {
+    "input": "D#  ",
+    "output": "D#"
+  },
+  {
+    "input": "D#+",
+    "output": "D#aug"
+  },
+  {
+    "input": "D#-",
+    "output": "D#m"
+  },
+  {
+    "input": "D#-7",
+    "output": "D#m7"
+  },
+  {
+    "input": "D#/A",
+    "output": "D#"
+  },
+  {
+    "input": "D#/C",
+    "output": "D#"
+  },
+  {
+    "input": "D#/D",
+    "output": "D#"
+  },
+  {
+    "input": "D#/G",
+    "output": "D#"
+  },
+  {
+    "input": "D#5",
+    "output": "D#5"
+  },
+  {
+    "input": "D#6",
+    "output": "D#6"
+  },
+  {
+    "input": "D#7",
+    "output": "D#7"
+  },
+  {
+    "input": "D#M",
+    "output": "D#"
+  },
+  {
+    "input": "D#MIN",
+    "output": "D#m"
+  },
+  {
+    "input": "D#MINOR",
+    "output": "D#m"
+  },
+  {
+    "input": "D#Maj",
+    "output": "D#"
+  },
+  {
+    "input": "D#Min",
+    "output": "D#m"
+  },
+  {
+    "input": "D#add11",
+    "output": "D#add11"
+  },
+  {
+    "input": "D#add9",
+    "output": "D#add9"
+  },
+  {
+    "input": "D#aug",
+    "output": "D#aug"
+  },
+  {
+    "input": "D#dim",
+    "output": "D#dim"
+  },
+  {
+    "input": "D#dim7",
+    "output": "D#dim7"
+  },
+  {
+    "input": "D#m",
+    "output": "D#m"
+  },
+  {
+    "input": "D#m\t",
+    "output": "D#m"
+  },
+  {
+    "input": "D#m  ",
+    "output": "D#m"
+  },
+  {
+    "input": "D#m/A",
+    "output": "D#m"
+  },
+  {
+    "input": "D#m/C",
+    "output": "D#m"
+  },
+  {
+    "input": "D#m/D",
+    "output": "D#m"
+  },
+  {
+    "input": "D#m/G",
+    "output": "D#m"
+  },
+  {
+    "input": "D#m7",
+    "output": "D#m7"
+  },
+  {
+    "input": "D#maj",
+    "output": "D#"
+  },
+  {
+    "input": "D#maj7",
+    "output": "D#maj7"
+  },
+  {
+    "input": "D#maj9",
+    "output": "D#maj9"
+  },
+  {
+    "input": "D#min",
+    "output": "D#m"
+  },
+  {
+    "input": "D#minor",
+    "output": "D#m"
+  },
+  {
+    "input": "D#sus",
+    "output": "D#sus4"
+  },
+  {
+    "input": "D#sus2",
+    "output": "D#sus2"
+  },
+  {
+    "input": "D#sus4",
+    "output": "D#sus4"
+  },
+  {
+    "input": "D#°",
+    "output": "D#dim"
+  },
+  {
+    "input": "D+",
+    "output": "Daug"
+  },
+  {
+    "input": "D-",
+    "output": "Dm"
+  },
+  {
+    "input": "D-7",
+    "output": "Dm7"
+  },
+  {
+    "input": "D-aj7",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "D/A",
+    "output": "D"
+  },
+  {
+    "input": "D/C",
+    "output": "D"
+  },
+  {
+    "input": "D/D",
+    "output": "D"
+  },
+  {
+    "input": "D/G",
+    "output": "D"
+  },
+  {
+    "input": "D5",
+    "output": "D5"
+  },
+  {
+    "input": "D5\t",
+    "output": "D5"
+  },
+  {
+    "input": "D5  ",
+    "output": "D5"
+  },
+  {
+    "input": "D5/A",
+    "output": "D5"
+  },
+  {
+    "input": "D5/C",
+    "output": "D5"
+  },
+  {
+    "input": "D5/D",
+    "output": "D5"
+  },
+  {
+    "input": "D5/G",
+    "output": "D5"
+  },
+  {
+    "input": "D6",
+    "output": "D6"
+  },
+  {
+    "input": "D6\t",
+    "output": "D6"
+  },
+  {
+    "input": "D6  ",
+    "output": "D6"
+  },
+  {
+    "input": "D6/A",
+    "output": "D6"
+  },
+  {
+    "input": "D6/C",
+    "output": "D6"
+  },
+  {
+    "input": "D6/D",
+    "output": "D6"
+  },
+  {
+    "input": "D6/G",
+    "output": "D6"
+  },
+  {
+    "input": "D7",
+    "output": "D7"
+  },
+  {
+    "input": "D7\t",
+    "output": "D7"
+  },
+  {
+    "input": "D7  ",
+    "output": "D7"
+  },
+  {
+    "input": "D7/A",
+    "output": "D7"
+  },
+  {
+    "input": "D7/C",
+    "output": "D7"
+  },
+  {
+    "input": "D7/D",
+    "output": "D7"
+  },
+  {
+    "input": "D7/G",
+    "output": "D7"
+  },
+  {
+    "input": "DADD9",
+    "output": "Dadd9"
+  },
+  {
+    "input": "DAdd9",
+    "output": "Dadd9"
+  },
+  {
+    "input": "DB",
+    "output": "DB"
+  },
+  {
+    "input": "DBM",
+    "output": "DBM"
+  },
+  {
+    "input": "DM",
+    "output": "D"
+  },
+  {
+    "input": "DM7",
+    "output": "DM7"
+  },
+  {
+    "input": "DMAJ7",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "DMIN",
+    "output": "Dm"
+  },
+  {
+    "input": "DMINOR",
+    "output": "Dm"
+  },
+  {
+    "input": "DMaj",
+    "output": "D"
+  },
+  {
+    "input": "DMin",
+    "output": "Dm"
+  },
+  {
+    "input": "DSUS",
+    "output": "Dsus4"
+  },
+  {
+    "input": "DSUS2",
+    "output": "Dsus2"
+  },
+  {
+    "input": "DSUS4",
+    "output": "Dsus4"
+  },
+  {
+    "input": "DSus2",
+    "output": "Dsus2"
+  },
+  {
+    "input": "DSus4",
+    "output": "Dsus4"
+  },
+  {
+    "input": "Dadd11",
+    "output": "Dadd11"
+  },
+  {
+    "input": "Dadd9",
+    "output": "Dadd9"
+  },
+  {
+    "input": "Dadd9\t",
+    "output": "Dadd9"
+  },
+  {
+    "input": "Dadd9  ",
+    "output": "Dadd9"
+  },
+  {
+    "input": "Dadd9/A",
+    "output": "Dadd9"
+  },
+  {
+    "input": "Dadd9/C",
+    "output": "Dadd9"
+  },
+  {
+    "input": "Dadd9/D",
+    "output": "Dadd9"
+  },
+  {
+    "input": "Dadd9/G",
+    "output": "Dadd9"
+  },
+  {
+    "input": "Daug",
+    "output": "Daug"
+  },
+  {
+    "input": "Db",
+    "output": "Db"
+  },
+  {
+    "input": "Db\t",
+    "output": "Db"
+  },
+  {
+    "input": "Db  ",
+    "output": "Db"
+  },
+  {
+    "input": "Db+",
+    "output": "Dbaug"
+  },
+  {
+    "input": "Db-",
+    "output": "Dbm"
+  },
+  {
+    "input": "Db-7",
+    "output": "Dbm7"
+  },
+  {
+    "input": "Db/A",
+    "output": "Db"
+  },
+  {
+    "input": "Db/C",
+    "output": "Db"
+  },
+  {
+    "input": "Db/D",
+    "output": "Db"
+  },
+  {
+    "input": "Db/G",
+    "output": "Db"
+  },
+  {
+    "input": "Db5",
+    "output": "Db5"
+  },
+  {
+    "input": "Db6",
+    "output": "Db6"
+  },
+  {
+    "input": "Db7",
+    "output": "Db7"
+  },
+  {
+    "input": "DbM",
+    "output": "Db"
+  },
+  {
+    "input": "DbMIN",
+    "output": "Dbm"
+  },
+  {
+    "input": "DbMINOR",
+    "output": "Dbm"
+  },
+  {
+    "input": "DbMaj",
+    "output": "Db"
+  },
+  {
+    "input": "DbMin",
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbadd11",
+    "output": "Dbadd11"
+  },
+  {
+    "input": "Dbadd9",
+    "output": "Dbadd9"
+  },
+  {
+    "input": "Dbaug",
+    "output": "Dbaug"
+  },
+  {
+    "input": "Dbdim",
+    "output": "Dbdim"
+  },
+  {
+    "input": "Dbdim7",
+    "output": "Dbdim7"
+  },
+  {
+    "input": "Dbm",
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbm\t",
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbm  ",
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbm/A",
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbm/C",
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbm/D",
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbm/G",
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbm7",
+    "output": "Dbm7"
+  },
+  {
+    "input": "Dbmaj",
+    "output": "Db"
+  },
+  {
+    "input": "Dbmaj7",
+    "output": "Dbmaj7"
+  },
+  {
+    "input": "Dbmaj9",
+    "output": "Dbmaj9"
+  },
+  {
+    "input": "Dbmin",
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbminor",
+    "output": "Dbm"
+  },
+  {
+    "input": "Dbsus",
+    "output": "Dbsus4"
+  },
+  {
+    "input": "Dbsus2",
+    "output": "Dbsus2"
+  },
+  {
+    "input": "Dbsus4",
+    "output": "Dbsus4"
+  },
+  {
+    "input": "Db°",
+    "output": "Dbdim"
+  },
+  {
+    "input": "Ddim",
+    "output": "Ddim"
+  },
+  {
+    "input": "Ddim7",
+    "output": "Ddim7"
+  },
+  {
+    "input": "Dm",
+    "output": "Dm"
+  },
+  {
+    "input": "Dm\t",
+    "output": "Dm"
+  },
+  {
+    "input": "Dm  ",
+    "output": "Dm"
+  },
+  {
+    "input": "Dm/A",
+    "output": "Dm"
+  },
+  {
+    "input": "Dm/C",
+    "output": "Dm"
+  },
+  {
+    "input": "Dm/D",
+    "output": "Dm"
+  },
+  {
+    "input": "Dm/G",
+    "output": "Dm"
+  },
+  {
+    "input": "Dm7",
+    "output": "Dm7"
+  },
+  {
+    "input": "Dm7\t",
+    "output": "Dm7"
+  },
+  {
+    "input": "Dm7  ",
+    "output": "Dm7"
+  },
+  {
+    "input": "Dm7/A",
+    "output": "Dm7"
+  },
+  {
+    "input": "Dm7/C",
+    "output": "Dm7"
+  },
+  {
+    "input": "Dm7/D",
+    "output": "Dm7"
+  },
+  {
+    "input": "Dm7/G",
+    "output": "Dm7"
+  },
+  {
+    "input": "Dmaj",
+    "output": "D"
+  },
+  {
+    "input": "Dmaj7",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Dmaj7\t",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Dmaj7  ",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Dmaj7/A",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Dmaj7/C",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Dmaj7/D",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Dmaj7/G",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "Dmaj9",
+    "output": "Dmaj9"
+  },
+  {
+    "input": "Dmin",
+    "output": "Dm"
+  },
+  {
+    "input": "Dminor",
+    "output": "Dm"
+  },
+  {
+    "input": "Dsus",
+    "output": "Dsus4"
+  },
+  {
+    "input": "Dsus2",
+    "output": "Dsus2"
+  },
+  {
+    "input": "Dsus2\t",
+    "output": "Dsus2"
+  },
+  {
+    "input": "Dsus2  ",
+    "output": "Dsus2"
+  },
+  {
+    "input": "Dsus2/A",
+    "output": "Dsus2"
+  },
+  {
+    "input": "Dsus2/C",
+    "output": "Dsus2"
+  },
+  {
+    "input": "Dsus2/D",
+    "output": "Dsus2"
+  },
+  {
+    "input": "Dsus2/G",
+    "output": "Dsus2"
+  },
+  {
+    "input": "Dsus4",
+    "output": "Dsus4"
+  },
+  {
+    "input": "Dsus4\t",
+    "output": "Dsus4"
+  },
+  {
+    "input": "Dsus4  ",
+    "output": "Dsus4"
+  },
+  {
+    "input": "Dsus4/A",
+    "output": "Dsus4"
+  },
+  {
+    "input": "Dsus4/C",
+    "output": "Dsus4"
+  },
+  {
+    "input": "Dsus4/D",
+    "output": "Dsus4"
+  },
+  {
+    "input": "Dsus4/G",
+    "output": "Dsus4"
+  },
+  {
+    "input": "D°",
+    "output": "Ddim"
+  },
+  {
+    "input": "E",
+    "output": "E"
+  },
+  {
+    "input": "E\t",
+    "output": "E"
+  },
+  {
+    "input": "E  ",
+    "output": "E"
+  },
+  {
+    "input": "E#",
+    "output": "E#"
+  },
+  {
+    "input": "E#+",
+    "output": "E#aug"
+  },
+  {
+    "input": "E#-",
+    "output": "E#m"
+  },
+  {
+    "input": "E#-7",
+    "output": "E#m7"
+  },
+  {
+    "input": "E#5",
+    "output": "E#5"
+  },
+  {
+    "input": "E#6",
+    "output": "E#6"
+  },
+  {
+    "input": "E#7",
+    "output": "E#7"
+  },
+  {
+    "input": "E#M",
+    "output": "E#"
+  },
+  {
+    "input": "E#MIN",
+    "output": "E#m"
+  },
+  {
+    "input": "E#Maj",
+    "output": "E#"
+  },
+  {
+    "input": "E#add11",
+    "output": "E#add11"
+  },
+  {
+    "input": "E#add9",
+    "output": "E#add9"
+  },
+  {
+    "input": "E#aug",
+    "output": "E#aug"
+  },
+  {
+    "input": "E#dim",
+    "output": "E#dim"
+  },
+  {
+    "input": "E#dim7",
+    "output": "E#dim7"
+  },
+  {
+    "input": "E#m",
+    "output": "E#m"
+  },
+  {
+    "input": "E#m7",
+    "output": "E#m7"
+  },
+  {
+    "input": "E#maj7",
+    "output": "E#maj7"
+  },
+  {
+    "input": "E#maj9",
+    "output": "E#maj9"
+  },
+  {
+    "input": "E#min",
+    "output": "E#m"
+  },
+  {
+    "input": "E#minor",
+    "output": "E#m"
+  },
+  {
+    "input": "E#sus",
+    "output": "E#sus4"
+  },
+  {
+    "input": "E#sus2",
+    "output": "E#sus2"
+  },
+  {
+    "input": "E#sus4",
+    "output": "E#sus4"
+  },
+  {
+    "input": "E#°",
+    "output": "E#dim"
+  },
+  {
+    "input": "E+",
+    "output": "Eaug"
+  },
+  {
+    "input": "E-",
+    "output": "Em"
+  },
+  {
+    "input": "E-7",
+    "output": "Em7"
+  },
+  {
+    "input": "E-aj7",
+    "output": "Emaj7"
+  },
+  {
+    "input": "E/A",
+    "output": "E"
+  },
+  {
+    "input": "E/C",
+    "output": "E"
+  },
+  {
+    "input": "E/D",
+    "output": "E"
+  },
+  {
+    "input": "E/G",
+    "output": "E"
+  },
+  {
+    "input": "E5",
+    "output": "E5"
+  },
+  {
+    "input": "E5\t",
+    "output": "E5"
+  },
+  {
+    "input": "E5  ",
+    "output": "E5"
+  },
+  {
+    "input": "E5/A",
+    "output": "E5"
+  },
+  {
+    "input": "E5/C",
+    "output": "E5"
+  },
+  {
+    "input": "E5/D",
+    "output": "E5"
+  },
+  {
+    "input": "E5/G",
+    "output": "E5"
+  },
+  {
+    "input": "E6",
+    "output": "E6"
+  },
+  {
+    "input": "E7",
+    "output": "E7"
+  },
+  {
+    "input": "E7\t",
+    "output": "E7"
+  },
+  {
+    "input": "E7  ",
+    "output": "E7"
+  },
+  {
+    "input": "E7/A",
+    "output": "E7"
+  },
+  {
+    "input": "E7/C",
+    "output": "E7"
+  },
+  {
+    "input": "E7/D",
+    "output": "E7"
+  },
+  {
+    "input": "E7/G",
+    "output": "E7"
+  },
+  {
+    "input": "EB",
+    "output": "EB"
+  },
+  {
+    "input": "EDIM",
+    "output": "EDIM"
+  },
+  {
+    "input": "EM",
+    "output": "E"
+  },
+  {
+    "input": "EM7",
+    "output": "EM7"
+  },
+  {
+    "input": "EMAJ7",
+    "output": "Emaj7"
+  },
+  {
+    "input": "EMIN",
+    "output": "Em"
+  },
+  {
+    "input": "EMINOR",
+    "output": "Em"
+  },
+  {
+    "input": "EMaj",
+    "output": "E"
+  },
+  {
+    "input": "EMin",
+    "output": "Em"
+  },
+  {
+    "input": "ESUS",
+    "output": "Esus4"
+  },
+  {
+    "input": "ESUS4",
+    "output": "Esus4"
+  },
+  {
+    "input": "ESus4",
+    "output": "Esus4"
+  },
+  {
+    "input": "Eadd11",
+    "output": "Eadd11"
+  },
+  {
+    "input": "Eadd9",
+    "output": "Eadd9"
+  },
+  {
+    "input": "Eaug",
+    "output": "Eaug"
+  },
+  {
+    "input": "Eb",
+    "output": "Eb"
+  },
+  {
+    "input": "Eb\t",
+    "output": "Eb"
+  },
+  {
+    "input": "Eb  ",
+    "output": "Eb"
+  },
+  {
+    "input": "Eb+",
+    "output": "Ebaug"
+  },
+  {
+    "input": "Eb-",
+    "output": "D#m"
+  },
+  {
+    "input": "Eb-7",
+    "output": "Ebm7"
+  },
+  {
+    "input": "Eb/A",
+    "output": "Eb"
+  },
+  {
+    "input": "Eb/C",
+    "output": "Eb"
+  },
+  {
+    "input": "Eb/D",
+    "output": "Eb"
+  },
+  {
+    "input": "Eb/G",
+    "output": "Eb"
+  },
+  {
+    "input": "Eb5",
+    "output": "Eb5"
+  },
+  {
+    "input": "Eb6",
+    "output": "Eb6"
+  },
+  {
+    "input": "Eb7",
+    "output": "Eb7"
+  },
+  {
+    "input": "EbM",
+    "output": "Eb"
+  },
+  {
+    "input": "EbMIN",
+    "output": "D#m"
+  },
+  {
+    "input": "EbMaj",
+    "output": "Eb"
+  },
+  {
+    "input": "Ebadd11",
+    "output": "Ebadd11"
+  },
+  {
+    "input": "Ebadd9",
+    "output": "Ebadd9"
+  },
+  {
+    "input": "Ebaug",
+    "output": "Ebaug"
+  },
+  {
+    "input": "Ebdim",
+    "output": "Ebdim"
+  },
+  {
+    "input": "Ebdim7",
+    "output": "Ebdim7"
+  },
+  {
+    "input": "Ebm",
+    "output": "D#m"
+  },
+  {
+    "input": "Ebm7",
+    "output": "Ebm7"
+  },
+  {
+    "input": "Ebmaj",
+    "output": "Eb"
+  },
+  {
+    "input": "Ebmaj7",
+    "output": "Ebmaj7"
+  },
+  {
+    "input": "Ebmaj9",
+    "output": "Ebmaj9"
+  },
+  {
+    "input": "Ebmin",
+    "output": "D#m"
+  },
+  {
+    "input": "Ebminor",
+    "output": "D#m"
+  },
+  {
+    "input": "Ebsus",
+    "output": "Ebsus4"
+  },
+  {
+    "input": "Ebsus2",
+    "output": "Ebsus2"
+  },
+  {
+    "input": "Ebsus4",
+    "output": "Ebsus4"
+  },
+  {
+    "input": "Eb°",
+    "output": "Ebdim"
+  },
+  {
+    "input": "Edim",
+    "output": "Edim"
+  },
+  {
+    "input": "Edim\t",
+    "output": "Edim"
+  },
+  {
+    "input": "Edim  ",
+    "output": "Edim"
+  },
+  {
+    "input": "Edim/A",
+    "output": "Edim"
+  },
+  {
+    "input": "Edim/C",
+    "output": "Edim"
+  },
+  {
+    "input": "Edim/D",
+    "output": "Edim"
+  },
+  {
+    "input": "Edim/G",
+    "output": "Edim"
+  },
+  {
+    "input": "Edim7",
+    "output": "Edim7"
+  },
+  {
+    "input": "Em",
+    "output": "Em"
+  },
+  {
+    "input": "Em\t",
+    "output": "Em"
+  },
+  {
+    "input": "Em  ",
+    "output": "Em"
+  },
+  {
+    "input": "Em/A",
+    "output": "Em"
+  },
+  {
+    "input": "Em/C",
+    "output": "Em"
+  },
+  {
+    "input": "Em/D",
+    "output": "Em"
+  },
+  {
+    "input": "Em/G",
+    "output": "Em"
+  },
+  {
+    "input": "Em7",
+    "output": "Em7"
+  },
+  {
+    "input": "Em7\t",
+    "output": "Em7"
+  },
+  {
+    "input": "Em7  ",
+    "output": "Em7"
+  },
+  {
+    "input": "Em7/A",
+    "output": "Em7"
+  },
+  {
+    "input": "Em7/C",
+    "output": "Em7"
+  },
+  {
+    "input": "Em7/D",
+    "output": "Em7"
+  },
+  {
+    "input": "Em7/G",
+    "output": "Em7"
+  },
+  {
+    "input": "Emaj",
+    "output": "E"
+  },
+  {
+    "input": "Emaj7",
+    "output": "Emaj7"
+  },
+  {
+    "input": "Emaj7\t",
+    "output": "Emaj7"
+  },
+  {
+    "input": "Emaj7  ",
+    "output": "Emaj7"
+  },
+  {
+    "input": "Emaj7/A",
+    "output": "Emaj7"
+  },
+  {
+    "input": "Emaj7/C",
+    "output": "Emaj7"
+  },
+  {
+    "input": "Emaj7/D",
+    "output": "Emaj7"
+  },
+  {
+    "input": "Emaj7/G",
+    "output": "Emaj7"
+  },
+  {
+    "input": "Emaj9",
+    "output": "Emaj9"
+  },
+  {
+    "input": "Emin",
+    "output": "Em"
+  },
+  {
+    "input": "Eminor",
+    "output": "Em"
+  },
+  {
+    "input": "Esus",
+    "output": "Esus4"
+  },
+  {
+    "input": "Esus2",
+    "output": "Esus2"
+  },
+  {
+    "input": "Esus4",
+    "output": "Esus4"
+  },
+  {
+    "input": "Esus4\t",
+    "output": "Esus4"
+  },
+  {
+    "input": "Esus4  ",
+    "output": "Esus4"
+  },
+  {
+    "input": "Esus4/A",
+    "output": "Esus4"
+  },
+  {
+    "input": "Esus4/C",
+    "output": "Esus4"
+  },
+  {
+    "input": "Esus4/D",
+    "output": "Esus4"
+  },
+  {
+    "input": "Esus4/G",
+    "output": "Esus4"
+  },
+  {
+    "input": "E°",
+    "output": "Edim"
+  },
+  {
+    "input": "F",
+    "output": "F"
+  },
+  {
+    "input": "F\t",
+    "output": "F"
+  },
+  {
+    "input": "F  ",
+    "output": "F"
+  },
+  {
+    "input": "F#",
+    "output": "F#"
+  },
+  {
+    "input": "F#\t",
+    "output": "F#"
+  },
+  {
+    "input": "F#  ",
+    "output": "F#"
+  },
+  {
+    "input": "F#+",
+    "output": "F#aug"
+  },
+  {
+    "input": "F#-",
+    "output": "F#m"
+  },
+  {
+    "input": "F#-7",
+    "output": "F#m7"
+  },
+  {
+    "input": "F#/A",
+    "output": "F#"
+  },
+  {
+    "input": "F#/C",
+    "output": "F#"
+  },
+  {
+    "input": "F#/D",
+    "output": "F#"
+  },
+  {
+    "input": "F#/G",
+    "output": "F#"
+  },
+  {
+    "input": "F#5",
+    "output": "F#5"
+  },
+  {
+    "input": "F#6",
+    "output": "F#6"
+  },
+  {
+    "input": "F#7",
+    "output": "F#7"
+  },
+  {
+    "input": "F#M",
+    "output": "F#"
+  },
+  {
+    "input": "F#MIN",
+    "output": "F#m"
+  },
+  {
+    "input": "F#MINOR",
+    "output": "F#m"
+  },
+  {
+    "input": "F#Maj",
+    "output": "F#"
+  },
+  {
+    "input": "F#Min",
+    "output": "F#m"
+  },
+  {
+    "input": "F#add11",
+    "output": "F#add11"
+  },
+  {
+    "input": "F#add9",
+    "output": "F#add9"
+  },
+  {
+    "input": "F#aug",
+    "output": "F#aug"
+  },
+  {
+    "input": "F#dim",
+    "output": "F#dim"
+  },
+  {
+    "input": "F#dim7",
+    "output": "F#dim7"
+  },
+  {
+    "input": "F#m",
+    "output": "F#m"
+  },
+  {
+    "input": "F#m\t",
+    "output": "F#m"
+  },
+  {
+    "input": "F#m  ",
+    "output": "F#m"
+  },
+  {
+    "input": "F#m/A",
+    "output": "F#m"
+  },
+  {
+    "input": "F#m/C",
+    "output": "F#m"
+  },
+  {
+    "input": "F#m/D",
+    "output": "F#m"
+  },
+  {
+    "input": "F#m/G",
+    "output": "F#m"
+  },
+  {
+    "input": "F#m7",
+    "output": "F#m7"
+  },
+  {
+    "input": "F#maj",
+    "output": "F#"
+  },
+  {
+    "input": "F#maj7",
+    "output": "F#maj7"
+  },
+  {
+    "input": "F#maj9",
+    "output": "F#maj9"
+  },
+  {
+    "input": "F#min",
+    "output": "F#m"
+  },
+  {
+    "input": "F#minor",
+    "output": "F#m"
+  },
+  {
+    "input": "F#sus",
+    "output": "F#sus4"
+  },
+  {
+    "input": "F#sus2",
+    "output": "F#sus2"
+  },
+  {
+    "input": "F#sus4",
+    "output": "F#sus4"
+  },
+  {
+    "input": "F#°",
+    "output": "F#dim"
+  },
+  {
+    "input": "F+",
+    "output": "Faug"
+  },
+  {
+    "input": "F-",
+    "output": "Fm"
+  },
+  {
+    "input": "F-7",
+    "output": "Fm7"
+  },
+  {
+    "input": "F-aj7",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "F/A",
+    "output": "F"
+  },
+  {
+    "input": "F/C",
+    "output": "F"
+  },
+  {
+    "input": "F/D",
+    "output": "F"
+  },
+  {
+    "input": "F/G",
+    "output": "F"
+  },
+  {
+    "input": "F5",
+    "output": "F5"
+  },
+  {
+    "input": "F6",
+    "output": "F6"
+  },
+  {
+    "input": "F7",
+    "output": "F7"
+  },
+  {
+    "input": "F7\t",
+    "output": "F7"
+  },
+  {
+    "input": "F7  ",
+    "output": "F7"
+  },
+  {
+    "input": "F7/A",
+    "output": "F7"
+  },
+  {
+    "input": "F7/C",
+    "output": "F7"
+  },
+  {
+    "input": "F7/D",
+    "output": "F7"
+  },
+  {
+    "input": "F7/G",
+    "output": "F7"
+  },
+  {
+    "input": "FM",
+    "output": "F"
+  },
+  {
+    "input": "FM7",
+    "output": "FM7"
+  },
+  {
+    "input": "FMAJ7",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "FMIN",
+    "output": "Fm"
+  },
+  {
+    "input": "FMINOR",
+    "output": "Fm"
+  },
+  {
+    "input": "FMaj",
+    "output": "F"
+  },
+  {
+    "input": "FMin",
+    "output": "Fm"
+  },
+  {
+    "input": "Fadd11",
+    "output": "Fadd11"
+  },
+  {
+    "input": "Fadd9",
+    "output": "Fadd9"
+  },
+  {
+    "input": "Faug",
+    "output": "Faug"
+  },
+  {
+    "input": "Fb",
+    "output": "E"
+  },
+  {
+    "input": "Fb+",
+    "output": "Fbaug"
+  },
+  {
+    "input": "Fb-",
+    "output": "Em"
+  },
+  {
+    "input": "Fb-7",
+    "output": "Fbm7"
+  },
+  {
+    "input": "Fb5",
+    "output": "Fb5"
+  },
+  {
+    "input": "Fb6",
+    "output": "Fb6"
+  },
+  {
+    "input": "Fb7",
+    "output": "Fb7"
+  },
+  {
+    "input": "FbM",
+    "output": "E"
+  },
+  {
+    "input": "FbMIN",
+    "output": "Em"
+  },
+  {
+    "input": "FbMaj",
+    "output": "E"
+  },
+  {
+    "input": "Fbadd11",
+    "output": "Fbadd11"
+  },
+  {
+    "input": "Fbadd9",
+    "output": "Fbadd9"
+  },
+  {
+    "input": "Fbaug",
+    "output": "Fbaug"
+  },
+  {
+    "input": "Fbdim",
+    "output": "Fbdim"
+  },
+  {
+    "input": "Fbdim7",
+    "output": "Fbdim7"
+  },
+  {
+    "input": "Fbm",
+    "output": "Em"
+  },
+  {
+    "input": "Fbm7",
+    "output": "Fbm7"
+  },
+  {
+    "input": "Fbmaj7",
+    "output": "Fbmaj7"
+  },
+  {
+    "input": "Fbmaj9",
+    "output": "Fbmaj9"
+  },
+  {
+    "input": "Fbmin",
+    "output": "Em"
+  },
+  {
+    "input": "Fbminor",
+    "output": "Em"
+  },
+  {
+    "input": "Fbsus",
+    "output": "Fbsus4"
+  },
+  {
+    "input": "Fbsus2",
+    "output": "Fbsus2"
+  },
+  {
+    "input": "Fbsus4",
+    "output": "Fbsus4"
+  },
+  {
+    "input": "Fb°",
+    "output": "Fbdim"
+  },
+  {
+    "input": "Fdim",
+    "output": "Fdim"
+  },
+  {
+    "input": "Fdim7",
+    "output": "Fdim7"
+  },
+  {
+    "input": "Fm",
+    "output": "Fm"
+  },
+  {
+    "input": "Fm\t",
+    "output": "Fm"
+  },
+  {
+    "input": "Fm  ",
+    "output": "Fm"
+  },
+  {
+    "input": "Fm/A",
+    "output": "Fm"
+  },
+  {
+    "input": "Fm/C",
+    "output": "Fm"
+  },
+  {
+    "input": "Fm/D",
+    "output": "Fm"
+  },
+  {
+    "input": "Fm/G",
+    "output": "Fm"
+  },
+  {
+    "input": "Fm7",
+    "output": "Fm7"
+  },
+  {
+    "input": "Fm7\t",
+    "output": "Fm7"
+  },
+  {
+    "input": "Fm7  ",
+    "output": "Fm7"
+  },
+  {
+    "input": "Fm7/A",
+    "output": "Fm7"
+  },
+  {
+    "input": "Fm7/C",
+    "output": "Fm7"
+  },
+  {
+    "input": "Fm7/D",
+    "output": "Fm7"
+  },
+  {
+    "input": "Fm7/G",
+    "output": "Fm7"
+  },
+  {
+    "input": "Fmaj",
+    "output": "F"
+  },
+  {
+    "input": "Fmaj7",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Fmaj7\t",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Fmaj7  ",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Fmaj7/A",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Fmaj7/C",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Fmaj7/D",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Fmaj7/G",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "Fmaj9",
+    "output": "Fmaj9"
+  },
+  {
+    "input": "Fmin",
+    "output": "Fm"
+  },
+  {
+    "input": "Fminor",
+    "output": "Fm"
+  },
+  {
+    "input": "Fsus",
+    "output": "Fsus4"
+  },
+  {
+    "input": "Fsus2",
+    "output": "Fsus2"
+  },
+  {
+    "input": "Fsus4",
+    "output": "Fsus4"
+  },
+  {
+    "input": "F°",
+    "output": "Fdim"
+  },
+  {
+    "input": "G",
+    "output": "G"
+  },
+  {
+    "input": "G\t",
+    "output": "G"
+  },
+  {
+    "input": "G  ",
+    "output": "G"
+  },
+  {
+    "input": "G#",
+    "output": "G#"
+  },
+  {
+    "input": "G#\t",
+    "output": "G#"
+  },
+  {
+    "input": "G#  ",
+    "output": "G#"
+  },
+  {
+    "input": "G#+",
+    "output": "G#aug"
+  },
+  {
+    "input": "G#-",
+    "output": "G#m"
+  },
+  {
+    "input": "G#-7",
+    "output": "G#m7"
+  },
+  {
+    "input": "G#/A",
+    "output": "G#"
+  },
+  {
+    "input": "G#/C",
+    "output": "G#"
+  },
+  {
+    "input": "G#/D",
+    "output": "G#"
+  },
+  {
+    "input": "G#/G",
+    "output": "G#"
+  },
+  {
+    "input": "G#5",
+    "output": "G#5"
+  },
+  {
+    "input": "G#6",
+    "output": "G#6"
+  },
+  {
+    "input": "G#7",
+    "output": "G#7"
+  },
+  {
+    "input": "G#M",
+    "output": "G#"
+  },
+  {
+    "input": "G#MIN",
+    "output": "G#m"
+  },
+  {
+    "input": "G#MINOR",
+    "output": "G#m"
+  },
+  {
+    "input": "G#Maj",
+    "output": "G#"
+  },
+  {
+    "input": "G#Min",
+    "output": "G#m"
+  },
+  {
+    "input": "G#add11",
+    "output": "G#add11"
+  },
+  {
+    "input": "G#add9",
+    "output": "G#add9"
+  },
+  {
+    "input": "G#aug",
+    "output": "G#aug"
+  },
+  {
+    "input": "G#dim",
+    "output": "G#dim"
+  },
+  {
+    "input": "G#dim7",
+    "output": "G#dim7"
+  },
+  {
+    "input": "G#m",
+    "output": "G#m"
+  },
+  {
+    "input": "G#m\t",
+    "output": "G#m"
+  },
+  {
+    "input": "G#m  ",
+    "output": "G#m"
+  },
+  {
+    "input": "G#m/A",
+    "output": "G#m"
+  },
+  {
+    "input": "G#m/C",
+    "output": "G#m"
+  },
+  {
+    "input": "G#m/D",
+    "output": "G#m"
+  },
+  {
+    "input": "G#m/G",
+    "output": "G#m"
+  },
+  {
+    "input": "G#m7",
+    "output": "G#m7"
+  },
+  {
+    "input": "G#maj",
+    "output": "G#"
+  },
+  {
+    "input": "G#maj7",
+    "output": "G#maj7"
+  },
+  {
+    "input": "G#maj9",
+    "output": "G#maj9"
+  },
+  {
+    "input": "G#min",
+    "output": "G#m"
+  },
+  {
+    "input": "G#minor",
+    "output": "G#m"
+  },
+  {
+    "input": "G#sus",
+    "output": "G#sus4"
+  },
+  {
+    "input": "G#sus2",
+    "output": "G#sus2"
+  },
+  {
+    "input": "G#sus4",
+    "output": "G#sus4"
+  },
+  {
+    "input": "G#°",
+    "output": "G#dim"
+  },
+  {
+    "input": "G+",
+    "output": "Gaug"
+  },
+  {
+    "input": "G-",
+    "output": "Gm"
+  },
+  {
+    "input": "G-7",
+    "output": "Gm7"
+  },
+  {
+    "input": "G-aj7",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "G/A",
+    "output": "G"
+  },
+  {
+    "input": "G/C",
+    "output": "G"
+  },
+  {
+    "input": "G/D",
+    "output": "G"
+  },
+  {
+    "input": "G/G",
+    "output": "G"
+  },
+  {
+    "input": "G5",
+    "output": "G5"
+  },
+  {
+    "input": "G5\t",
+    "output": "G5"
+  },
+  {
+    "input": "G5  ",
+    "output": "G5"
+  },
+  {
+    "input": "G5/A",
+    "output": "G5"
+  },
+  {
+    "input": "G5/C",
+    "output": "G5"
+  },
+  {
+    "input": "G5/D",
+    "output": "G5"
+  },
+  {
+    "input": "G5/G",
+    "output": "G5"
+  },
+  {
+    "input": "G6",
+    "output": "G6"
+  },
+  {
+    "input": "G6\t",
+    "output": "G6"
+  },
+  {
+    "input": "G6  ",
+    "output": "G6"
+  },
+  {
+    "input": "G6/A",
+    "output": "G6"
+  },
+  {
+    "input": "G6/C",
+    "output": "G6"
+  },
+  {
+    "input": "G6/D",
+    "output": "G6"
+  },
+  {
+    "input": "G6/G",
+    "output": "G6"
+  },
+  {
+    "input": "G7",
+    "output": "G7"
+  },
+  {
+    "input": "G7\t",
+    "output": "G7"
+  },
+  {
+    "input": "G7  ",
+    "output": "G7"
+  },
+  {
+    "input": "G7/A",
+    "output": "G7"
+  },
+  {
+    "input": "G7/C",
+    "output": "G7"
+  },
+  {
+    "input": "G7/D",
+    "output": "G7"
+  },
+  {
+    "input": "G7/G",
+    "output": "G7"
+  },
+  {
+    "input": "GADD9",
+    "output": "Gadd9"
+  },
+  {
+    "input": "GAdd9",
+    "output": "Gadd9"
+  },
+  {
+    "input": "GB",
+    "output": "GB"
+  },
+  {
+    "input": "GBM",
+    "output": "GBM"
+  },
+  {
+    "input": "GM",
+    "output": "G"
+  },
+  {
+    "input": "GM7",
+    "output": "GM7"
+  },
+  {
+    "input": "GMAJ7",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "GMIN",
+    "output": "Gm"
+  },
+  {
+    "input": "GMINOR",
+    "output": "Gm"
+  },
+  {
+    "input": "GMaj",
+    "output": "G"
+  },
+  {
+    "input": "GMin",
+    "output": "Gm"
+  },
+  {
+    "input": "GSUS",
+    "output": "Gsus4"
+  },
+  {
+    "input": "GSUS4",
+    "output": "Gsus4"
+  },
+  {
+    "input": "GSus4",
+    "output": "Gsus4"
+  },
+  {
+    "input": "Gadd11",
+    "output": "Gadd11"
+  },
+  {
+    "input": "Gadd9",
+    "output": "Gadd9"
+  },
+  {
+    "input": "Gadd9\t",
+    "output": "Gadd9"
+  },
+  {
+    "input": "Gadd9  ",
+    "output": "Gadd9"
+  },
+  {
+    "input": "Gadd9/A",
+    "output": "Gadd9"
+  },
+  {
+    "input": "Gadd9/C",
+    "output": "Gadd9"
+  },
+  {
+    "input": "Gadd9/D",
+    "output": "Gadd9"
+  },
+  {
+    "input": "Gadd9/G",
+    "output": "Gadd9"
+  },
+  {
+    "input": "Gaug",
+    "output": "Gaug"
+  },
+  {
+    "input": "Gb",
+    "output": "F#"
+  },
+  {
+    "input": "Gb\t",
+    "output": "F#"
+  },
+  {
+    "input": "Gb  ",
+    "output": "F#"
+  },
+  {
+    "input": "Gb+",
+    "output": "Gbaug"
+  },
+  {
+    "input": "Gb-",
+    "output": "F#m"
+  },
+  {
+    "input": "Gb-7",
+    "output": "Gbm7"
+  },
+  {
+    "input": "Gb/A",
+    "output": "F#"
+  },
+  {
+    "input": "Gb/C",
+    "output": "F#"
+  },
+  {
+    "input": "Gb/D",
+    "output": "F#"
+  },
+  {
+    "input": "Gb/G",
+    "output": "F#"
+  },
+  {
+    "input": "Gb5",
+    "output": "Gb5"
+  },
+  {
+    "input": "Gb6",
+    "output": "Gb6"
+  },
+  {
+    "input": "Gb7",
+    "output": "F#7"
+  },
+  {
+    "input": "GbM",
+    "output": "F#"
+  },
+  {
+    "input": "GbMIN",
+    "output": "F#m"
+  },
+  {
+    "input": "GbMINOR",
+    "output": "F#m"
+  },
+  {
+    "input": "GbMaj",
+    "output": "F#"
+  },
+  {
+    "input": "GbMin",
+    "output": "F#m"
+  },
+  {
+    "input": "Gbadd11",
+    "output": "Gbadd11"
+  },
+  {
+    "input": "Gbadd9",
+    "output": "Gbadd9"
+  },
+  {
+    "input": "Gbaug",
+    "output": "Gbaug"
+  },
+  {
+    "input": "Gbdim",
+    "output": "Gbdim"
+  },
+  {
+    "input": "Gbdim7",
+    "output": "Gbdim7"
+  },
+  {
+    "input": "Gbm",
+    "output": "F#m"
+  },
+  {
+    "input": "Gbm\t",
+    "output": "F#m"
+  },
+  {
+    "input": "Gbm  ",
+    "output": "F#m"
+  },
+  {
+    "input": "Gbm/A",
+    "output": "F#m"
+  },
+  {
+    "input": "Gbm/C",
+    "output": "F#m"
+  },
+  {
+    "input": "Gbm/D",
+    "output": "F#m"
+  },
+  {
+    "input": "Gbm/G",
+    "output": "F#m"
+  },
+  {
+    "input": "Gbm7",
+    "output": "Gbm7"
+  },
+  {
+    "input": "Gbmaj",
+    "output": "F#"
+  },
+  {
+    "input": "Gbmaj7",
+    "output": "Gbmaj7"
+  },
+  {
+    "input": "Gbmaj9",
+    "output": "Gbmaj9"
+  },
+  {
+    "input": "Gbmin",
+    "output": "F#m"
+  },
+  {
+    "input": "Gbminor",
+    "output": "F#m"
+  },
+  {
+    "input": "Gbsus",
+    "output": "Gbsus4"
+  },
+  {
+    "input": "Gbsus2",
+    "output": "Gbsus2"
+  },
+  {
+    "input": "Gbsus4",
+    "output": "Gbsus4"
+  },
+  {
+    "input": "Gb°",
+    "output": "Gbdim"
+  },
+  {
+    "input": "Gdim",
+    "output": "Gdim"
+  },
+  {
+    "input": "Gdim7",
+    "output": "Gdim7"
+  },
+  {
+    "input": "Gm",
+    "output": "Gm"
+  },
+  {
+    "input": "Gm\t",
+    "output": "Gm"
+  },
+  {
+    "input": "Gm  ",
+    "output": "Gm"
+  },
+  {
+    "input": "Gm/A",
+    "output": "Gm"
+  },
+  {
+    "input": "Gm/C",
+    "output": "Gm"
+  },
+  {
+    "input": "Gm/D",
+    "output": "Gm"
+  },
+  {
+    "input": "Gm/G",
+    "output": "Gm"
+  },
+  {
+    "input": "Gm7",
+    "output": "Gm7"
+  },
+  {
+    "input": "Gm7\t",
+    "output": "Gm7"
+  },
+  {
+    "input": "Gm7  ",
+    "output": "Gm7"
+  },
+  {
+    "input": "Gm7/A",
+    "output": "Gm7"
+  },
+  {
+    "input": "Gm7/C",
+    "output": "Gm7"
+  },
+  {
+    "input": "Gm7/D",
+    "output": "Gm7"
+  },
+  {
+    "input": "Gm7/G",
+    "output": "Gm7"
+  },
+  {
+    "input": "Gmaj",
+    "output": "G"
+  },
+  {
+    "input": "Gmaj7",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Gmaj7\t",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Gmaj7  ",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Gmaj7/A",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Gmaj7/C",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Gmaj7/D",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Gmaj7/G",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "Gmaj9",
+    "output": "Gmaj9"
+  },
+  {
+    "input": "Gmin",
+    "output": "Gm"
+  },
+  {
+    "input": "Gminor",
+    "output": "Gm"
+  },
+  {
+    "input": "Gsus",
+    "output": "Gsus4"
+  },
+  {
+    "input": "Gsus2",
+    "output": "Gsus2"
+  },
+  {
+    "input": "Gsus4",
+    "output": "Gsus4"
+  },
+  {
+    "input": "Gsus4\t",
+    "output": "Gsus4"
+  },
+  {
+    "input": "Gsus4  ",
+    "output": "Gsus4"
+  },
+  {
+    "input": "Gsus4/A",
+    "output": "Gsus4"
+  },
+  {
+    "input": "Gsus4/C",
+    "output": "Gsus4"
+  },
+  {
+    "input": "Gsus4/D",
+    "output": "Gsus4"
+  },
+  {
+    "input": "Gsus4/G",
+    "output": "Gsus4"
+  },
+  {
+    "input": "G°",
+    "output": "Gdim"
+  },
+  {
+    "input": "H",
+    "output": "H"
+  },
+  {
+    "input": "H7",
+    "output": "H7"
+  },
+  {
+    "input": "Xyz",
+    "output": "Xyz"
+  },
+  {
+    "input": "ZZ99",
+    "output": "ZZ99"
+  },
+  {
+    "input": "a",
+    "output": "A"
+  },
+  {
+    "input": "a#",
+    "output": "A#"
+  },
+  {
+    "input": "a5",
+    "output": "A5"
+  },
+  {
+    "input": "a6",
+    "output": "A6"
+  },
+  {
+    "input": "a7",
+    "output": "A7"
+  },
+  {
+    "input": "ab",
+    "output": "Ab"
+  },
+  {
+    "input": "abm",
+    "output": "Abm"
+  },
+  {
+    "input": "adim",
+    "output": "Adim"
+  },
+  {
+    "input": "am",
+    "output": "Am"
+  },
+  {
+    "input": "am7",
+    "output": "Am7"
+  },
+  {
+    "input": "amaj7",
+    "output": "Amaj7"
+  },
+  {
+    "input": "asus2",
+    "output": "Asus2"
+  },
+  {
+    "input": "asus4",
+    "output": "Asus4"
+  },
+  {
+    "input": "b",
+    "output": "B"
+  },
+  {
+    "input": "b7",
+    "output": "B7"
+  },
+  {
+    "input": "bb",
+    "output": "Bb"
+  },
+  {
+    "input": "bb7",
+    "output": "Bb7"
+  },
+  {
+    "input": "bbm",
+    "output": "Bbm"
+  },
+  {
+    "input": "bdim",
+    "output": "Bdim"
+  },
+  {
+    "input": "bm",
+    "output": "Bm"
+  },
+  {
+    "input": "bm7",
+    "output": "Bm7"
+  },
+  {
+    "input": "c",
+    "output": "C"
+  },
+  {
+    "input": "c#",
+    "output": "C#"
+  },
+  {
+    "input": "c#m",
+    "output": "C#m"
+  },
+  {
+    "input": "c6",
+    "output": "C6"
+  },
+  {
+    "input": "c7",
+    "output": "C7"
+  },
+  {
+    "input": "cadd9",
+    "output": "Cadd9"
+  },
+  {
+    "input": "caug",
+    "output": "Caug"
+  },
+  {
+    "input": "cdim7",
+    "output": "Cdim7"
+  },
+  {
+    "input": "cm",
+    "output": "Cm"
+  },
+  {
+    "input": "cm7",
+    "output": "Cm7"
+  },
+  {
+    "input": "cmaj7",
+    "output": "Cmaj7"
+  },
+  {
+    "input": "d",
+    "output": "D"
+  },
+  {
+    "input": "d#",
+    "output": "D#"
+  },
+  {
+    "input": "d#m",
+    "output": "D#m"
+  },
+  {
+    "input": "d5",
+    "output": "D5"
+  },
+  {
+    "input": "d6",
+    "output": "D6"
+  },
+  {
+    "input": "d7",
+    "output": "D7"
+  },
+  {
+    "input": "dadd9",
+    "output": "Dadd9"
+  },
+  {
+    "input": "db",
+    "output": "Db"
+  },
+  {
+    "input": "dbm",
+    "output": "Dbm"
+  },
+  {
+    "input": "dm",
+    "output": "Dm"
+  },
+  {
+    "input": "dm7",
+    "output": "Dm7"
+  },
+  {
+    "input": "dmaj7",
+    "output": "Dmaj7"
+  },
+  {
+    "input": "dsus2",
+    "output": "Dsus2"
+  },
+  {
+    "input": "dsus4",
+    "output": "Dsus4"
+  },
+  {
+    "input": "e",
+    "output": "E"
+  },
+  {
+    "input": "e5",
+    "output": "E5"
+  },
+  {
+    "input": "e7",
+    "output": "E7"
+  },
+  {
+    "input": "eb",
+    "output": "Eb"
+  },
+  {
+    "input": "edim",
+    "output": "Edim"
+  },
+  {
+    "input": "em",
+    "output": "Em"
+  },
+  {
+    "input": "em7",
+    "output": "Em7"
+  },
+  {
+    "input": "emaj7",
+    "output": "Emaj7"
+  },
+  {
+    "input": "esus4",
+    "output": "Esus4"
+  },
+  {
+    "input": "f",
+    "output": "F"
+  },
+  {
+    "input": "f#",
+    "output": "F#"
+  },
+  {
+    "input": "f#m",
+    "output": "F#m"
+  },
+  {
+    "input": "f7",
+    "output": "F7"
+  },
+  {
+    "input": "fm",
+    "output": "Fm"
+  },
+  {
+    "input": "fm7",
+    "output": "Fm7"
+  },
+  {
+    "input": "fmaj7",
+    "output": "Fmaj7"
+  },
+  {
+    "input": "g",
+    "output": "G"
+  },
+  {
+    "input": "g#",
+    "output": "G#"
+  },
+  {
+    "input": "g#m",
+    "output": "G#m"
+  },
+  {
+    "input": "g#madd9",
+    "output": "G#madd9"
+  },
+  {
+    "input": "g5",
+    "output": "G5"
+  },
+  {
+    "input": "g6",
+    "output": "G6"
+  },
+  {
+    "input": "g7",
+    "output": "G7"
+  },
+  {
+    "input": "gadd9",
+    "output": "Gadd9"
+  },
+  {
+    "input": "gb",
+    "output": "F#"
+  },
+  {
+    "input": "gbm",
+    "output": "F#m"
+  },
+  {
+    "input": "gm",
+    "output": "Gm"
+  },
+  {
+    "input": "gm7",
+    "output": "Gm7"
+  },
+  {
+    "input": "gmaj7",
+    "output": "Gmaj7"
+  },
+  {
+    "input": "gsus4",
+    "output": "Gsus4"
+  },
+  {
+    "input": "z",
+    "output": "Z"
+  }
+]
