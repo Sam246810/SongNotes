@@ -1,0 +1,494 @@
+[
+  {
+    "input": "G          C          D\nAmazing grace, how sweet the sound",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "G          C          D",
+          "lyrics": "Amazing grace, how sweet the sound"
+        }
+      ]
+    }
+  },
+  {
+    "input": "   G        C\nWell hello there friend",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "   G        C",
+          "lyrics": "Well hello there friend"
+        }
+      ]
+    }
+  },
+  {
+    "input": "Row, row, row your boat\nGently down the stream",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "Row, row, row your boat"
+        },
+        {
+          "chords": "",
+          "lyrics": "Gently down the stream"
+        }
+      ]
+    }
+  },
+  {
+    "input": "Yesterday\n=========\n\nG          Am\nYesterday, all my troubles seemed so far away",
+    "output": {
+      "title": "Yesterday",
+      "meta": {},
+      "lines": [
+        {
+          "chords": "G          Am",
+          "lyrics": "Yesterday, all my troubles seemed so far away"
+        }
+      ]
+    }
+  },
+  {
+    "input": "First line\nSecond line",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "First line"
+        },
+        {
+          "chords": "",
+          "lyrics": "Second line"
+        }
+      ]
+    }
+  },
+  {
+    "input": "Verse\n\nG   C   D   G\n\nBridge",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "Verse"
+        },
+        {
+          "chords": "",
+          "lyrics": ""
+        },
+        {
+          "chords": "G   C   D   G",
+          "lyrics": ""
+        },
+        {
+          "chords": "",
+          "lyrics": ""
+        },
+        {
+          "chords": "",
+          "lyrics": "Bridge"
+        }
+      ]
+    }
+  },
+  {
+    "input": "G   C\nAm   F\nHere come the lyrics finally",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "G   C",
+          "lyrics": ""
+        },
+        {
+          "chords": "Am   F",
+          "lyrics": "Here come the lyrics finally"
+        }
+      ]
+    }
+  },
+  {
+    "input": "First verse line\n\nSecond verse line",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "First verse line"
+        },
+        {
+          "chords": "",
+          "lyrics": ""
+        },
+        {
+          "chords": "",
+          "lyrics": "Second verse line"
+        }
+      ]
+    }
+  },
+  {
+    "input": "\n\n  \nOnly line\n\n\n",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "Only line"
+        }
+      ]
+    }
+  },
+  {
+    "input": "G   C\r\nHello there\r\n",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "G   C",
+          "lyrics": "Hello there"
+        }
+      ]
+    }
+  },
+  {
+    "input": "",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": []
+    }
+  },
+  {
+    "input": "G          C\nThis line has chords\nThis line does not\nD          Em\nNeither does this one wait yes it does",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "G          C",
+          "lyrics": "This line has chords"
+        },
+        {
+          "chords": "",
+          "lyrics": "This line does not"
+        },
+        {
+          "chords": "D          Em",
+          "lyrics": "Neither does this one wait yes it does"
+        }
+      ]
+    }
+  },
+  {
+    "input": "[G#maj]\nFor all the heart I have",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "G#maj",
+          "lyrics": "For all the heart I have"
+        }
+      ]
+    }
+  },
+  {
+    "input": "          [G#maj]\nFor all the heart I have",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "          G#maj",
+          "lyrics": "For all the heart I have"
+        }
+      ]
+    }
+  },
+  {
+    "input": "[Fmin] [G#maj]\nWhat is the color of your butterflies",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "Fmin G#maj",
+          "lyrics": "What is the color of your butterflies"
+        }
+      ]
+    }
+  },
+  {
+    "input": "[A#min]\nWhat are just niceties",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "A#min",
+          "lyrics": "What are just niceties"
+        }
+      ]
+    }
+  },
+  {
+    "input": "[Cmaj-//-C#maj]\nId never go back",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "Cmaj-//-C#maj",
+          "lyrics": "Id never go back"
+        }
+      ]
+    }
+  },
+  {
+    "input": "[Verse]\n[G#maj]\nFor all the heart I have",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "[Verse]"
+        },
+        {
+          "chords": "G#maj",
+          "lyrics": "For all the heart I have"
+        }
+      ]
+    }
+  },
+  {
+    "input": "[Instrumental]\n[F#maj] [A#min] [F#maj]\n\n[Bridge] (very very tentative)\nWhatever happens",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "[Instrumental]"
+        },
+        {
+          "chords": "F#maj A#min F#maj",
+          "lyrics": ""
+        },
+        {
+          "chords": "",
+          "lyrics": ""
+        },
+        {
+          "chords": "",
+          "lyrics": "[Bridge] (very very tentative)"
+        },
+        {
+          "chords": "",
+          "lyrics": "Whatever happens"
+        }
+      ]
+    }
+  },
+  {
+    "input": "[Last Chorus Ending (rest is the same)]\nMaybe instead of a last chorus",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "[Last Chorus Ending (rest is the same)]"
+        },
+        {
+          "chords": "",
+          "lyrics": "Maybe instead of a last chorus"
+        }
+      ]
+    }
+  },
+  {
+    "input": "[Verse]\n          [G#maj]\nFor all the heart I have\n                       [F#maj]\nI never put it on the line\n\n[Chorus]\n          [G#maj]\nWhen you hear me call out your name",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "[Verse]"
+        },
+        {
+          "chords": "          G#maj",
+          "lyrics": "For all the heart I have"
+        },
+        {
+          "chords": "                       F#maj",
+          "lyrics": "I never put it on the line"
+        },
+        {
+          "chords": "",
+          "lyrics": ""
+        },
+        {
+          "chords": "",
+          "lyrics": "[Chorus]"
+        },
+        {
+          "chords": "          G#maj",
+          "lyrics": "When you hear me call out your name"
+        }
+      ]
+    }
+  },
+  {
+    "input": "Key: C# Maj\nBPM: 118\n\n[Verse]\n[G#maj]\nFor all the heart I have",
+    "output": {
+      "title": null,
+      "meta": {
+        "key": "C# Maj",
+        "bpm": "118"
+      },
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "[Verse]"
+        },
+        {
+          "chords": "G#maj",
+          "lyrics": "For all the heart I have"
+        }
+      ]
+    }
+  },
+  {
+    "input": "Key: G\nBPM: 90\nCapo: 2\nTuning: Drop D\n\nSome lyric line",
+    "output": {
+      "title": null,
+      "meta": {
+        "key": "G",
+        "bpm": "90",
+        "capo": "2",
+        "tuning": "Drop D"
+      },
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "Some lyric line"
+        }
+      ]
+    }
+  },
+  {
+    "input": "Just a regular lyric line",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "Just a regular lyric line"
+        }
+      ]
+    }
+  },
+  {
+    "input": "Key change is coming soon\nfor everyone involved",
+    "output": {
+      "title": null,
+      "meta": {},
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "Key change is coming soon"
+        },
+        {
+          "chords": "",
+          "lyrics": "for everyone involved"
+        }
+      ]
+    }
+  },
+  {
+    "input": "              Key: C# Maj\n              BPM: 118\n              [Verse]\n              [G#maj]\n              For all the heart I have",
+    "output": {
+      "title": null,
+      "meta": {
+        "key": "C# Maj",
+        "bpm": "118"
+      },
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "              [Verse]"
+        },
+        {
+          "chords": "              G#maj",
+          "lyrics": "              For all the heart I have"
+        }
+      ]
+    }
+  },
+  {
+    "input": "Home\n====\n\nKey: D\nCapo: 2\n\n[Verse]\nD          G          A\nWoke up this morning to the sound of rain\n[Bmin]\nNothing has ever felt so plain\n\n[Chorus]\nG     D     A     Bm\nThis is the place I call my own\n\n[Bridge] (quiet, half-time)\nJust a whisper in the dark",
+    "output": {
+      "title": "Home",
+      "meta": {
+        "key": "D",
+        "capo": "2"
+      },
+      "lines": [
+        {
+          "chords": "",
+          "lyrics": "[Verse]"
+        },
+        {
+          "chords": "D          G          A",
+          "lyrics": "Woke up this morning to the sound of rain"
+        },
+        {
+          "chords": "Bmin",
+          "lyrics": "Nothing has ever felt so plain"
+        },
+        {
+          "chords": "",
+          "lyrics": ""
+        },
+        {
+          "chords": "",
+          "lyrics": "[Chorus]"
+        },
+        {
+          "chords": "G     D     A     Bm",
+          "lyrics": "This is the place I call my own"
+        },
+        {
+          "chords": "",
+          "lyrics": ""
+        },
+        {
+          "chords": "",
+          "lyrics": "[Bridge] (quiet, half-time)"
+        },
+        {
+          "chords": "",
+          "lyrics": "Just a whisper in the dark"
+        }
+      ]
+    }
+  }
+]

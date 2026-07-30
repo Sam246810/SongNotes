@@ -1,0 +1,294 @@
+[
+  {
+    "input": "",
+    "output": []
+  },
+  {
+    "input": "   ",
+    "output": [
+      {
+        "text": "   ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      }
+    ]
+  },
+  {
+    "input": "G",
+    "output": [
+      {
+        "text": "G",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "G"
+      }
+    ]
+  },
+  {
+    "input": "G   C   D",
+    "output": [
+      {
+        "text": "G",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "G"
+      },
+      {
+        "text": "   ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "C",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "C"
+      },
+      {
+        "text": "   ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "D",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "D"
+      }
+    ]
+  },
+  {
+    "input": "  G  C  ",
+    "output": [
+      {
+        "text": "  ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "G",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "G"
+      },
+      {
+        "text": "  ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "C",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "C"
+      },
+      {
+        "text": "  ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      }
+    ]
+  },
+  {
+    "input": "Am7 Dsus4 G/B Cmaj7",
+    "output": [
+      {
+        "text": "Am7",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "Am7"
+      },
+      {
+        "text": " ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "Dsus4",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "Dsus4"
+      },
+      {
+        "text": " ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "G/B",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "G"
+      },
+      {
+        "text": " ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "Cmaj7",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "Cmaj7"
+      }
+    ]
+  },
+  {
+    "input": "G Xyz D",
+    "output": [
+      {
+        "text": "G",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "G"
+      },
+      {
+        "text": " ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "Xyz",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": false,
+        "chordName": "Xyz"
+      },
+      {
+        "text": " ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "D",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "D"
+      }
+    ]
+  },
+  {
+    "input": "g c d",
+    "output": [
+      {
+        "text": "g",
+        "isChord": true,
+        "looksLikeChord": false,
+        "isWhitespace": false,
+        "chordName": "G"
+      },
+      {
+        "text": " ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "c",
+        "isChord": true,
+        "looksLikeChord": false,
+        "isWhitespace": false,
+        "chordName": "C"
+      },
+      {
+        "text": " ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "d",
+        "isChord": true,
+        "looksLikeChord": false,
+        "isWhitespace": false,
+        "chordName": "D"
+      }
+    ]
+  },
+  {
+    "input": "C#m7b5",
+    "output": [
+      {
+        "text": "C#m7b5",
+        "isChord": false,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "C#m7b5"
+      }
+    ]
+  },
+  {
+    "input": "C is for cookie",
+    "output": [
+      {
+        "text": "C",
+        "isChord": true,
+        "looksLikeChord": true,
+        "isWhitespace": false,
+        "chordName": "C"
+      },
+      {
+        "text": " ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "is",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": false,
+        "chordName": "Is"
+      },
+      {
+        "text": " ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "for",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": false,
+        "chordName": "For"
+      },
+      {
+        "text": " ",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": true
+      },
+      {
+        "text": "cookie",
+        "isChord": false,
+        "looksLikeChord": false,
+        "isWhitespace": false,
+        "chordName": "Cookie"
+      }
+    ]
+  }
+]

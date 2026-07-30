@@ -1,0 +1,102 @@
+[
+  {
+    "input": "G          C          D",
+    "output": true
+  },
+  {
+    "input": "Am7   Dsus4   G/B   Cmaj7",
+    "output": true
+  },
+  {
+    "input": "Amazing grace, how sweet the sound",
+    "output": false
+  },
+  {
+    "input": "Did I do that?",
+    "output": false
+  },
+  {
+    "input": "a",
+    "output": false
+  },
+  {
+    "input": "Am",
+    "output": true
+  },
+  {
+    "input": "",
+    "output": false
+  },
+  {
+    "input": "    ",
+    "output": false
+  },
+  {
+    "input": "G    C    (slow down)    D",
+    "output": true
+  },
+  {
+    "input": "C is for cookie, and that is good enough for me",
+    "output": false
+  },
+  {
+    "input": "A",
+    "output": true
+  },
+  {
+    "input": "Bm",
+    "output": true
+  },
+  {
+    "input": "C#",
+    "output": true
+  },
+  {
+    "input": "Db7",
+    "output": false
+  },
+  {
+    "input": "Esus4",
+    "output": true
+  },
+  {
+    "input": "F#m7",
+    "output": false
+  },
+  {
+    "input": "G/B",
+    "output": true
+  },
+  {
+    "input": "A   B   C   D   E   F   G",
+    "output": true
+  },
+  {
+    "input": "Verse 1",
+    "output": false
+  },
+  {
+    "input": "Chorus:",
+    "output": false
+  },
+  {
+    "input": "la la la",
+    "output": false
+  },
+  {
+    "input": "Oh!",
+    "output": false
+  },
+  {
+    "input": "G,C,D",
+    "output": false
+  },
+  {
+    "input": "   G   ",
+    "output": true
+  },
+  {
+    "input": "g c d",
+    "output": false
+  }
+]

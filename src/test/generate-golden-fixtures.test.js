@@ -20,8 +20,9 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { CHORD_DB, normalizeChordName } from '../utils/chords.js';
+import { CHORD_DB, normalizeChordName, tokenizeChordLine } from '../utils/chords.js';
 import { transposeChordToken, transposeChordsLine } from '../utils/transpose.js';
+import { looksLikeChordLine, parseLyricsText } from '../utils/lyricsImport.js';
 
 function splitRootSuffix(name) {
   const m = name.match(/^([A-G])([#b]?)/);
@@ -189,6 +190,106 @@ function buildTransposeLineFixtures() {
   return fixtures;
 }
 
+// looksLikeChordLine: the hand-crafted cases from lyricsImport.test.js
+// (the highest-value inputs — each one exercises a specific decision the
+// function makes) plus a broader spread of chord-line/prose variety.
+function buildLooksLikeChordLineFixtures() {
+  const inputs = [
+    'G          C          D',
+    'Am7   Dsus4   G/B   Cmaj7',
+    'Amazing grace, how sweet the sound',
+    'Did I do that?',
+    'a',
+    'Am',
+    '',
+    '    ',
+    'G    C    (slow down)    D',
+    'C is for cookie, and that is good enough for me',
+    // Broader spread: single chords across all 12 roots, sparse and dense
+    // chord rows, mixed-case prose, punctuation edge cases.
+    'A', 'Bm', 'C#', 'Db7', 'Esus4', 'F#m7', 'G/B',
+    'A   B   C   D   E   F   G',
+    'Verse 1',
+    'Chorus:',
+    'la la la',
+    'Oh!',
+    'G,C,D',
+    '   G   ',
+    'g c d', // lowercase -- must not misfire per the "a" test's own reasoning
+  ];
+  return inputs.map((input) => ({ input, output: looksLikeChordLine(input) }));
+}
+
+// parseLyricsText: the 25 hand-crafted scenarios from lyricsImport.test.js
+// (title header, meta header block, bracketed chord cues, section markers,
+// mixed conventions, Windows line endings, indentation, empty input) --
+// these are the highest-value fixtures since each targets one specific
+// parsing decision -- plus a couple of longer, more realistic full-song
+// texts mixing several conventions at once.
+function buildParseLyricsTextFixtures() {
+  const inputs = [
+    'G          C          D\nAmazing grace, how sweet the sound',
+    '   G        C\nWell hello there friend',
+    'Row, row, row your boat\nGently down the stream',
+    'Yesterday\n=========\n\nG          Am\nYesterday, all my troubles seemed so far away',
+    'First line\nSecond line',
+    'Verse\n\nG   C   D   G\n\nBridge',
+    'G   C\nAm   F\nHere come the lyrics finally',
+    'First verse line\n\nSecond verse line',
+    '\n\n  \nOnly line\n\n\n',
+    'G   C\r\nHello there\r\n',
+    '',
+    ['G          C', 'This line has chords', 'This line does not', 'D          Em',
+      'Neither does this one wait yes it does'].join('\n'),
+    '[G#maj]\nFor all the heart I have',
+    '          [G#maj]\nFor all the heart I have',
+    '[Fmin] [G#maj]\nWhat is the color of your butterflies',
+    '[A#min]\nWhat are just niceties',
+    '[Cmaj-//-C#maj]\nId never go back',
+    '[Verse]\n[G#maj]\nFor all the heart I have',
+    '[Instrumental]\n[F#maj] [A#min] [F#maj]\n\n[Bridge] (very very tentative)\nWhatever happens',
+    '[Last Chorus Ending (rest is the same)]\nMaybe instead of a last chorus',
+    ['[Verse]', '          [G#maj]', 'For all the heart I have', '                       [F#maj]',
+      'I never put it on the line', '', '[Chorus]', '          [G#maj]',
+      'When you hear me call out your name'].join('\n'),
+    'Key: C# Maj\nBPM: 118\n\n[Verse]\n[G#maj]\nFor all the heart I have',
+    'Key: G\nBPM: 90\nCapo: 2\nTuning: Drop D\n\nSome lyric line',
+    'Just a regular lyric line',
+    'Key change is coming soon\nfor everyone involved',
+    '              Key: C# Maj\n              BPM: 118\n              [Verse]\n              [G#maj]\n              For all the heart I have',
+    // Extra: a longer realistic song mixing both chord notations across
+    // multiple verses/sections, not covered verbatim by any single unit test.
+    [
+      'Home', '====', '',
+      'Key: D', 'Capo: 2', '',
+      '[Verse]',
+      'D          G          A',
+      'Woke up this morning to the sound of rain',
+      '[Bmin]',
+      'Nothing has ever felt so plain',
+      '',
+      '[Chorus]',
+      'G     D     A     Bm',
+      'This is the place I call my own',
+      '',
+      '[Bridge] (quiet, half-time)',
+      'Just a whisper in the dark',
+    ].join('\n'),
+  ];
+  return inputs.map((input) => ({ input, output: parseLyricsText(input) }));
+}
+
+// tokenizeChordLine: a spread of chord-track lines covering whitespace
+// tokenization, mixed known/unknown chords, and empty input -- the
+// dependency looksLikeChordLine relies on for its own token classification.
+function buildTokenizeChordLineFixtures() {
+  const inputs = [
+    '', '   ', 'G', 'G   C   D', '  G  C  ', 'Am7 Dsus4 G/B Cmaj7',
+    'G Xyz D', 'g c d', 'C#m7b5', 'C is for cookie',
+  ];
+  return inputs.map((input) => ({ input, output: tokenizeChordLine(input) }));
+}
+
 const specDir = path.resolve(import.meta.dirname, '../../spec');
 
 describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', () => {
@@ -211,5 +312,26 @@ describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', ()
     expect(fixtures.length).toBeGreaterThan(0);
     fs.mkdirSync(specDir, { recursive: true });
     fs.writeFileSync(path.join(specDir, 'transpose-chords-line.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/tokenize-chord-line.json from the real tokenizeChordLine', () => {
+    const fixtures = buildTokenizeChordLineFixtures();
+    expect(fixtures.length).toBeGreaterThan(0);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'tokenize-chord-line.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/looks-like-chord-line.json from the real looksLikeChordLine', () => {
+    const fixtures = buildLooksLikeChordLineFixtures();
+    expect(fixtures.length).toBeGreaterThan(0);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'looks-like-chord-line.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/parse-lyrics-text.json from the real parseLyricsText', () => {
+    const fixtures = buildParseLyricsTextFixtures();
+    expect(fixtures.length).toBeGreaterThan(0);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'parse-lyrics-text.json'), JSON.stringify(fixtures, null, 2) + '\n');
   });
 });
