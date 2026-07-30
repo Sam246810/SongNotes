@@ -20,7 +20,10 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { CHORD_DB, normalizeChordName, tokenizeChordLine } from '../utils/chords.js';
+import {
+  CHORD_DB, normalizeChordName, tokenizeChordLine,
+  formatFretsForInput, parseFretsInput, alignChordsWithLyrics,
+} from '../utils/chords.js';
 import { transposeChordToken, transposeChordsLine } from '../utils/transpose.js';
 import { looksLikeChordLine, parseLyricsText } from '../utils/lyricsImport.js';
 
@@ -290,6 +293,45 @@ function buildTokenizeChordLineFixtures() {
   return inputs.map((input) => ({ input, output: tokenizeChordLine(input) }));
 }
 
+// formatFretsForInput: every real CHORD_DB voicing's frets array (broad,
+// realistic coverage of muted/open/fretted-string combinations) plus a
+// couple of synthetic edge cases.
+function buildFormatFretsForInputFixtures() {
+  const inputs = Object.values(CHORD_DB).map((v) => v.frets);
+  inputs.push([-1, -1, -1, -1, -1, -1], [0, 0, 0, 0, 0, 0], [24, 24, 24, 24, 24, 24]);
+  return inputs.map((input) => ({ input, output: formatFretsForInput(input) }));
+}
+
+// parseFretsInput: the hand-crafted cases from chords.test.js (valid
+// 6-value strings, x/X muted-string casing, extra whitespace, a
+// baseFret > 1 case, the formatFretsForInput round-trip, and every
+// rejection path -- wrong value count, non-numeric, empty/null) plus a
+// couple of extra edge cases (fret > 24, all-muted).
+function buildParseFretsInputFixtures() {
+  const inputs = [
+    'x 3 2 0 1 0', 'X 0 2 2 2 0', '  x   3  2 0 1  0 ', 'x 6 8 8 7 6',
+    formatFretsForInput(CHORD_DB.Am7.frets),
+    'x 3 2 0 1', 'x 3 2 0 1 0 3', 'x 3 2 0 y 0', '', null,
+    'x x x x x x', '0 0 0 0 0 0', 'x 25 2 0 1 0', '   ',
+  ];
+  return inputs.map((input) => ({ input, output: parseFretsInput(input) }));
+}
+
+// alignChordsWithLyrics: the hand-crafted cases from chords.test.js
+// (both-empty, padding-shorter, trimming-longer-if-whitespace-only,
+// NOT-trimming-longer-if-real-content) plus a couple of extra
+// null/undefined-parameter edge cases.
+function buildAlignChordsWithLyricsFixtures() {
+  const pairs = [
+    ['', ''], [null, null],
+    ['C', 'Hello'], ['C G', 'Hello world'],
+    ['C    ', 'Hi'], ['C G   ', 'Hello'],
+    ['C    G', 'Hi'], ['C  Am  ', 'Hi'],
+    [null, 'Hello'], ['C', null], ['', 'Hello'], ['C', ''],
+  ];
+  return pairs.map(([chords, lyrics]) => ({ chords, lyrics, output: alignChordsWithLyrics(chords, lyrics) }));
+}
+
 const specDir = path.resolve(import.meta.dirname, '../../spec');
 
 describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', () => {
@@ -333,5 +375,26 @@ describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', ()
     expect(fixtures.length).toBeGreaterThan(0);
     fs.mkdirSync(specDir, { recursive: true });
     fs.writeFileSync(path.join(specDir, 'parse-lyrics-text.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/format-frets-for-input.json from the real formatFretsForInput', () => {
+    const fixtures = buildFormatFretsForInputFixtures();
+    expect(fixtures.length).toBeGreaterThan(0);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'format-frets-for-input.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/parse-frets-input.json from the real parseFretsInput', () => {
+    const fixtures = buildParseFretsInputFixtures();
+    expect(fixtures.length).toBeGreaterThan(0);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'parse-frets-input.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/align-chords-with-lyrics.json from the real alignChordsWithLyrics', () => {
+    const fixtures = buildAlignChordsWithLyricsFixtures();
+    expect(fixtures.length).toBeGreaterThan(0);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'align-chords-with-lyrics.json'), JSON.stringify(fixtures, null, 2) + '\n');
   });
 });

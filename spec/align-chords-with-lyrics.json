@@ -1,0 +1,62 @@
+[
+  {
+    "chords": "",
+    "lyrics": "",
+    "output": ""
+  },
+  {
+    "chords": null,
+    "lyrics": null,
+    "output": ""
+  },
+  {
+    "chords": "C",
+    "lyrics": "Hello",
+    "output": "C    "
+  },
+  {
+    "chords": "C G",
+    "lyrics": "Hello world",
+    "output": "C G        "
+  },
+  {
+    "chords": "C    ",
+    "lyrics": "Hi",
+    "output": "C "
+  },
+  {
+    "chords": "C G   ",
+    "lyrics": "Hello",
+    "output": "C G  "
+  },
+  {
+    "chords": "C    G",
+    "lyrics": "Hi",
+    "output": "C    G"
+  },
+  {
+    "chords": "C  Am  ",
+    "lyrics": "Hi",
+    "output": "C  Am  "
+  },
+  {
+    "chords": null,
+    "lyrics": "Hello",
+    "output": "     "
+  },
+  {
+    "chords": "C",
+    "lyrics": null,
+    "output": "C"
+  },
+  {
+    "chords": "",
+    "lyrics": "Hello",
+    "output": "     "
+  },
+  {
+    "chords": "C",
+    "lyrics": "",
+    "output": "C"
+  }
+]
