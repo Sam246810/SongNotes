@@ -1,4 +1,5 @@
 import { alignChordsWithLyrics } from '../utils/chords';
+import { chordsLineToAnchors, anchorsToChordsLine } from '../utils/chordAnchors';
 import { getDEK } from '../crypto/keyManager';
 import { encryptJSON, decryptJSON } from '../crypto/envelope';
 
@@ -260,14 +261,26 @@ export class CloudSongsRepository {
     return [...byId.values()];
   }
 
-  /** Build the persisted row for a song at a given rev. Always encrypted — throws if the DEK isn't available. */
+  /**
+   * Build the persisted row for a song at a given rev. Always encrypted —
+   * throws if the DEK isn't available.
+   *
+   * `lines[].chords` is converted from this app's own editing representation
+   * (a chords string space-padded to align above its lyrics) to wire-format
+   * v2's per-chord-anchor shape (`{i, c}`, see `docs/WIRE-FORMAT-v2.md`
+   * section 4) before encrypting — the same model the Android app's editor
+   * natively uses. Storing the padded string verbatim would mean a song
+   * edited on one platform renders wrong on the other: column position in a
+   * padded string only means anything relative to that exact rendering, not
+   * as portable data.
+   */
   async _buildRow(song, rev) {
     const dek = getDEK();
     if (!dek) throw new Error('Cannot save: your account encryption key is not unlocked in this session.');
 
     const content = await encryptJSON(dek, {
       title: song.title,
-      lines: song.lines,
+      lines: song.lines.map((l) => ({ id: l.id, lyrics: l.lyrics, chords: chordsLineToAnchors(l.chords) })),
       bpm: song.bpm,
       key: song.key,
       tuning: song.tuning,
@@ -290,15 +303,36 @@ export class CloudSongsRepository {
     };
   }
 
+  /**
+   * Converts `lines[].chords` back from wire-format anchors to this app's own
+   * padded-string editing representation. Tolerates `chords` already being a
+   * padded string (not an anchors array) -- real encrypted rows written before
+   * this conversion existed still decrypt to that shape, and there's no
+   * version marker inside `content` to gate on, so this checks the actual
+   * runtime type instead. Never crashes on real pre-existing data.
+   */
+  _anchorLinesToPaddedLines(lines) {
+    return lines.map((l) => ({
+      id: l.id,
+      lyrics: l.lyrics,
+      chords: alignChordsWithLyrics(
+        Array.isArray(l.chords) ? anchorsToChordsLine(l.lyrics.length, l.chords) : l.chords,
+        l.lyrics,
+      ),
+    }));
+  }
+
   async _decryptRow(row) {
     // Backward-compat read path only — nothing writes encrypted:false anymore.
+    // These predate the anchor conversion entirely, so `lines[].chords` here
+    // is ALREADY a padded string, not anchors — do not convert it again.
     if (!row.encrypted) {
       return { ...row.content, id: row.id };
     }
     const dek = getDEK();
     if (!dek) throw new Error('locked: account DEK unavailable');
     const content = await decryptJSON(dek, row.content);
-    return { id: row.id, ...content };
+    return { id: row.id, ...content, lines: this._anchorLinesToPaddedLines(content.lines) };
   }
 
   _placeholderSong(row) {

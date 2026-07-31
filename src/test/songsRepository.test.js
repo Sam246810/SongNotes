@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { CloudSongsRepository } from '../store/songsRepository';
-import { generateContentKey } from '../crypto/envelope';
-import { establishDEK, clearSession } from '../crypto/keyManager';
+import { generateContentKey, decryptJSON, encryptJSON } from '../crypto/envelope';
+import { establishDEK, clearSession, getDEK } from '../crypto/keyManager';
 
 /** In-memory stand-in for a Supabase `songs` table — no network involved. */
 class FakeRemoteAdapter {
@@ -126,6 +126,64 @@ describe('CloudSongsRepository', () => {
       const [listed] = await repo.list();
       expect(listed.title).toBe('Super Secret Title');
       expect(listed.lines[0].lyrics).toBe('super secret lyrics');
+    });
+  });
+
+  describe('wire-format v2: chords stored as anchors, not the padded editing string', () => {
+    it('stores chords[] as {i,c} anchors in the encrypted content, not the padded string', async () => {
+      const song = makeSong({
+        lines: [{ id: 'line-1', chords: 'G          C', lyrics: 'Amazing grace, how sweet' }],
+      });
+      await repo.create(song);
+
+      const dek = getDEK();
+      const remoteRow = [...adapter.rows.values()][0];
+      const decryptedContent = await decryptJSON(dek, remoteRow.content);
+      expect(decryptedContent.lines[0].chords).toEqual([{ i: 0, c: 'G' }, { i: 11, c: 'C' }]);
+
+      // The app-facing Song object gets a padded string back (re-aligned to the
+      // lyrics length via alignChordsWithLyrics, same as everywhere else in the
+      // app) -- callers (the editor, transpose, etc.) never need to know storage
+      // uses anchors, just that G is at column 0 and C is at column 11.
+      const [listed] = await repo.list();
+      expect(listed.lines[0].chords.slice(0, 12)).toBe('G          C');
+      expect(listed.lines[0].chords.length).toBeGreaterThanOrEqual(song.lines[0].lyrics.length);
+    });
+
+    it('round-trips a chord placed past the end of a short lyric line (valid per wire-format §4)', async () => {
+      const song = makeSong({
+        lines: [{ id: 'line-1', chords: '          Dsus4', lyrics: 'Oh' }],
+      });
+      await repo.create(song);
+      const [listed] = await repo.list();
+      expect(listed.lines[0].chords).toBe('          Dsus4');
+    });
+
+    it('round-trips an all-instrumental line with empty lyrics', async () => {
+      const song = makeSong({ lines: [{ id: 'line-1', chords: 'G   C   D', lyrics: '' }] });
+      await repo.create(song);
+      const [listed] = await repo.list();
+      expect(listed.lines[0].chords.trim().split(/\s+/)).toEqual(['G', 'C', 'D']);
+    });
+
+    it('reads a real pre-existing encrypted row whose content still has the old padded-string chords (written before this conversion existed)', async () => {
+      const dek = getDEK();
+      const legacyContent = await encryptJSON(dek, {
+        title: 'Old Song',
+        lines: [{ id: 'line-1', chords: 'Am    G', lyrics: 'a lyric from before the fix' }],
+        bpm: 0, key: '', tuning: '', capo: 0, customChords: undefined,
+        createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+      adapter.rows.set('old-song', {
+        id: 'old-song', user_id: 'user-1', encrypted: true, content: legacyContent,
+        is_locked: false, rev: 1, deleted_at: null,
+        created_at: '2026-01-01T00:00:00.000Z', updated_at: '2026-01-01T00:00:00.000Z',
+      });
+
+      const songs = await repo.list();
+      const listed = songs.find((s) => s.id === 'old-song');
+      expect(listed.title).toBe('Old Song');
+      expect(listed.lines[0].chords.slice(0, 7)).toBe('Am    G');
     });
   });
 
