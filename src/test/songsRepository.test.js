@@ -7,7 +7,7 @@ import { establishDEK, clearSession } from '../crypto/keyManager';
 class FakeRemoteAdapter {
   constructor() {
     this.rows = new Map();
-    this.calls = { list: 0, insert: 0, update: 0, remove: 0 };
+    this.calls = { list: 0, insert: 0, updateWithRevCheck: 0 };
   }
   async list() {
     this.calls.list++;
@@ -18,14 +18,13 @@ class FakeRemoteAdapter {
     this.rows.set(row.id, row);
     return row;
   }
-  async update(id, row) {
-    this.calls.update++;
+  /** Mirrors SupabaseSongsAdapter's `WHERE id = ? AND rev = ?` conditional update. */
+  async updateWithRevCheck(id, row, expectedRev) {
+    this.calls.updateWithRevCheck++;
+    const current = this.rows.get(id);
+    if (!current || current.rev !== expectedRev) return { conflict: true };
     this.rows.set(id, row);
-    return row;
-  }
-  async remove(id) {
-    this.calls.remove++;
-    this.rows.delete(id);
+    return { conflict: false, row };
   }
 }
 
@@ -72,7 +71,7 @@ describe('CloudSongsRepository', () => {
 
       const remoteRow = [...adapter.rows.values()][0];
       expect(remoteRow.encrypted).toBe(true);
-      expect(remoteRow.title).toBeNull();
+      expect('title' in remoteRow).toBe(false); // no title column at all anymore, not even null
       const serializedBlob = JSON.stringify(remoteRow);
       expect(serializedBlob).not.toContain('Super Secret Title');
       expect(serializedBlob).not.toContain('super secret lyrics');
@@ -137,7 +136,7 @@ describe('CloudSongsRepository', () => {
       await repo.update('song-1', makeSong({ title: 'Renamed' }));
 
       // Remote hasn't been called yet (debounced)...
-      expect(adapter.calls.update).toBe(0);
+      expect(adapter.calls.updateWithRevCheck).toBe(0);
       // ...but the cache already reflects the rename (decrypt to check, since it's ciphertext).
       const cached = JSON.parse(localStorage.getItem('songnotes_cloud_cache:user-1'));
       const cachedRow = cached.find((r) => r.id === 'song-1');
@@ -146,7 +145,7 @@ describe('CloudSongsRepository', () => {
       expect(listed.title).toBe('Renamed');
 
       await vi.advanceTimersByTimeAsync(60);
-      expect(adapter.calls.update).toBe(1);
+      expect(adapter.calls.updateWithRevCheck).toBe(1);
     });
 
     it('coalesces rapid successive updates into a single debounced remote push', async () => {
@@ -160,12 +159,12 @@ describe('CloudSongsRepository', () => {
       await repo.update('song-1', makeSong({ title: 'Edit 3' }));
       await vi.advanceTimersByTimeAsync(60);
 
-      expect(adapter.calls.update).toBe(1);
+      expect(adapter.calls.updateWithRevCheck).toBe(1);
       const [listed] = await repo.list();
       expect(listed.title).toBe('Edit 3');
     });
 
-    it('remove cancels a pending debounced push and deletes remotely + from cache', async () => {
+    it('remove cancels a pending debounced push and tombstones the row remotely + in cache', async () => {
       vi.useFakeTimers();
       await repo.create(makeSong());
       await repo.update('song-1', makeSong({ title: 'About to be deleted' }));
@@ -173,11 +172,16 @@ describe('CloudSongsRepository', () => {
       await repo.remove('song-1');
       await vi.advanceTimersByTimeAsync(100);
 
-      expect(adapter.calls.update).toBe(0); // pending push was cancelled, not fired
-      expect(adapter.calls.remove).toBe(1);
-      expect(adapter.rows.has('song-1')).toBe(false);
+      // Only the tombstone write happened -- the pending edit's push was cancelled, not fired.
+      expect(adapter.calls.updateWithRevCheck).toBe(1);
+      expect(adapter.rows.get('song-1').deleted_at).not.toBeNull();
+
+      // A tombstone is a soft delete, not a real DELETE -- the row still exists (for other
+      // devices' reconciliation to see), it's just never shown to the user.
       const cached = JSON.parse(localStorage.getItem('songnotes_cloud_cache:user-1'));
-      expect(cached.find((r) => r.id === 'song-1')).toBeUndefined();
+      expect(cached.find((r) => r.id === 'song-1').deleted_at).not.toBeNull();
+      const songs = await repo.list();
+      expect(songs.find((s) => s.id === 'song-1')).toBeUndefined();
     });
 
     it('falls back to the local cache when the remote list() call fails (offline)', async () => {
@@ -189,17 +193,62 @@ describe('CloudSongsRepository', () => {
       expect(songs[0].title).toBe('Super Secret Title');
     });
 
-    it('last-write-wins reconciliation prefers the newer of cache vs remote for the same id', async () => {
-      await repo.create(makeSong({ updatedAt: '2026-01-01T00:00:00.000Z' }));
+    it('rev-based reconciliation prefers the higher rev between cache and remote for the same id', async () => {
+      await repo.create(makeSong());
 
-      // Simulate a newer edit made on another device: bump updated_at on the "remote"
-      // copy only (not in our local cache). Reconciliation compares timestamps, not
-      // content, so the existing valid ciphertext is fine to reuse here.
+      // Simulate a newer edit made on another device: bump rev on the "remote" copy
+      // only (not in our local cache). Reconciliation compares rev -- coordinated via
+      // updateWithRevCheck's optimistic-concurrency check, unlike wall-clock
+      // updated_at, which is vulnerable to clock skew between devices.
       const remoteRow = adapter.rows.get('song-1');
-      adapter.rows.set('song-1', { ...remoteRow, updated_at: '2026-06-01T00:00:00.000Z' });
+      adapter.rows.set('song-1', { ...remoteRow, rev: remoteRow.rev + 1 });
 
       const [listed] = await repo.list();
       expect(listed.title).toBe('Super Secret Title');
+      const cached = JSON.parse(localStorage.getItem('songnotes_cloud_cache:user-1'));
+      expect(cached.find((r) => r.id === 'song-1').rev).toBe(remoteRow.rev + 1);
+    });
+  });
+
+  describe('sync-v2 (Tier 0): rev, tombstones, conflict copies', () => {
+    it('a delete on another device propagates: list() hides the song once its remote row is tombstoned', async () => {
+      // "Another device" deletes song-1 -- simulated directly against the fake
+      // remote, bypassing this repo instance entirely, same as a real second client
+      // would only ever be visible through the remote row, never this cache.
+      await repo.create(makeSong());
+      const remoteRow = adapter.rows.get('song-1');
+      adapter.rows.set('song-1', { ...remoteRow, deleted_at: new Date().toISOString(), rev: remoteRow.rev + 1 });
+
+      const songs = await repo.list();
+      expect(songs.find((s) => s.id === 'song-1')).toBeUndefined();
+    });
+
+    it('a losing optimistic-concurrency race keeps the edit as a new conflict-copy song instead of dropping it', async () => {
+      // Real timers here, not fake -- the conflict path chains a second real
+      // async encryptJSON call (for the conflict copy) after the failed push, and
+      // advanceTimersByTimeAsync's microtask flushing isn't reliably deep enough
+      // for that extra hop; a short real wait is simpler and just as fast.
+      await repo.create(makeSong());
+      await repo.update('song-1', makeSong({ title: 'My Local Edit' }));
+
+      // Before this device's debounced push fires, "another device" wins the race:
+      // writes directly to the fake remote with the same expected rev, bumping rev.
+      const remoteRow = adapter.rows.get('song-1');
+      adapter.rows.set('song-1', { ...remoteRow, rev: remoteRow.rev + 1 });
+
+      await new Promise((resolve) => setTimeout(resolve, 150)); // let this device's now-stale push fire and lose
+
+      // The original row is untouched by the loser -- still whatever "another device" wrote.
+      expect(adapter.rows.get('song-1').rev).toBe(remoteRow.rev + 1);
+      // But this device's edit was NOT silently dropped -- it landed as a new row.
+      expect(adapter.rows.size).toBe(2);
+      const conflictRow = [...adapter.rows.values()].find((r) => r.id !== 'song-1');
+      expect(conflictRow).toBeDefined();
+      expect(conflictRow.rev).toBe(1);
+
+      const songs = await repo.list();
+      const conflictSong = songs.find((s) => s.id === conflictRow.id);
+      expect(conflictSong.title).toMatch(/^My Local Edit \(conflict copy — .+, \d{1,2}:\d{2}.*\)$/);
     });
   });
 });

@@ -50,6 +50,30 @@ function getOrCreateGuestId() {
 }
 
 /**
+ * A short, friendly label for "which device/browser wrote this" -- used only to
+ * make a sync conflict copy's title immediately understandable (see
+ * `_writeConflictCopy` below), never for anything security- or identity-relevant.
+ */
+function getDeviceLabel() {
+  const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+  let os = 'Unknown OS';
+  if (/Windows/i.test(ua)) os = 'Windows';
+  else if (/Android/i.test(ua)) os = 'Android';
+  else if (/iPhone|iPad/i.test(ua)) os = 'iOS';
+  else if (/Mac OS X|Macintosh/i.test(ua)) os = 'Mac';
+  else if (/CrOS/i.test(ua)) os = 'ChromeOS';
+  else if (/Linux/i.test(ua)) os = 'Linux';
+
+  let browser = 'Browser';
+  if (/Edg\//i.test(ua)) browser = 'Edge';
+  else if (/Firefox/i.test(ua)) browser = 'Firefox';
+  else if (/Chrome/i.test(ua)) browser = 'Chrome';
+  else if (/Safari/i.test(ua)) browser = 'Safari';
+
+  return `${browser} on ${os}`;
+}
+
+/**
  * Guest-mode repository — plain localStorage CRUD, scoped to the current guest session
  * so different guest sessions/tabs don't see each other's local data. Guests have no
  * account and therefore no encryption key, so guest songs are never encrypted.
@@ -127,15 +151,25 @@ export class SupabaseSongsAdapter {
     return data;
   }
 
-  async update(id, row) {
-    const { data, error } = await this.client.from('songs').update(row).eq('id', id).select().single();
+  /**
+   * Conditional update — only writes if the row's current `rev` still matches
+   * `expectedRev` (optimistic concurrency: `WHERE id = ? AND rev = ?`). Returns
+   * `{ conflict: true }` (no row matched -- someone else already wrote a newer
+   * rev) rather than throwing, since a lost race is an expected outcome the
+   * caller handles (see `CloudSongsRepository._pushOne`'s conflict-copy path),
+   * not an error condition.
+   */
+  async updateWithRevCheck(id, row, expectedRev) {
+    const { data, error } = await this.client
+      .from('songs')
+      .update(row)
+      .eq('id', id)
+      .eq('rev', expectedRev)
+      .select()
+      .maybeSingle();
     if (error) throw error;
-    return data;
-  }
-
-  async remove(id) {
-    const { error } = await this.client.from('songs').delete().eq('id', id);
-    if (error) throw error;
+    if (!data) return { conflict: true };
+    return { conflict: false, row: data };
   }
 }
 
@@ -148,7 +182,16 @@ export class SupabaseSongsAdapter {
  *
  * Composes a local cache of the exact server row shape (i.e. ciphertext, never
  * plaintext) for instant loads and offline resilience, against any adapter exposing
- * { list, insert, update, remove }.
+ * { list, insert, updateWithRevCheck }.
+ *
+ * Sync-v2 (Tier 0, docs/PLAN.md "Phase 7"): every row carries a `rev` (bumped on every
+ * write) and a `deleted_at` tombstone instead of a real delete. `_reconcile` compares by
+ * `rev`, not wall-clock `updated_at` -- immune to clock skew between devices, and the
+ * same optimistic-concurrency check that guards `_pushOne` naturally makes `rev` a
+ * reliable causal order. A lost race NEVER silently drops an edit: the loser is written
+ * as a new, separate song with a "(conflict copy — <device>, <time>)" title suffix
+ * baked into the plaintext before encryption (the `title` column is gone -- nothing
+ * server-side can see it to stamp a marker there instead).
  */
 export class CloudSongsRepository {
   constructor({ adapter, userId, cacheKey, debounceMs = 750 }) {
@@ -156,7 +199,7 @@ export class CloudSongsRepository {
     this.userId = userId;
     this.cacheKey = cacheKey || `songnotes_cloud_cache:${userId}`;
     this.debounceMs = debounceMs;
-    this._debounce = new Map(); // songId -> { timer, row }
+    this._debounce = new Map(); // songId -> { timer, song, row, expectedRev }
     this._flushAllPending = this._flushAllPending.bind(this);
   }
 
@@ -189,25 +232,36 @@ export class CloudSongsRepository {
     }
   }
 
+  _updateCacheRow(row) {
+    const rows = this._readCache();
+    const idx = rows.findIndex((r) => r.id === row.id);
+    this._writeCache(idx === -1 ? [...rows, row] : rows.map((r, i) => (i === idx ? row : r)));
+  }
+
   /**
-   * Union cached + remote rows, keeping whichever copy of each id is strictly newer.
-   * On a tie, the cache wins: a local edit not yet pushed (debounced) shares its
-   * source song's updatedAt with what's already on the server, and must not be
-   * clobbered by that stale remote copy just because the timestamps are equal.
+   * Union cached + remote rows, keeping whichever copy of each id has the higher
+   * `rev`. `rev` (not `updated_at`) is the ordering signal -- it's coordinated via
+   * `updateWithRevCheck`'s optimistic-concurrency check, so it's immune to clock
+   * skew between devices the way comparing wall-clock timestamps isn't. A tombstoned
+   * remote row (`deleted_at` set) with a higher rev than the cached copy simply wins
+   * like any other update -- no special-casing needed, a delete is just another
+   * write. On a tie, the cache wins: a local edit not yet pushed (debounced) shares
+   * its source song's rev with what's already on the server, and must not be
+   * clobbered by that stale remote copy just because the revs are equal.
    */
   _reconcile(cachedRows, remoteRows) {
     const byId = new Map(cachedRows.map((r) => [r.id, r]));
     for (const r of remoteRows) {
       const cached = byId.get(r.id);
-      if (!cached || new Date(r.updated_at) > new Date(cached.updated_at)) {
+      if (!cached || r.rev > cached.rev) {
         byId.set(r.id, r);
       }
     }
     return [...byId.values()];
   }
 
-  /** Build the persisted row for a song. Always encrypted — throws if the DEK isn't available. */
-  async _buildRow(song) {
+  /** Build the persisted row for a song at a given rev. Always encrypted — throws if the DEK isn't available. */
+  async _buildRow(song, rev) {
     const dek = getDEK();
     if (!dek) throw new Error('Cannot save: your account encryption key is not unlocked in this session.');
 
@@ -228,8 +282,9 @@ export class CloudSongsRepository {
       user_id: this.userId,
       encrypted: true,
       content,
-      title: null,
       is_locked: false,
+      rev,
+      deleted_at: null,
       created_at: song.createdAt,
       updated_at: song.updatedAt,
     };
@@ -270,6 +325,7 @@ export class CloudSongsRepository {
 
     const songs = [];
     for (const row of rows) {
+      if (row.deleted_at) continue; // tombstoned -- kept in the cache for reconciliation, never shown
       try {
         songs.push(await this._decryptRow(row));
       } catch {
@@ -281,7 +337,7 @@ export class CloudSongsRepository {
 
   async get(id) {
     const row = this._readCache().find((r) => r.id === id);
-    if (!row) return null;
+    if (!row || row.deleted_at) return null;
     try {
       return await this._decryptRow(row);
     } catch {
@@ -290,25 +346,30 @@ export class CloudSongsRepository {
   }
 
   async create(song) {
-    const row = await this._buildRow(song);
+    const row = await this._buildRow(song, 1);
     const created = await this.adapter.insert(row);
     this._writeCache([...this._readCache(), created]);
     return song;
   }
 
   async update(id, song) {
-    const row = await this._buildRow(song);
+    const cachedRows = this._readCache();
+    const existingRow = cachedRows.find((r) => r.id === id) ?? null;
+    const nextRev = (existingRow?.rev ?? 0) + 1;
+    const row = await this._buildRow(song, nextRev);
 
     // Cache is written immediately so a reload never loses the latest edit even if
     // the debounced remote push hasn't fired yet.
-    const cachedRows = this._readCache();
-    const existingRow = cachedRows.find((r) => r.id === id) ?? null;
-    const nextRows = existingRow
-      ? cachedRows.map((r) => (r.id === id ? row : r))
-      : [...cachedRows, row];
-    this._writeCache(nextRows);
+    this._writeCache(existingRow ? cachedRows.map((r) => (r.id === id ? row : r)) : [...cachedRows, row]);
 
-    this._scheduleRemotePush(id, row);
+    // expectedRev is the rev the SERVER should currently have. Captured once per
+    // debounce burst (from the pending entry if one's already in flight, or from
+    // the cache otherwise) -- re-reading it from our own cache on every keystroke
+    // would read the rev we JUST optimistically bumped above, not the last
+    // confirmed-remote rev, breaking the optimistic-concurrency check entirely.
+    const pending = this._debounce.get(id);
+    const expectedRev = pending ? pending.expectedRev : (existingRow?.rev ?? 0);
+    this._scheduleRemotePush(id, song, row, expectedRev);
     return song;
   }
 
@@ -318,18 +379,73 @@ export class CloudSongsRepository {
       clearTimeout(pending.timer);
       this._debounce.delete(id);
     }
-    this._writeCache(this._readCache().filter((r) => r.id !== id));
-    await this.adapter.remove(id);
+
+    const cachedRows = this._readCache();
+    const existingRow = cachedRows.find((r) => r.id === id);
+    if (!existingRow) return; // nothing local to delete
+
+    // Same "confirmed remote rev, not our own optimistically-bumped cache rev"
+    // reasoning as update()'s expectedRev -- a pending (now-cancelled) edit may
+    // have already bumped the cached rev past what the server actually has.
+    const expectedRev = pending ? pending.expectedRev : existingRow.rev;
+
+    const tombstoneRow = {
+      ...existingRow,
+      deleted_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      rev: existingRow.rev + 1,
+    };
+    this._writeCache(cachedRows.map((r) => (r.id === id ? tombstoneRow : r)));
+
+    const result = await this.adapter.updateWithRevCheck(id, tombstoneRow, expectedRev);
+    if (result.conflict) {
+      // Someone else edited concurrently -- Tier 0's simplest reasonable choice is
+      // to let that edit stand rather than force a delete through (full 3-way merge
+      // of "delete vs. concurrent edit" is Tier 1 territory). Not silently wrong:
+      // the next list() reconciles against the real current row either way.
+      console.error('SongNotes: delete for song', id, 'conflicted with a concurrent edit');
+    } else {
+      this._updateCacheRow(result.row);
+    }
   }
 
-  _scheduleRemotePush(id, row) {
+  _scheduleRemotePush(id, song, row, expectedRev) {
     const pending = this._debounce.get(id);
     if (pending) clearTimeout(pending.timer);
     const timer = setTimeout(() => {
       this._debounce.delete(id);
-      this.adapter.update(id, row).catch((e) => console.error('SongNotes: cloud sync failed for song', id, e));
+      this._pushOne(id, song, row, expectedRev).catch((e) => console.error('SongNotes: cloud sync failed for song', id, e));
     }, this.debounceMs);
-    this._debounce.set(id, { timer, row });
+    this._debounce.set(id, { timer, song, row, expectedRev });
+  }
+
+  async _pushOne(id, song, row, expectedRev) {
+    const result = await this.adapter.updateWithRevCheck(id, row, expectedRev);
+    if (result.conflict) {
+      await this._writeConflictCopy(song);
+      return;
+    }
+    this._updateCacheRow(result.row);
+  }
+
+  /**
+   * A lost optimistic-concurrency race means someone else's write already landed
+   * with the rev this device expected. Rather than silently discarding this
+   * device's edit (the exact "two devices editing different verses means one
+   * silently vanishes" bug this whole rev/tombstone scheme exists to fix), it's
+   * written as a brand new song, title marked so it's immediately obvious what
+   * happened and where it came from.
+   */
+  async _writeConflictCopy(song) {
+    const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const conflictSong = {
+      ...song,
+      id: crypto.randomUUID(),
+      title: `${song.title || 'Untitled'} (conflict copy — ${getDeviceLabel()}, ${timeLabel})`,
+    };
+    const row = await this._buildRow(conflictSong, 1);
+    const created = await this.adapter.insert(row);
+    this._writeCache([...this._readCache(), created]);
   }
 
   /** Force any pending debounced writes out immediately (e.g. before logout/unload). */
@@ -344,7 +460,7 @@ export class CloudSongsRepository {
     clearTimeout(pending.timer);
     this._debounce.delete(id);
     try {
-      await this.adapter.update(id, pending.row);
+      await this._pushOne(id, pending.song, pending.row, pending.expectedRev);
     } catch (e) {
       console.error('SongNotes: cloud sync failed for song', id, e);
     }
