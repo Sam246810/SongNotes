@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { generateSalt, deriveKEK, serializeKdfParams, deserializeKdfParams } from '../crypto/kdf';
-import { generateContentKey, encryptJSON, decryptJSON, wrapContentKey, unwrapContentKey } from '../crypto/envelope';
+import { generateSalt, deriveKEK, serializeKdfParams, deserializeKdfParams, PBKDF2_KDF_PARAMS } from '../crypto/kdf';
+import {
+  generateContentKey, encryptJSON, decryptJSON, wrapContentKey, unwrapContentKey,
+  computeDekVerifier, checkDekVerifier,
+} from '../crypto/envelope';
 import { establishDEK, getDEK, isUnlocked, clearSession } from '../crypto/keyManager';
 import {
   createAccountKeys,
@@ -8,6 +11,7 @@ import {
   unlockWithPassphrase,
   unlockWithRecoveryCode,
   rewrapWithNewPassphrase,
+  migrateWrapIfNeeded,
 } from '../crypto/accountKeys';
 
 describe('kdf: deriveKEK', () => {
@@ -47,17 +51,45 @@ describe('kdf: deriveKEK', () => {
     await expect(unwrapContentKey(kekB, wrapped)).rejects.toThrow();
   });
 
-  it('round-trips KDF params through (de)serialization', () => {
+  it('round-trips KDF params through (de)serialization, defaulting to Argon2id', () => {
     const salt = generateSalt();
     const serialized = serializeKdfParams(salt);
     expect(serialized.salt).toEqual(expect.any(String));
-    expect(serialized.iterations).toBe(600000);
-    expect(serialized.name).toBe('PBKDF2');
-    expect(serialized.hash).toBe('SHA-256');
+    expect(serialized.name).toBe('Argon2id');
+    expect(serialized.memorySize).toBe(65536);
+    expect(serialized.iterations).toBe(3);
+    expect(serialized.parallelism).toBe(1);
 
     const deserialized = deserializeKdfParams(serialized);
     expect(deserialized.salt).toBeInstanceOf(Uint8Array);
     expect(deserialized.salt).toEqual(salt);
+  });
+
+  it('still derives via the PBKDF2 reader path for old-style params', async () => {
+    const salt = generateSalt();
+    const kek1 = await deriveKEK('correct horse battery staple', salt, PBKDF2_KDF_PARAMS);
+    const kek2 = await deriveKEK('correct horse battery staple', salt, PBKDF2_KDF_PARAMS);
+
+    const contentKey = await generateContentKey();
+    const wrapped = await wrapContentKey(kek1, contentKey);
+    const unwrapped = await unwrapContentKey(kek2, wrapped);
+    const envelope = await encryptJSON(unwrapped, { hello: 'world' });
+    expect(await decryptJSON(contentKey, envelope)).toEqual({ hello: 'world' });
+  });
+});
+
+describe('envelope: DEK verifier', () => {
+  it('confirms the right DEK without touching wrapped content', async () => {
+    const dek = await generateContentKey();
+    const verifier = await computeDekVerifier(dek);
+    expect(await checkDekVerifier(dek, verifier)).toBe(true);
+  });
+
+  it('rejects the wrong DEK', async () => {
+    const dek = await generateContentKey();
+    const otherDek = await generateContentKey();
+    const verifier = await computeDekVerifier(dek);
+    expect(await checkDekVerifier(otherDek, verifier)).toBe(false);
   });
 });
 
@@ -202,5 +234,93 @@ describe('accountKeys: envelope-encryption key hierarchy', () => {
     // Recovery code still unlocks the same DEK — untouched by the passphrase reset.
     const viaRecovery = await unlockWithRecoveryCode(newEnvelope, recoveryCode);
     expect(await decryptJSON(viaRecovery, envelopeCt)).toEqual(probe);
+  });
+
+  it('creates a v2 envelope: wraps[] list, dekId, verifier, no v1 fixed fields', async () => {
+    const { envelope } = await createAccountKeys('a-passphrase', generateRecoveryCode());
+    expect(envelope.v).toBe(2);
+    expect(envelope.alg).toBe('AES-256-GCM');
+    expect(envelope.dekId).toEqual(expect.any(String));
+    expect(envelope.dekId.length).toBeGreaterThan(0);
+    expect(envelope.passphrase).toBeUndefined();
+    expect(envelope.recovery).toBeUndefined();
+
+    expect(envelope.wraps).toHaveLength(2);
+    const pass = envelope.wraps.find((w) => w.type === 'passphrase');
+    const recovery = envelope.wraps.find((w) => w.type === 'recovery-code');
+    expect(pass.id).toBe('pass');
+    expect(pass.kdf.name).toBe('Argon2id');
+    expect(pass.iv).toEqual(expect.any(String));
+    expect(pass.ct).toEqual(expect.any(String));
+    expect(recovery.id).toBe('recovery');
+    expect(recovery.kdf.name).toBe('Argon2id');
+
+    expect(envelope.verifier.iv).toEqual(expect.any(String));
+    expect(envelope.verifier.ct).toEqual(expect.any(String));
+  });
+
+  it('reads a legacy v1 envelope ({v:1, passphrase, recovery} fixed fields)', async () => {
+    // Hand-built in the old shape rather than produced by this version's own
+    // createAccountKeys, since nothing in this codebase writes v1 anymore —
+    // this is standing in for an envelope stored server-side before the v2 change.
+    const passphrase = 'legacy-passphrase';
+    const recoveryCode = generateRecoveryCode();
+    const dek = await generateContentKey();
+
+    const passSalt = generateSalt();
+    const passKek = await deriveKEK(passphrase, passSalt, PBKDF2_KDF_PARAMS);
+    const wrappedByPassphrase = await wrapContentKey(passKek, dek);
+
+    const recoverySalt = generateSalt();
+    const recoveryKek = await deriveKEK(recoveryCode, recoverySalt, PBKDF2_KDF_PARAMS);
+    const wrappedByRecovery = await wrapContentKey(recoveryKek, dek);
+
+    const v1Envelope = {
+      v: 1,
+      passphrase: { kdf: serializeKdfParams(passSalt, PBKDF2_KDF_PARAMS), wrapped: wrappedByPassphrase },
+      recovery: { kdf: serializeKdfParams(recoverySalt, PBKDF2_KDF_PARAMS), wrapped: wrappedByRecovery },
+    };
+
+    const viaPassphrase = await unlockWithPassphrase(v1Envelope, passphrase);
+    const viaRecovery = await unlockWithRecoveryCode(v1Envelope, recoveryCode);
+    const probe = { legacy: 'still readable' };
+    const envelopeCt = await encryptJSON(dek, probe);
+    expect(await decryptJSON(viaPassphrase, envelopeCt)).toEqual(probe);
+    expect(await decryptJSON(viaRecovery, envelopeCt)).toEqual(probe);
+
+    // rewrapWithNewPassphrase upgrades a v1 envelope to v2 as a side effect.
+    const upgraded = await rewrapWithNewPassphrase(v1Envelope, dek, 'new-passphrase');
+    expect(upgraded.v).toBe(2);
+    expect(upgraded.wraps).toHaveLength(2);
+    const stillViaRecovery = await unlockWithRecoveryCode(upgraded, recoveryCode);
+    expect(await decryptJSON(stillViaRecovery, envelopeCt)).toEqual(probe);
+  });
+
+  it('migrateWrapIfNeeded rewraps a PBKDF2 v2 wrap to Argon2id, leaves an up-to-date one alone', async () => {
+    const passphrase = 'a-passphrase';
+    const { dek, envelope } = await createAccountKeys(passphrase, generateRecoveryCode());
+
+    // Force the passphrase wrap onto the old KDF, as if it predated the Argon2id switch.
+    const oldSalt = generateSalt();
+    const oldKek = await deriveKEK(passphrase, oldSalt, PBKDF2_KDF_PARAMS);
+    const oldWrapped = await wrapContentKey(oldKek, dek);
+    const downgraded = {
+      ...envelope,
+      wraps: envelope.wraps.map((w) => (w.type === 'passphrase'
+        ? { ...w, kdf: serializeKdfParams(oldSalt, PBKDF2_KDF_PARAMS), iv: oldWrapped.iv, ct: oldWrapped.wrapped }
+        : w)),
+    };
+
+    const { envelope: migrated, migrated: didMigrate } = await migrateWrapIfNeeded(downgraded, 'passphrase', passphrase, dek);
+    expect(didMigrate).toBe(true);
+    const newPassWrap = migrated.wraps.find((w) => w.type === 'passphrase');
+    expect(newPassWrap.kdf.name).toBe('Argon2id');
+    const viaPassphrase = await unlockWithPassphrase(migrated, passphrase);
+    const probe = { after: 'migration' };
+    const envelopeCt = await encryptJSON(dek, probe);
+    expect(await decryptJSON(viaPassphrase, envelopeCt)).toEqual(probe);
+
+    const { migrated: noOpMigrate } = await migrateWrapIfNeeded(migrated, 'passphrase', passphrase, dek);
+    expect(noOpMigrate).toBe(false);
   });
 });

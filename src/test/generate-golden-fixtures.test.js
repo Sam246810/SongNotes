@@ -26,6 +26,8 @@ import {
 } from '../utils/chords.js';
 import { transposeChordToken, transposeChordsLine } from '../utils/transpose.js';
 import { looksLikeChordLine, parseLyricsText } from '../utils/lyricsImport.js';
+import { createAccountKeys, unlockWithPassphrase, unlockWithRecoveryCode } from '../crypto/accountKeys.js';
+import { bufToBase64 } from '../crypto/base64.js';
 
 function splitRootSuffix(name) {
   const m = name.match(/^([A-G])([#b]?)/);
@@ -332,6 +334,38 @@ function buildAlignChordsWithLyricsFixtures() {
   return pairs.map(([chords, lyrics]) => ({ chords, lyrics, output: alignChordsWithLyrics(chords, lyrics) }));
 }
 
+// Envelope v2 cross-repo test vector (SongNotes-Android Phase 6): builds a REAL
+// account-key envelope via createAccountKeys (real random salts/IVs, same as
+// production) and exports the raw DEK bytes alongside it, so the Kotlin side can
+// unlock the exact same envelope with the same passphrase/recovery code and assert
+// it recovers byte-identical DEK material -- proving the envelope format, Argon2id
+// KDF, and AES-GCM unwrap are all cross-implementation-compatible, not just
+// internally self-consistent. The reverse direction (an Android-built envelope
+// decrypting here) is exercised by the `envelope-v2-from-android.json` test below,
+// written by :core:data's own EnvelopeV2GoldenFixtureTest.kt when that suite runs.
+async function buildEnvelopeV2Fixture() {
+  const passphrase = 'correct horse battery staple';
+  const recoveryCode = 'ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2';
+  const { dek, envelope } = await createAccountKeys(passphrase, recoveryCode);
+  const rawDek = await crypto.subtle.exportKey('raw', dek);
+
+  // Sanity-check the fixture unlocks correctly before ever committing it — a fixture
+  // that doesn't even round-trip in its own language would be worse than no fixture.
+  const viaPassphrase = await unlockWithPassphrase(envelope, passphrase);
+  const viaRecovery = await unlockWithRecoveryCode(envelope, recoveryCode);
+  const rawViaPassphrase = await crypto.subtle.exportKey('raw', viaPassphrase);
+  const rawViaRecovery = await crypto.subtle.exportKey('raw', viaRecovery);
+  if (bufToBase64(rawViaPassphrase) !== bufToBase64(rawDek)) throw new Error('passphrase unlock mismatch');
+  if (bufToBase64(rawViaRecovery) !== bufToBase64(rawDek)) throw new Error('recovery unlock mismatch');
+
+  return {
+    passphrase,
+    recoveryCode,
+    expectedDekBase64: bufToBase64(rawDek),
+    envelope,
+  };
+}
+
 const specDir = path.resolve(import.meta.dirname, '../../spec');
 
 describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', () => {
@@ -396,5 +430,31 @@ describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', ()
     expect(fixtures.length).toBeGreaterThan(0);
     fs.mkdirSync(specDir, { recursive: true });
     fs.writeFileSync(path.join(specDir, 'align-chords-with-lyrics.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/envelope-v2.json from the real createAccountKeys (Phase 6 cross-repo test vector)', async () => {
+    const fixture = await buildEnvelopeV2Fixture();
+    expect(fixture.envelope.v).toBe(2);
+    expect(fixture.envelope.wraps).toHaveLength(2);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'envelope-v2.json'), JSON.stringify(fixture, null, 2) + '\n');
+  });
+
+  it('reads spec/envelope-v2-from-android.json (if present) and unlocks it with both wraps', async () => {
+    const fixturePath = path.join(specDir, 'envelope-v2-from-android.json');
+    if (!fs.existsSync(fixturePath)) {
+      // Not generated yet on this machine -- :core:data's EnvelopeV2GoldenFixtureTest.kt
+      // writes it when run. Not a failure: this direction is verified whenever both
+      // suites have run at least once and the file is committed, same as any other
+      // golden fixture in this repo.
+      return;
+    }
+    const fixture = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'));
+    const viaPassphrase = await unlockWithPassphrase(fixture.envelope, fixture.passphrase);
+    const viaRecovery = await unlockWithRecoveryCode(fixture.envelope, fixture.recoveryCode);
+    const rawViaPassphrase = bufToBase64(await crypto.subtle.exportKey('raw', viaPassphrase));
+    const rawViaRecovery = bufToBase64(await crypto.subtle.exportKey('raw', viaRecovery));
+    expect(rawViaPassphrase).toBe(fixture.expectedDekBase64);
+    expect(rawViaRecovery).toBe(fixture.expectedDekBase64);
   });
 });

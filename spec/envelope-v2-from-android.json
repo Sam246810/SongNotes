@@ -1,0 +1,44 @@
+{
+  "envelope": {
+    "dekId": "121f73e6c8c5c353",
+    "v": 2,
+    "verifier": {
+      "ct": "cZaO7NgjEiXyBoumXleXNoYalHy9jCVOmVGyLhRKQ1nohdyCXKY=",
+      "iv": "UxJ/XTZvn/wFs3RT"
+    },
+    "wraps": [
+      {
+        "ct": "CY8d9X45hDhsvT0sVdgUD4W1UPdA+icvjZUsy8fse+9bMfULBRpFyoUfQSR9JTsN",
+        "id": "pass",
+        "type": "passphrase",
+        "kdf": {
+          "hashLength": 32,
+          "memorySize": 65536,
+          "salt": "jDkdwMHog11o5+tfi9Rt3g==",
+          "parallelism": 1,
+          "name": "Argon2id",
+          "iterations": 3
+        },
+        "iv": "JwHbxO2D+8bl1BaA"
+      },
+      {
+        "ct": "/fN6jwVs7AcSec17eArmnq27BVFEgSMbEmm3B0vTWm7CJpXblEkDifE1JwZAIW4N",
+        "id": "recovery",
+        "type": "recovery-code",
+        "kdf": {
+          "hashLength": 32,
+          "memorySize": 65536,
+          "salt": "VoF+EbCNSQxvyNVCgigKJA==",
+          "parallelism": 1,
+          "name": "Argon2id",
+          "iterations": 3
+        },
+        "iv": "Q22TupIhLbjmj2V+"
+      }
+    ],
+    "alg": "AES-256-GCM"
+  },
+  "expectedDekBase64": "zbAgOhdJJofJg37Awa0z+c4sMWNDFrdW2p8djK8hOgo=",
+  "recoveryCode": "KLMNP-QRSTU-VWXYZ-23456-789AB",
+  "passphrase": "kotlin correct horse battery staple"
+}

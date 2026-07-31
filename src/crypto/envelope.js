@@ -65,3 +65,31 @@ export async function unwrapContentKey(kek, wrappedEnvelope) {
     ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey']
   );
 }
+
+/**
+ * Verifier magic string for envelope v2 (see accountKeys.js): a fixed plaintext
+ * encrypted directly under the DEK (not wrapped) so a single AES-GCM open confirms
+ * "this is the right DEK" without needing an actual wrapped content key to unwrap,
+ * or touching real song data.
+ */
+export const DEK_VERIFIER_PLAINTEXT = 'songnotes-dek-check-v2';
+
+/** @returns {Promise<{iv: string, ct: string}>} the DEK verifier for envelope v2. */
+export async function computeDekVerifier(dek) {
+  const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
+  const plaintext = new TextEncoder().encode(DEK_VERIFIER_PLAINTEXT);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, dek, plaintext);
+  return { iv: bufToBase64(iv), ct: bufToBase64(ct) };
+}
+
+/** @returns {Promise<boolean>} true iff `dek` is the key the verifier was computed for. */
+export async function checkDekVerifier(dek, verifier) {
+  try {
+    const iv = base64ToBuf(verifier.iv);
+    const ct = base64ToBuf(verifier.ct);
+    const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, dek, ct);
+    return new TextDecoder().decode(plaintext) === DEK_VERIFIER_PLAINTEXT;
+  } catch {
+    return false; // wrong key -> GCM auth tag failure, not a real error
+  }
+}
