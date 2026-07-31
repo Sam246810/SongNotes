@@ -6,6 +6,7 @@ import {
   unlockWithPassphrase,
   unlockWithRecoveryCode as recoverDekWithCode,
   rewrapWithNewPassphrase,
+  migrateWrapIfNeeded,
 } from '../crypto/accountKeys';
 import { SupabaseUserKeysAdapter } from '../lib/userKeysAdapter';
 import { AuthContext } from './AuthContext';
@@ -75,6 +76,18 @@ export default function AuthProvider({ children }) {
           } else {
             const dek = await unlockWithPassphrase(env, password);
             establishDEK(dek);
+            // Best-effort: rewrap the passphrase wrap onto the current KDF policy
+            // (Argon2id) if a v2 envelope's wrap is still on PBKDF2. A v1 envelope
+            // entirely is upgraded to v2 elsewhere (password change, recovery
+            // reset — see rewrapWithNewPassphrase), not silently here. Never blocks
+            // sign-in — the DEK is already established above regardless of whether
+            // this persist succeeds.
+            try {
+              const { envelope: migratedEnv, migrated } = await migrateWrapIfNeeded(env, 'passphrase', password, dek);
+              if (migrated) await keysAdapter.upsert(migratedEnv);
+            } catch (migrateError) {
+              console.error('Failed to migrate account encryption key to current KDF policy', migrateError);
+            }
           }
         } catch (e) {
           // Wrong password would already have failed signInWithPassword above, so this

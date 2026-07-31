@@ -432,12 +432,31 @@ describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', ()
     fs.writeFileSync(path.join(specDir, 'align-chords-with-lyrics.json'), JSON.stringify(fixtures, null, 2) + '\n');
   });
 
-  it('writes spec/envelope-v2.json from the real createAccountKeys (Phase 6 cross-repo test vector)', async () => {
-    const fixture = await buildEnvelopeV2Fixture();
-    expect(fixture.envelope.v).toBe(2);
-    expect(fixture.envelope.wraps).toHaveLength(2);
-    fs.mkdirSync(specDir, { recursive: true });
-    fs.writeFileSync(path.join(specDir, 'envelope-v2.json'), JSON.stringify(fixture, null, 2) + '\n');
+  it('writes (once) or re-verifies spec/envelope-v2.json against createAccountKeys (Phase 6 cross-repo test vector)', async () => {
+    // Unlike every fixture above, createAccountKeys is NOT a pure function of its
+    // inputs -- it generates real random salts/IVs/DEK internally, same as
+    // production. Regenerating on every run would silently drift this committed
+    // fixture out of sync with the frozen copy in SongNotes-Android's :core:data
+    // module on every single `npm test`, defeating the entire point of a committed
+    // cross-repo test vector. So: bootstrap once if the file doesn't exist yet: BUT
+    // ONCE COMMITTED, if it changes, that's a deliberate, reviewed regeneration
+    // (delete the file and re-run), never an automatic side effect of testing.
+    const fixturePath = path.join(specDir, 'envelope-v2.json');
+    if (!fs.existsSync(fixturePath)) {
+      const fixture = await buildEnvelopeV2Fixture();
+      expect(fixture.envelope.v).toBe(2);
+      expect(fixture.envelope.wraps).toHaveLength(2);
+      fs.mkdirSync(specDir, { recursive: true });
+      fs.writeFileSync(fixturePath, JSON.stringify(fixture, null, 2) + '\n');
+      return;
+    }
+    // Already committed: verify the EXISTING fixture still round-trips with the
+    // current crypto code, rather than overwriting it with a fresh random one.
+    const fixture = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'));
+    const viaPassphrase = await unlockWithPassphrase(fixture.envelope, fixture.passphrase);
+    const viaRecovery = await unlockWithRecoveryCode(fixture.envelope, fixture.recoveryCode);
+    expect(bufToBase64(await crypto.subtle.exportKey('raw', viaPassphrase))).toBe(fixture.expectedDekBase64);
+    expect(bufToBase64(await crypto.subtle.exportKey('raw', viaRecovery))).toBe(fixture.expectedDekBase64);
   });
 
   it('reads spec/envelope-v2-from-android.json (if present) and unlocks it with both wraps', async () => {
