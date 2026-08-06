@@ -21,7 +21,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  CHORD_DB, normalizeChordName, tokenizeChordLine,
+  CHORD_DB, normalizeChordName, tokenizeChordLine, lookupChord,
   formatFretsForInput, parseFretsInput, alignChordsWithLyrics,
 } from '../utils/chords.js';
 import { transposeChordToken, transposeChordsLine } from '../utils/transpose.js';
@@ -304,6 +304,27 @@ function buildFormatFretsForInputFixtures() {
   return inputs.map((input) => ({ input, output: formatFretsForInput(input) }));
 }
 
+// lookupChord: broad coverage of the priority rule (customChords overrides
+// CHORD_DB) and the plain-CHORD_DB/unrecognized paths, across enough chord
+// names and variant spellings to exercise normalizeChordName's routing too.
+function buildLookupChordFixtures() {
+  const customChords = {
+    // Overrides a real CHORD_DB entry — must win over the built-in voicing.
+    G: { frets: [3, 5, 5, 4, 3, 3], baseFret: 3 },
+    // Fills a gap CHORD_DB has no entry for at all.
+    Cadd11: { frets: [-1, 3, 3, 0, 1, 1], baseFret: 1 },
+  };
+  const names = [
+    'C', 'G', 'g', ' G ', 'F#', 'Gb', 'A#m', 'Bbm', 'Cadd11', 'Xyz', '', 'Am7', 'F#m7',
+  ];
+  const fixtures = [];
+  for (const name of names) {
+    fixtures.push({ input: name, customChords: null, output: lookupChord(name, null) });
+    fixtures.push({ input: name, customChords, output: lookupChord(name, customChords) });
+  }
+  return fixtures;
+}
+
 // parseFretsInput: the hand-crafted cases from chords.test.js (valid
 // 6-value strings, x/X muted-string casing, extra whitespace, a
 // baseFret > 1 case, the formatFretsForInput round-trip, and every
@@ -409,6 +430,24 @@ describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', ()
     expect(fixtures.length).toBeGreaterThan(0);
     fs.mkdirSync(specDir, { recursive: true });
     fs.writeFileSync(path.join(specDir, 'parse-lyrics-text.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/chord-db.json as a literal dump of the real CHORD_DB (SongNotes-Android Phase 8)', () => {
+    // Not a function's output -- CHORD_DB is hand-written data, so "the real
+    // implementation" here just means "programmatically dumped from the actual
+    // source object," never hand-retyped into Kotlin (which is exactly the
+    // transcription-error risk this fixture strategy exists to avoid).
+    const keys = Object.keys(CHORD_DB);
+    expect(keys.length).toBeGreaterThan(50);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'chord-db.json'), JSON.stringify(CHORD_DB, null, 2) + '\n');
+  });
+
+  it('writes spec/lookup-chord.json from the real lookupChord', () => {
+    const fixtures = buildLookupChordFixtures();
+    expect(fixtures.length).toBeGreaterThan(0);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'lookup-chord.json'), JSON.stringify(fixtures, null, 2) + '\n');
   });
 
   it('writes spec/format-frets-for-input.json from the real formatFretsForInput', () => {
