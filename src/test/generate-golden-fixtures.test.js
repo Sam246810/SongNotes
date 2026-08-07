@@ -26,6 +26,7 @@ import {
 } from '../utils/chords.js';
 import { transposeChordToken, transposeChordsLine } from '../utils/transpose.js';
 import { looksLikeChordLine, parseLyricsText } from '../utils/lyricsImport.js';
+import { exportToText } from '../utils/export.js';
 import { createAccountKeys, unlockWithPassphrase, unlockWithRecoveryCode } from '../crypto/accountKeys.js';
 import { bufToBase64 } from '../crypto/base64.js';
 
@@ -325,6 +326,46 @@ function buildLookupChordFixtures() {
   return fixtures;
 }
 
+// exportToText: song shapes covering the header (title/underline), every
+// per-line branch (chords+lyrics, chords-only, lyrics-only, neither), and a
+// couple of realistic multi-line songs -- for SongNotes-Android Phase 9's
+// formatSongAsText port. Lines use the padded-string chords shape the app's
+// in-memory song object actually carries (not the wire-format anchors), same
+// as what exportToText is really called with.
+function buildExportToTextFixtures() {
+  const songs = [
+    { title: 'Untitled Song', lines: [] },
+    { title: '', lines: [{ chords: '', lyrics: 'Just lyrics, no chords' }] },
+    { title: 'Chords Only', lines: [{ chords: 'G       C       D', lyrics: '' }] },
+    { title: '', lines: [{ chords: '   ', lyrics: '   ' }] },
+    {
+      title: 'Amazing Grace',
+      lines: [
+        { chords: 'G          C          D', lyrics: 'Amazing grace, how sweet the sound' },
+        { chords: '', lyrics: '' },
+        { chords: 'G          Em', lyrics: 'That saved a wretch like me' },
+      ],
+    },
+    {
+      title: 'Special "Chars" & Stuff',
+      lines: [
+        { chords: 'F#m7  Cadd9', lyrics: 'Tab\tand "quotes" here' },
+        { chords: '', lyrics: 'Just a plain line' },
+      ],
+    },
+  ];
+  // The real app always keeps chords aligned to lyrics length (every edit
+  // runs alignChordsWithLyrics) -- apply it here too so a fixture's chords
+  // string round-trips correctly through the wire-format anchor
+  // representation SongNotes-Android's Song.lines actually stores (anchors
+  // are reconstructed against lyrics.length, so an unaligned fixture would
+  // fail there for a reason that has nothing to do with exportToText itself).
+  for (const song of songs) {
+    for (const line of song.lines) line.chords = alignChordsWithLyrics(line.chords, line.lyrics);
+  }
+  return songs.map((song) => ({ input: song, output: exportToText(song) }));
+}
+
 // parseFretsInput: the hand-crafted cases from chords.test.js (valid
 // 6-value strings, x/X muted-string casing, extra whitespace, a
 // baseFret > 1 case, the formatFretsForInput round-trip, and every
@@ -448,6 +489,13 @@ describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', ()
     expect(fixtures.length).toBeGreaterThan(0);
     fs.mkdirSync(specDir, { recursive: true });
     fs.writeFileSync(path.join(specDir, 'lookup-chord.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/export-to-text.json from the real exportToText', () => {
+    const fixtures = buildExportToTextFixtures();
+    expect(fixtures.length).toBeGreaterThan(0);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'export-to-text.json'), JSON.stringify(fixtures, null, 2) + '\n');
   });
 
   it('writes spec/format-frets-for-input.json from the real formatFretsForInput', () => {

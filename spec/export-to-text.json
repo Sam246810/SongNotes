@@ -1,0 +1,81 @@
+[
+  {
+    "input": {
+      "title": "Untitled Song",
+      "lines": []
+    },
+    "output": "Untitled Song\n=============\n\n"
+  },
+  {
+    "input": {
+      "title": "",
+      "lines": [
+        {
+          "chords": "                      ",
+          "lyrics": "Just lyrics, no chords"
+        }
+      ]
+    },
+    "output": "Untitled\n========\n\nJust lyrics, no chords"
+  },
+  {
+    "input": {
+      "title": "Chords Only",
+      "lines": [
+        {
+          "chords": "G       C       D",
+          "lyrics": ""
+        }
+      ]
+    },
+    "output": "Chords Only\n===========\n\nG       C       D"
+  },
+  {
+    "input": {
+      "title": "",
+      "lines": [
+        {
+          "chords": "   ",
+          "lyrics": "   "
+        }
+      ]
+    },
+    "output": "Untitled\n========\n\n"
+  },
+  {
+    "input": {
+      "title": "Amazing Grace",
+      "lines": [
+        {
+          "chords": "G          C          D           ",
+          "lyrics": "Amazing grace, how sweet the sound"
+        },
+        {
+          "chords": "",
+          "lyrics": ""
+        },
+        {
+          "chords": "G          Em              ",
+          "lyrics": "That saved a wretch like me"
+        }
+      ]
+    },
+    "output": "Amazing Grace\n=============\n\nG          C          D           \nAmazing grace, how sweet the sound\n\nG          Em              \nThat saved a wretch like me"
+  },
+  {
+    "input": {
+      "title": "Special \"Chars\" & Stuff",
+      "lines": [
+        {
+          "chords": "F#m7  Cadd9          ",
+          "lyrics": "Tab\tand \"quotes\" here"
+        },
+        {
+          "chords": "                 ",
+          "lyrics": "Just a plain line"
+        }
+      ]
+    },
+    "output": "Special \"Chars\" & Stuff\n=======================\n\nF#m7  Cadd9          \nTab\tand \"quotes\" here\nJust a plain line"
+  }
+]
