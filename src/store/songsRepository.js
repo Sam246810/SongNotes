@@ -1,6 +1,6 @@
 import { alignChordsWithLyrics } from '../utils/chords';
 import { chordsLineToAnchors, anchorsToChordsLine } from '../utils/chordAnchors';
-import { getDEK } from '../crypto/keyManager';
+import { getDEK, getActiveDekId } from '../crypto/keyManager';
 import { encryptJSON, decryptJSON } from '../crypto/envelope';
 
 const STORAGE_KEY = 'songnotes_songs';
@@ -172,6 +172,17 @@ export class SupabaseSongsAdapter {
     if (!data) return { conflict: true };
     return { conflict: false, row: data };
   }
+
+  /**
+   * Hard-deletes every row for this user — a real DELETE, not a tombstone write.
+   * One statement rather than a per-row loop; RLS's `"own songs" for all` policy
+   * covers DELETE, so this is scoped to the caller's own rows regardless of the
+   * explicit `.eq('user_id', ...)` filter, which is kept anyway as defense in depth.
+   */
+  async deleteAll(userId) {
+    const { error } = await this.client.from('songs').delete().eq('user_id', userId);
+    if (error) throw error;
+  }
 }
 
 /**
@@ -296,6 +307,7 @@ export class CloudSongsRepository {
       encrypted: true,
       content,
       is_locked: false,
+      dek_id: getActiveDekId(),
       rev,
       deleted_at: null,
       created_at: song.createdAt,
@@ -335,12 +347,36 @@ export class CloudSongsRepository {
     return { id: row.id, ...content, lines: this._anchorLinesToPaddedLines(content.lines) };
   }
 
-  _placeholderSong(row) {
+  /**
+   * True iff this row's `dek_id` is known and differs from the currently
+   * unlocked DEK's -- almost always the aftermath of a DEK rotation (recovery
+   * code lost, see accountRecovery.js's rotateAndPurge; the purge itself hard-
+   * deletes rows, but a row synced from another device between the rotation
+   * and its own purge running there can slip through). `false` (not "unknown")
+   * whenever either side is missing -- a row with no `dek_id` predates this
+   * column and gets no special-casing, and with no active DEK at all this
+   * can't be evaluated either way, so callers fall through to the generic
+   * "locked, not decrypted yet" path instead of guessing.
+   */
+  _isFromPreviousKey(row) {
+    const activeDekId = getActiveDekId();
+    return Boolean(row.dek_id && activeDekId && row.dek_id !== activeDekId);
+  }
+
+  /**
+   * @param {'undecryptable'|'previous-key'} reason 'previous-key' is known
+   *   ahead of time from `_isFromPreviousKey` (skips a decrypt attempt that's
+   *   guaranteed to fail); 'undecryptable' covers everything else a decrypt
+   *   attempt can throw on (session simply not unlocked yet, genuine corruption).
+   */
+  _placeholderSong(row, reason = 'undecryptable') {
+    const isFromPreviousKey = reason === 'previous-key';
     return {
       id: row.id,
-      title: '🔒 Locked — click to unlock',
+      title: isFromPreviousKey ? '🔒 Encrypted under a previous key' : '🔒 Locked — click to unlock',
       lines: [],
       isUndecryptedPlaceholder: true,
+      isFromPreviousKey,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -360,6 +396,10 @@ export class CloudSongsRepository {
     const songs = [];
     for (const row of rows) {
       if (row.deleted_at) continue; // tombstoned -- kept in the cache for reconciliation, never shown
+      if (this._isFromPreviousKey(row)) {
+        songs.push(this._placeholderSong(row, 'previous-key'));
+        continue;
+      }
       try {
         songs.push(await this._decryptRow(row));
       } catch {
@@ -372,6 +412,7 @@ export class CloudSongsRepository {
   async get(id) {
     const row = this._readCache().find((r) => r.id === id);
     if (!row || row.deleted_at) return null;
+    if (this._isFromPreviousKey(row)) return this._placeholderSong(row, 'previous-key');
     try {
       return await this._decryptRow(row);
     } catch {
@@ -505,6 +546,32 @@ export class CloudSongsRepository {
       // Best-effort only — browsers don't reliably await work during unload.
       this._flushOne(id);
     }
+  }
+
+  /**
+   * Drops every pending debounced write without pushing it — the opposite of
+   * flushPending(). Needed before a DEK rotation/purge: a pending entry's `row`
+   * was already built (encrypted) under the OLD DEK, so if its timer fired after
+   * the purge it would write a fresh conflict copy under a dead key, resurrecting
+   * a "deleted" song. Call this before purgeAll(), not after.
+   */
+  cancelPending() {
+    for (const { timer } of this._debounce.values()) clearTimeout(timer);
+    this._debounce.clear();
+  }
+
+  /**
+   * Hard-deletes every song row this user has on the server (tombstones and
+   * conflict copies included — a real DELETE, not another tombstone write) and
+   * clears the local cache. Used only when the account DEK is being rotated
+   * (recovery code lost): the old rows are cryptographically dead weight, not
+   * data to preserve, so this is deliberately NOT the tombstone-based remove()
+   * above. Caller is responsible for cancelPending() first and for calling this
+   * BEFORE establishing the new DEK (see accountRecovery.js's rotateAndPurge).
+   */
+  async purgeAll() {
+    await this.adapter.deleteAll(this.userId);
+    this._writeCache([]);
   }
 }
 

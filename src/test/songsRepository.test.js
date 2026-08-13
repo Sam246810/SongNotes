@@ -92,6 +92,31 @@ describe('CloudSongsRepository', () => {
       expect(JSON.stringify(listed)).not.toContain('super secret lyrics');
     });
 
+    it('stamps dek_id on the row from the active session', async () => {
+      clearSession();
+      await establishDEK(await generateContentKey(), 'user-1', 'dek-abc');
+      await repo.create(makeSong());
+      const remoteRow = [...adapter.rows.values()][0];
+      expect(remoteRow.dek_id).toBe('dek-abc');
+    });
+
+    it('shows a distinct "previous key" placeholder after a DEK rotation, without attempting to decrypt', async () => {
+      clearSession();
+      await establishDEK(await generateContentKey(), 'user-1', 'dek-old');
+      await repo.create(makeSong());
+
+      // Simulate rotateAndPurge's aftermath on a device that hasn't synced the
+      // purge yet: a fresh DEK/dekId is active, but this row is still around
+      // (e.g. synced from another device in the gap) encrypted under the old one.
+      clearSession();
+      await establishDEK(await generateContentKey(), 'user-1', 'dek-new');
+
+      const [listed] = await repo.list();
+      expect(listed.isUndecryptedPlaceholder).toBe(true);
+      expect(listed.isFromPreviousKey).toBe(true);
+      expect(listed.title).toBe('🔒 Encrypted under a previous key');
+    });
+
     it('re-encrypts on every edit and the updated content round-trips correctly', async () => {
       vi.useFakeTimers();
       await repo.create(makeSong());

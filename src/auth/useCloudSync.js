@@ -26,6 +26,10 @@ export default function useCloudSync() {
     if (authLoading) return undefined;
 
     let cancelled = false;
+    // The CloudSongsRepository instance THIS effect run creates, if any — tracked
+    // locally (not from the store) so the cleanup below disposes exactly the
+    // instance it made, never a newer one a later run already installed.
+    let createdRepo = null;
 
     async function setup() {
       setPhase('checking');
@@ -40,10 +44,11 @@ export default function useCloudSync() {
         return;
       }
 
-      await restoreSession();
+      await restoreSession(user.id);
 
       const songsAdapter = new SupabaseSongsAdapter(supabase, user.id);
       const cloudRepo = new CloudSongsRepository({ adapter: songsAdapter, userId: user.id });
+      createdRepo = cloudRepo;
 
       setRepo(cloudRepo);
       if (!cancelled) {
@@ -55,6 +60,11 @@ export default function useCloudSync() {
     setup();
     return () => {
       cancelled = true;
+      // dispose() removes the repo's `beforeunload` flush listener -- without
+      // this the listener leaked across every account switch/reconnect in this
+      // tab, and an old instance still holding rows encrypted under a since-
+      // rotated DEK could flush a stale write on a later unload.
+      createdRepo?.dispose();
     };
   }, [user?.id, authLoading, setRepo, hydrate]);
 

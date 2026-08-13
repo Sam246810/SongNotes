@@ -20,7 +20,12 @@ export default function Dashboard({ onPrivacyLock }) {
   const [confirmDelete, setConfirmDelete] = useState(null); // songId pending deletion
   const [showNewSongDialog, setShowNewSongDialog] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const migration = useLocalMigration();
+
+  const visibleSongs = [...songs]
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    .filter((s) => s.title.toLowerCase().includes(searchQuery.trim().toLowerCase()));
 
   // Recorded/imported Scratchpad audio is session-only (see src/audio/dawSession.js) —
   // warn before an action that would make it unreachable, rather than losing it silently.
@@ -36,13 +41,6 @@ export default function Dashboard({ onPrivacyLock }) {
   }
 
   function handleNew() {
-    if (!configured) {
-      // No accounts available at all in this deployment — ask for a title directly.
-      const name = window.prompt("Enter song name:", "Untitled Song");
-      if (name === null) return;
-      addSong(name.trim() || 'Untitled Song');
-      return;
-    }
     setShowNewSongDialog(true);
   }
 
@@ -90,6 +88,14 @@ export default function Dashboard({ onPrivacyLock }) {
             <>
               <span className={styles.accountEmail} title={user.email}>{user.email}</span>
               <div className={styles.accountActions}>
+                <Link
+                  className={styles.accountLinkBtn}
+                  to="/account"
+                  title="Recovery code, password"
+                  id="account-settings-link"
+                >
+                  ⚙ Account
+                </Link>
                 <button
                   className={styles.accountLinkBtn}
                   onClick={onPrivacyLock}
@@ -114,6 +120,21 @@ export default function Dashboard({ onPrivacyLock }) {
         </div>
       )}
 
+      {/* Search */}
+      {songs.length > 0 && (
+        <div className={styles.searchArea}>
+          <input
+            type="text"
+            className={styles.searchInput}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search songs…"
+            aria-label="Search songs"
+            id="song-search-input"
+          />
+        </div>
+      )}
+
       {/* Song list */}
       <div className={styles.listArea}>
         {songs.length === 0 ? (
@@ -125,9 +146,15 @@ export default function Dashboard({ onPrivacyLock }) {
               + Create Song
             </button>
           </div>
+        ) : visibleSongs.length === 0 ? (
+          <div className={styles.empty}>
+            <div className={styles.emptyIllustration}>🔍</div>
+            <p className={styles.emptyTitle}>No matches</p>
+            <p className={styles.emptySubtitle}>No songs match "{searchQuery.trim()}"</p>
+          </div>
         ) : (
           <ul className={styles.list}>
-            {songs.map((song) => (
+            {visibleSongs.map((song) => (
               <li
                 key={song.id}
                 className={`${styles.item} ${song.id === activeSongId ? styles.active : ''}`}

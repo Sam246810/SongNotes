@@ -11,7 +11,7 @@ import styles from '../../auth/AuthPage.module.css';
  * failing — that doubles as password verification with no new crypto code.
  */
 export default function PrivacyScreen({ onUnlock }) {
-  const { unlockAccountKey } = useAuth();
+  const { unlockAccountKey, signOut } = useAuth();
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -28,6 +28,13 @@ export default function PrivacyScreen({ onUnlock }) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleSignOut() {
+    // Clears the lock flag too — otherwise signing back in later would land
+    // straight back on this screen with no way to have re-unlocked it.
+    onUnlock();
+    signOut();
   }
 
   return (
@@ -57,6 +64,14 @@ export default function PrivacyScreen({ onUnlock }) {
             {submitting ? 'Unlocking…' : 'Unlock'}
           </button>
         </form>
+        <button
+          type="button"
+          className={`${styles.guestLink} ${styles.linkButton}`}
+          onClick={handleSignOut}
+          id="privacy-sign-out-btn"
+        >
+          Forgot your password? Sign out instead
+        </button>
       </div>
     </div>
   );

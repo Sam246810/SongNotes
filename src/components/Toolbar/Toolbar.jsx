@@ -1,13 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
 import useSongsStore from '../../store/songsStore';
 import { downloadText, exportToPdf } from '../../utils/export';
+import ConfirmDialog from '../ConfirmDialog/ConfirmDialog';
 import styles from './Toolbar.module.css';
+
+const SHORTCUTS = [
+  { keys: 'Tab', desc: 'jump between the chord and lyric track on this line' },
+  { keys: 'Enter', desc: 'start a new line below' },
+  { keys: '⌫ Backspace', desc: 'at the start of an empty line, deletes it' },
+  { keys: '↑ / ↓', desc: 'move to the line above / below' },
+  { keys: 'Click a chord', desc: 'edit it directly — hover to see its diagram' },
+];
 
 export default function Toolbar({ song, showScratchpad, onToggleScratchpad }) {
   const { renameSong } = useSongsStore();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(song.title);
   const [showExport, setShowExport] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const titleRef = useRef(null);
   const exportRef = useRef(null);
 
@@ -108,6 +118,17 @@ export default function Toolbar({ song, showScratchpad, onToggleScratchpad }) {
           🎛️ {showScratchpad ? 'Hide Scratchpad' : 'Scratchpad'}
         </button>
 
+        {/* Keyboard shortcuts help */}
+        <button
+          className={styles.btn}
+          onClick={() => setShowShortcuts(true)}
+          title="Keyboard shortcuts"
+          aria-label="Keyboard shortcuts"
+          id="shortcuts-help-btn"
+        >
+          ⌨️ Shortcuts
+        </button>
+
         {/* Export dropdown */}
         <div className={styles.exportWrap} ref={exportRef}>
           <button
@@ -144,6 +165,24 @@ export default function Toolbar({ song, showScratchpad, onToggleScratchpad }) {
           )}
         </div>
       </div>
+
+      {showShortcuts && (
+        <ConfirmDialog
+          title="Keyboard Shortcuts"
+          message={
+            <ul className={styles.shortcutList}>
+              {SHORTCUTS.map(({ keys, desc }) => (
+                <li key={keys}>
+                  <kbd className={styles.shortcutKey}>{keys}</kbd> {desc}
+                </li>
+              ))}
+            </ul>
+          }
+          confirmLabel="Got it"
+          onConfirm={() => setShowShortcuts(false)}
+          confirmId="shortcuts-dismiss-btn"
+        />
+      )}
     </div>
   );
 }

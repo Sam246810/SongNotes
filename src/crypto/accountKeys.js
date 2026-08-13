@@ -6,6 +6,7 @@ import {
   generateContentKey, wrapContentKey, unwrapContentKey,
   computeDekVerifier, checkDekVerifier,
 } from './envelope';
+import { normalizeRecoveryCode, RECOVERY_CODE_ALPHABET } from './recoveryCode';
 
 /**
  * Account-level key envelope: a single random Data Encryption Key (DEK) per user,
@@ -62,10 +63,15 @@ async function buildWrap(id, type, secret, dek) {
   return { id, type, kdf: serializeKdfParams(salt), iv, ct };
 }
 
-/** A high-entropy, easy-to-transcribe recovery code (unambiguous alphabet, grouped). */
+/**
+ * A high-entropy, easy-to-transcribe recovery code (unambiguous alphabet, grouped).
+ * 20 chars from a 32-symbol alphabet is ~100 bits of entropy (log2(32)*20), not
+ * 160 -- 160 would be the entropy of the 20 raw random *bytes* this draws from,
+ * before the `% alphabet.length` reduction discards the rest of each byte.
+ */
 export function generateRecoveryCode() {
-  const bytes = crypto.getRandomValues(new Uint8Array(20)); // 160 bits of entropy
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // excludes 0/O, 1/I/L etc.
+  const bytes = crypto.getRandomValues(new Uint8Array(20));
+  const alphabet = RECOVERY_CODE_ALPHABET; // excludes 0, 1, I, O (not L) -- see recoveryCode.js
   let code = '';
   for (let i = 0; i < bytes.length; i++) {
     code += alphabet[bytes[i] % alphabet.length];
@@ -88,9 +94,15 @@ export async function unlockWithPassphrase(envelope, accountPassword) {
 /** Alias for unlockWithPassphrase */
 export const unlockWithAccountPassword = unlockWithPassphrase;
 
-/** @returns {Promise<CryptoKey>} the DEK, or throws if the recovery code is wrong. */
+/**
+ * @returns {Promise<CryptoKey>} the DEK, or throws if the recovery code is wrong.
+ * Normalizes the input first (see recoveryCode.js) so a code retyped lowercase,
+ * without hyphens, or with stray whitespace still unlocks -- this is the *only*
+ * call site normalization needs to live behind, since every recovery-code unlock
+ * (web and, once ported, Android) goes through here.
+ */
 export async function unlockWithRecoveryCode(envelope, recoveryCode) {
-  return unlockWithType(envelope, 'recovery', 'recovery-code', recoveryCode);
+  return unlockWithType(envelope, 'recovery', 'recovery-code', normalizeRecoveryCode(recoveryCode));
 }
 
 async function unlockWithType(envelope, v1Field, v2Type, secret) {
@@ -180,6 +192,35 @@ export async function migrateWrapIfNeeded(envelope, v2Type, secret, dek) {
   return {
     envelope: { ...envelope, wraps: envelope.wraps.map((w) => (w.type === v2Type ? newWrap : w)) },
     migrated: true,
+  };
+}
+
+/**
+ * Mints a brand-new recovery code and replaces ONLY the recovery wrap -- for an
+ * account whose owner never saw/saved theirs (see accountRecovery.js's lifecycle
+ * fixes) or simply wants to rotate it. The passphrase wrap, dekId, and verifier
+ * are untouched, and the DEK itself never changes, so no song is re-encrypted and
+ * signing in with the account password keeps working exactly as before.
+ * Requires the DEK already in hand (caller must be unlocked) -- this never
+ * derives from the OLD recovery code, so it works even if that one is already lost.
+ * @returns {Promise<{envelope: object, recoveryCode: string}>}
+ */
+export async function regenerateRecoveryWrap(envelope, dek) {
+  const recoveryCode = generateRecoveryCode();
+  const recoveryWrap = await buildWrap('recovery', 'recovery-code', recoveryCode, dek);
+  const wraps =
+    envelope.v >= 2
+      ? envelope.wraps.map((w) => (w.type === 'recovery-code' ? recoveryWrap : w))
+      : [findWrap(envelope, 'passphrase', 'passphrase'), recoveryWrap];
+  return {
+    envelope: {
+      v: ENVELOPE_VERSION,
+      dekId: envelope.v >= 2 ? envelope.dekId : generateDekId(),
+      alg: 'AES-256-GCM',
+      wraps,
+      verifier: envelope.v >= 2 ? envelope.verifier : await computeDekVerifier(dek),
+    },
+    recoveryCode,
   };
 }
 

@@ -1,0 +1,214 @@
+{
+  "normalize": [
+    {
+      "input": "ABCDE-FGHJK-LMNPQ-RSTUV",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV"
+    },
+    {
+      "input": "abcde-fghjk-lmnpq-rstuv",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV"
+    },
+    {
+      "input": "ABCDEFGHJKLMNPQRSTUV",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV"
+    },
+    {
+      "input": "ABCDE FGHJK LMNPQ RSTUV",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV"
+    },
+    {
+      "input": " ABCDE-FGHJK-LMNPQ-RSTUV ",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV"
+    },
+    {
+      "input": "ABCDE-FGHJK-LMNPQ-RSTUV\t",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV"
+    },
+    {
+      "input": "A-B-C-D-E---F-G-H-J-K---L-M-N-P-Q---R-S-T-U-V",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV"
+    },
+    {
+      "input": "ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2"
+    },
+    {
+      "input": "abcde-fghjk-lmnpq-rstuv-wxyz2",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2"
+    },
+    {
+      "input": "ABCDEFGHJKLMNPQRSTUVWXYZ2",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2"
+    },
+    {
+      "input": "ABCDE FGHJK LMNPQ RSTUV WXYZ2",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2"
+    },
+    {
+      "input": " ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2 ",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2"
+    },
+    {
+      "input": "ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2\t",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2"
+    },
+    {
+      "input": "A-B-C-D-E---F-G-H-J-K---L-M-N-P-Q---R-S-T-U-V---W-X-Y-Z-2",
+      "output": "ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2"
+    },
+    {
+      "input": "ABCDE-FGHJK",
+      "output": "ABCDE-FGHJK"
+    },
+    {
+      "input": "abcde-fghjk",
+      "output": "ABCDE-FGHJK"
+    },
+    {
+      "input": "ABCDEFGHJK",
+      "output": "ABCDE-FGHJK"
+    },
+    {
+      "input": "ABCDE FGHJK",
+      "output": "ABCDE-FGHJK"
+    },
+    {
+      "input": " ABCDE-FGHJK ",
+      "output": "ABCDE-FGHJK"
+    },
+    {
+      "input": "ABCDE-FGHJK\t",
+      "output": "ABCDE-FGHJK"
+    },
+    {
+      "input": "A-B-C-D-E---F-G-H-J-K",
+      "output": "ABCDE-FGHJK"
+    },
+    {
+      "input": "ABCDEF",
+      "output": "ABCDE-F"
+    },
+    {
+      "input": "abcdef",
+      "output": "ABCDE-F"
+    },
+    {
+      "input": " ABCDEF ",
+      "output": "ABCDE-F"
+    },
+    {
+      "input": "ABCDEF\t",
+      "output": "ABCDE-F"
+    },
+    {
+      "input": "A-B-C-D-E-F",
+      "output": "ABCDE-F"
+    },
+    {
+      "input": "A",
+      "output": "A"
+    },
+    {
+      "input": "a",
+      "output": "A"
+    },
+    {
+      "input": " A ",
+      "output": "A"
+    },
+    {
+      "input": "A\t",
+      "output": "A"
+    },
+    {
+      "input": "",
+      "output": ""
+    },
+    {
+      "input": "  ",
+      "output": ""
+    },
+    {
+      "input": "\t",
+      "output": ""
+    },
+    {
+      "input": "ABC0DE-IOL1",
+      "output": "ABCDE-L"
+    },
+    {
+      "input": "0000000000",
+      "output": ""
+    },
+    {
+      "input": "IIIIIIIIII",
+      "output": ""
+    },
+    {
+      "input": "OOOOOOOOOO",
+      "output": ""
+    },
+    {
+      "input": "LLLLLLLLLL",
+      "output": "LLLLL-LLLLL"
+    },
+    {
+      "input": "----",
+      "output": ""
+    },
+    {
+      "input": "   ",
+      "output": ""
+    },
+    {
+      "input": "ＡＢＣＤＥ",
+      "output": "ABCDE"
+    },
+    {
+      "input": null,
+      "output": ""
+    },
+    {
+      "input": null,
+      "output": ""
+    }
+  ],
+  "kek": [
+    {
+      "input": "ABCDE-FGHJK-LMNPQ-RSTUV",
+      "saltBase64": "AAECAwQFBgcICQoLDA0ODw==",
+      "kdf": {
+        "name": "Argon2id",
+        "memorySize": 65536,
+        "iterations": 3,
+        "parallelism": 1,
+        "hashLength": 32
+      },
+      "expectedKekBase64": "WQvwaVCOh81t3zfKr8Qz0Ko0HrFzqwF7hHnjPdSX1w8="
+    },
+    {
+      "input": "abcde fghjk lmnpq rstuv",
+      "saltBase64": "AAECAwQFBgcICQoLDA0ODw==",
+      "kdf": {
+        "name": "Argon2id",
+        "memorySize": 65536,
+        "iterations": 3,
+        "parallelism": 1,
+        "hashLength": 32
+      },
+      "expectedKekBase64": "WQvwaVCOh81t3zfKr8Qz0Ko0HrFzqwF7hHnjPdSX1w8="
+    },
+    {
+      "input": "ZYXWV-UTSRQ-PNMLK-JHGFE",
+      "saltBase64": "ICEiIyQlJicoKSorLC0uLw==",
+      "kdf": {
+        "name": "Argon2id",
+        "memorySize": 65536,
+        "iterations": 3,
+        "parallelism": 1,
+        "hashLength": 32
+      },
+      "expectedKekBase64": "OrW3kLYCNgY3ge4kOpLwOT469qGTugQ6pvGmjhI3pxg="
+    }
+  ]
+}

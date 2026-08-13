@@ -118,6 +118,7 @@ export default function NewSongDialog({ onDone, onCancel }) {
               className={styles.titleInput}
               value={songTitle}
               onChange={handleTitleChange}
+              onFocus={(e) => e.target.select()}
               placeholder="e.g. Yesterday"
               autoFocus={mode === 'blank'}
             />

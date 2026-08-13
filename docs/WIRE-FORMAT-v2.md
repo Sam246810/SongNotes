@@ -29,7 +29,7 @@ create table if not exists public.user_keys (
 create table if not exists public.songs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  dek_id text not null,              -- which DEK this row is encrypted under; see §3
+  dek_id text,                       -- which DEK this row is encrypted under; see §3
   content jsonb not null,            -- {v, alg, iv, ct} — see §2, always encrypted
   rev bigint not null default 1,     -- optimistic-concurrency counter; see §5
   deleted_at timestamptz,            -- tombstone; null = alive
@@ -65,14 +65,25 @@ create policy "own songs" on public.songs for all
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
 ```
 
+> **Implementation status, both repos (as of the Phase 12 forgot-password work):**
+> the DDL above is the target, not what's live. The actual `supabase/schema.sql`
+> still carries `encrypted`/`is_locked` columns this section says to drop, uses a
+> client-computed `rev` guarded by `WHERE rev = $expected` rather than the
+> `songs_bump_rev` DB trigger below, and `rev` is `integer`, not `bigint`. This was
+> already an acknowledged gap before Phase 12 (see `docs/handoff/PHASE-07.md`'s
+> "Deferred" list) and reconciling it is a separate, larger effort — not attempted
+> here. **`dek_id` is the one column Phase 12 actually added for real** (nullable,
+> not `not null` as this DDL shows — see the column comment in the live
+> `supabase/schema.sql` for why a null can't be backfilled retroactively). Trust
+> the live schema file over this section for anything not called out above.
+
 Changes from v1, and why:
 
 - **No `title` or `is_locked` columns.** In v1 `title` was always written `NULL` (the
   real title lives inside the ciphertext) — a trap that invites a future "optimize
   the list view" leak. Dropped entirely.
-- **`dek_id` added, not nullable.** Every song row states which DEK encrypted it.
-  Makes "this song predates a key reset" identifiable instead of "decrypt just
-  threw". See §3.
+- **`dek_id` added.** Every song row states which DEK encrypted it. Makes "this song
+  predates a key reset" identifiable instead of "decrypt just threw". See §3.
 - **`rev` + a DB-side trigger**, not client-supplied. The trigger is the source of
   truth so a client can never forge a revision bump. Used for optimistic-concurrency
   writes — see §5.
@@ -139,19 +150,19 @@ characters.
 ```json
 {
   "v": 2,
-  "dekId": "<12 random bytes, base64url, no padding>",
+  "dekId": "<8 random bytes, lowercase hex — see the note below>",
   "alg": "AES-256-GCM",
   "wraps": [
     {
       "id": "pass",
       "type": "passphrase",
-      "kdf": { "name": "Argon2id", "v": 19, "m": 65536, "t": 3, "p": 1, "salt": "<base64>" },
+      "kdf": { "name": "Argon2id", "memorySize": 65536, "iterations": 3, "parallelism": 1, "hashLength": 32, "salt": "<base64>" },
       "iv": "<base64>", "ct": "<base64>"
     },
     {
       "id": "recovery",
       "type": "recovery-code",
-      "kdf": { "name": "Argon2id", "v": 19, "m": 65536, "t": 3, "p": 1, "salt": "<base64>" },
+      "kdf": { "name": "Argon2id", "memorySize": 65536, "iterations": 3, "parallelism": 1, "hashLength": 32, "salt": "<base64>" },
       "iv": "<base64>", "ct": "<base64>"
     }
   ],
@@ -180,15 +191,23 @@ Notes on each field:
 - **`kdf.name` is checked per-wrap, not assumed.** A reader must dispatch on
   `kdf.name` (`"Argon2id"` or, only for legacy v1 envelopes upgraded in place,
   `"PBKDF2"` — see §6). **Never hardcode the algorithm.**
-- **Argon2id parameters:** `m=65536` (64 MiB, in **KiB** per the Argon2 spec —
-  double-check your library's unit), `t=3` iterations, `p=1` lane, 16-byte salt,
-  32-byte (256-bit) output, version `19` (0x13, i.e. Argon2 v1.3). This is OWASP's
-  first recommended profile as of 2024–2026 guidance.
-- **`dekId`**: 12 random bytes, base64url **without padding** (so it's safe to use
-  directly as e.g. a filename component or column value with no escaping). Every
-  `songs.dek_id` must match the `dekId` currently active in `user_keys.envelope` for
-  that user, or the song predates a key reset (§3.3) and should render as
-  "encrypted under a previous key" rather than a generic decrypt failure.
+- **Argon2id parameters, and their JSON key names — verified against both
+  implementations' committed golden fixtures, not just this prose:**
+  `memorySize=65536` (64 MiB, in **KiB** per the Argon2 spec — double-check your
+  library's unit), `iterations=3`, `parallelism=1`, `hashLength=32` (bytes,
+  256-bit output), 16-byte salt, algorithm version `19` (0x13, i.e. Argon2 v1.3 —
+  hardcoded into both implementations, **not itself a serialized JSON field**;
+  there is no `v` key inside `kdf`, only on the outer envelope). This is OWASP's
+  first recommended profile as of 2024–2026 guidance. An earlier draft of this
+  section used shorthand key names (`m`/`t`/`p`/`v`) that neither implementation
+  ever actually wrote — the names above are what's really on the wire.
+- **`dekId`**: 8 random bytes rendered as lowercase hex (16 characters) — not the
+  12-bytes-base64url this section previously claimed; both implementations agree
+  with each other on the 8-byte-hex form, so the doc was wrong, not the code.
+  Every `songs.dek_id` must match the `dekId` currently active in
+  `user_keys.envelope` for that user, or the song predates a key reset (§3.3) and
+  should render as "encrypted under a previous key" rather than a generic decrypt
+  failure.
 - **`verifier`**: `AES-GCM-encrypt(dek, freshIv, utf8("songnotes-dek-check-v2"))`.
   After deriving a candidate DEK from a passphrase/recovery-code attempt, decrypt
   `verifier` and check the plaintext equals exactly `"songnotes-dek-check-v2"`. This
@@ -201,24 +220,46 @@ Unchanged from v1 — this format was already good:
 
 - 20 random bytes → mapped **unbiased** via `byte % 32` (256 is a multiple of 32, so
   every output symbol is equally likely) onto the alphabet
-  `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (32 chars — excludes `0/O`, `1/I/L` for
-  unambiguous handwriting/reading).
+  `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (32 chars — excludes `0`, `1`, `I`, `O` for
+  unambiguous handwriting/reading. **Not** `L` — the string reads `...GHJKLMN...`,
+  L is present and generatable; several earlier design notes assumed otherwise and
+  were wrong).
 - One character per byte → 20 characters → **100 bits of entropy** (5 bits/byte
   survive the modulo; the raw 160 bits of input is not the code's actual entropy).
 - Hyphenated every 5th character except the last: `XXXXX-XXXXX-XXXXX-XXXXX` (23
   characters total including hyphens).
 
-**New in v2 — normalize before deriving, on both platforms:**
+**New in v2 — normalize before deriving, on both platforms (implemented as of
+Phase 12; `src/crypto/recoveryCode.js` / `RecoveryCode.kt`, both pinned against
+the committed `spec/recovery-code-vectors.json`):**
 
 ```
-normalize(input) = insert '-' every 5 chars into
-                    uppercase(input).filter { it in ALPHABET }
+normalize(input) = chunk(5, strip(uppercase(NFKC(input))))
+                      .join('-')
+
+strip(s)  = s.filter { it in ALPHABET }     -- drops hyphens, spaces, anything else
+chunk(5, s) = s split into runs of up to 5 chars, in order
 ```
 
-i.e. uppercase, strip every character not in the 32-char alphabet (including
-existing hyphens, spaces, anything pasted), then re-insert canonical hyphens. Derive
-the KEK from the **normalized** string, not the raw user input. This fixes a v1
-footgun: retyping a recovery code without hyphens used to just fail as "wrong code".
+i.e. NFKC-normalize (folds full-width/compatibility variants), uppercase
+(locale-invariant — Kotlin must use `uppercase()`, not the deprecated
+`toUpperCase()`, which is Turkish-locale-sensitive), strip every character not in
+the 32-char alphabet, then re-chunk into groups of 5 joined by `-`. Derive the KEK
+from the **normalized** string, not the raw user input. This fixes a v1 footgun:
+retyping a recovery code without hyphens used to just fail as "wrong code".
+
+Two precision points the vectors exist specifically to pin:
+
+- **No trailing separator.** A naive "insert `-` after every 5th character" emits
+  a trailing hyphen on input whose stripped length is an exact multiple of 5 (the
+  canonical 25-character form — 20 alphabet chars + `-WXYZ2`-style suffix — is
+  divisible by 5) and derives a different KEK than the real implementation. Chunk
+  first, then join, never insert-as-you-go.
+- **`normalize()` never validates length.** No length check on the derive path —
+  only the UI layer may warn about an unexpected length (see
+  `describeRecoveryCodeInput` in `recoveryCode.js`/`RecoveryCode.kt`), and even
+  then non-blockingly. A hard length assertion inside `normalize()` itself would
+  reject the committed fixtures, which include a deliberately-off-length case.
 
 ### 3.2 Device key wrap — Android-local only, not synced
 
@@ -260,6 +301,30 @@ and the web client know nothing about it.
   current policy (e.g. a legacy PBKDF2 entry, or a lower Argon2 `t`/`m` than today's
   default), rewrap that entry with current params **as a side effect of a successful
   unlock**, and upsert. Silent, incremental fleet-wide upgrade.
+- **Forgot password, have the recovery code ("Path A" — non-destructive, added
+  Phase 12):** fetch the envelope; unlock with the recovery code (no writes yet);
+  set the new/current auth password (`supabase.auth.updateUser`); replace only the
+  `pass` wrap entry for it (same math as "Passphrase change" above — the DEK never
+  changes, the `recovery` wrap is untouched, the same code keeps working
+  afterward). Ordering is load-bearing: a failure between the password update and
+  the wrap update leaves the envelope on the old password ("State X"), which is
+  indistinguishable from — and self-heals via — the ordinary "Unlock" flow above,
+  never a permanent lockout for someone who actually has a valid code. Implemented
+  identically in `src/auth/accountRecovery.js` (web) and
+  `SupabaseAuthRepository.recoverWithRecoveryCode` (Android; the destructive path
+  below is web-only for now — Android links out to the web for it).
+- **Forgot password, code is lost ("Path B" — destructive, added Phase 12):** the
+  DEK is cryptographically unrecoverable at this point, full stop. Behind an
+  explicit typed confirmation: set the new password; run "New account, first
+  encryption setup" above to mint a fresh `dek`/`dekId`/both wraps; **display the
+  new recovery code and block on it being acknowledged before writing anything**
+  (minting, then writing, then displaying — in that order — is how an earlier,
+  now-removed `resetAccountEncryption` implementation ended up discarding codes on
+  a crash or closed tab between steps); then hard-delete (real `DELETE`, not a
+  tombstone) every `songs` row for the user — their `dek_id` no longer matches
+  anything unlockable, so unlike "Full reset" above there is nothing to
+  re-encrypt, only dead ciphertext to discard. `src/auth/accountRecovery.js`'s
+  `rotateAndPurge`.
 
 ---
 
@@ -426,20 +491,39 @@ start.
 ## 7. Cross-implementation test vectors (mandatory, both repos, before Phase 7)
 
 A fixed set of `(input, expected-output)` pairs, generated once and **committed
-verbatim to both repos** under `spec/wire-format-v2/`:
+verbatim to both repos**. Correction: these live directly under `spec/` in both
+repos (the web app's `src/test/generate-golden-fixtures.test.js` writes them
+there, matching every other golden fixture in that file) — an earlier draft of
+this section claimed a `spec/wire-format-v2/` subdirectory that was never
+actually used by any implementation.
 
 - `kdf-vectors.json` — passphrase + salt + Argon2id params → expected 32-byte KEK
-  (hex). Also PBKDF2 vectors for the legacy reader path.
+  (hex). Also PBKDF2 vectors for the legacy reader path. **Not yet built.**
 - `envelope-vectors.json` — a full `user_keys.envelope` fixture with a **known
   plaintext DEK**, so both platforms can independently unwrap it and diff.
+  **Delivered under a different name:** `spec/envelope-v2.json` (web-authored) /
+  `spec/envelope-v2-from-android.json` (Android-authored), see
+  `EnvelopeV2GoldenFixtureTest.kt` / `generate-golden-fixtures.test.js`'s own
+  envelope-v2 tests — same purpose, shipped ahead of this document catching up.
 - `song-vectors.json` — plaintext song documents ↔ their AES-GCM ciphertext under a
   **known DEK + known IV** (IVs are normally random; for these fixed vectors only,
   the IV is pinned so the ciphertext is reproducible and diffable byte-for-byte).
+  **Not yet built.**
 - `chord-anchor-vectors.json` — v1 padded-string ↔ v2 anchor conversions for the
   tricky cases: overlapping chords, a chord past end-of-lyrics, an all-instrumental
-  (empty-lyrics) line, adjacent chords with zero gap.
+  (empty-lyrics) line, adjacent chords with zero gap. **Not yet built.**
 - `recovery-code-vectors.json` — raw pasted input (with stray casing/spacing/no
-  hyphens) → normalized form → derived KEK, so both platforms' `normalize()` agree.
+  hyphens) → normalized form, plus a few fixed-salt Argon2id (input, salt) → KEK
+  vectors, so both platforms' `normalize()` **and** KDF derivation agree, not just
+  the string transform in isolation. **Delivered, Phase 12** — generated by
+  `generate-golden-fixtures.test.js`, read-only-consumed by
+  `RecoveryCodeGoldenFixtureTest.kt`. Unlike `envelope-vectors.json`, this one
+  needs no Kotlin-writes-a-fixture reverse direction: `normalize()` and the
+  fixed-salt KDF derivation are both pure functions of their inputs, so there's no
+  "real random DEK" reason for Kotlin to ever generate its own copy — see that
+  test class's own doc comment, which also explains why this sidesteps the
+  cross-repo-write hazard `EnvelopeV2GoldenFixtureTest.kt`'s reverse direction has
+  (writing into a sibling repo's working tree from a test run).
 
 **CI in both repos runs these vectors on every change to `src/crypto/` (web) or
 `:core:data`'s crypto code (Android).** A failing vector means the platforms have

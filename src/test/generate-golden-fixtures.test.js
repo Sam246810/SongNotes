@@ -27,8 +27,11 @@ import {
 import { transposeChordToken, transposeChordsLine } from '../utils/transpose.js';
 import { looksLikeChordLine, parseLyricsText } from '../utils/lyricsImport.js';
 import { exportToText } from '../utils/export.js';
+import { argon2id } from 'hash-wasm';
 import { createAccountKeys, unlockWithPassphrase, unlockWithRecoveryCode } from '../crypto/accountKeys.js';
-import { bufToBase64 } from '../crypto/base64.js';
+import { bufToBase64, base64ToBuf } from '../crypto/base64.js';
+import { DEFAULT_KDF_PARAMS } from '../crypto/kdf.js';
+import { normalizeRecoveryCode } from '../crypto/recoveryCode.js';
 
 function splitRootSuffix(name) {
   const m = name.match(/^([A-G])([#b]?)/);
@@ -428,6 +431,97 @@ async function buildEnvelopeV2Fixture() {
   };
 }
 
+// recovery-code-vectors.json (Phase 12 forgot-password work): normalizeRecoveryCode
+// is a PURE function (unlike createAccountKeys below), so unlike envelope-v2.json
+// this regenerates freely on every run -- no "write once" dance needed. Generated
+// ONLY here; the Kotlin side's RecoveryCodeGoldenFixtureTest.kt only ever READS
+// the committed copy (see that file's own doc comment for why -- avoiding the
+// cross-repo-write hazard EnvelopeV2GoldenFixtureTest.kt has).
+//
+// `normalize`: a broad spread of real-world-plausible input mangling (case,
+// hyphens, whitespace, full-width chars, confusable/excluded characters) run
+// through the real normalizeRecoveryCode, output recorded not predicted -- same
+// "don't hand-translate" strategy as every fixture above.
+function buildRecoveryCodeNormalizeFixtures() {
+  const bases = [
+    'ABCDE-FGHJK-LMNPQ-RSTUV',
+    'ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2', // 25 chars -- exact multiple of 5, pins "no trailing separator"
+    'ABCDE-FGHJK',
+    'ABCDEF', // not a multiple of 5 -- pins the short-remainder-chunk case
+    'A',
+    '',
+  ];
+  const transforms = [
+    (s) => s,
+    (s) => s.toLowerCase(),
+    (s) => s.replace(/-/g, ''),
+    (s) => s.replace(/-/g, ' '),
+    (s) => ' ' + s + ' ',
+    (s) => s + '\t',
+    (s) => s.split('').join('-'), // pathological: a hyphen after every single character
+  ];
+  const inputs = new Set();
+  for (const base of bases) {
+    for (const t of transforms) inputs.add(t(base));
+  }
+  // Confusable/excluded characters (0, 1, I, O -- NOT L, which is a valid
+  // alphabet character despite several early design notes assuming otherwise).
+  inputs.add('ABC0DE-IOL1');
+  inputs.add('0000000000');
+  inputs.add('IIIIIIIIII');
+  inputs.add('OOOOOOOOOO');
+  inputs.add('LLLLLLLLLL'); // must NOT be stripped -- L is valid
+  inputs.add('----');
+  inputs.add('   ');
+  inputs.add('ＡＢＣＤＥ'); // full-width -- NFKC folding
+  inputs.add(null);
+  inputs.add(undefined);
+
+  return Array.from(inputs).map((input) => ({ input: input ?? null, output: normalizeRecoveryCode(input) }));
+}
+
+// `kek`: a handful of FIXED (input, salt) pairs run through the real Argon2id
+// derivation (the same primitive kdf.js's deriveKEK wraps -- called directly
+// here since deriveKEK's resulting CryptoKey is deliberately non-extractable,
+// so its raw bytes can't be pulled back out for a fixture). Kept to 2-3 entries
+// since Argon2id at 64 MiB is ~1s each and both suites run every entry. One
+// entry uses a messy (lowercase, no-hyphen) input that normalizes to the same
+// string as a clean one, proving normalize-before-derive parity, not just
+// normalize-in-isolation.
+async function buildRecoveryCodeKekFixtures() {
+  const fixed = [
+    { input: 'ABCDE-FGHJK-LMNPQ-RSTUV', saltBase64: 'AAECAwQFBgcICQoLDA0ODw==' },
+    { input: 'abcde fghjk lmnpq rstuv', saltBase64: 'AAECAwQFBgcICQoLDA0ODw==' },
+    { input: 'ZYXWV-UTSRQ-PNMLK-JHGFE', saltBase64: 'ICEiIyQlJicoKSorLC0uLw==' },
+  ];
+  const results = [];
+  for (const { input, saltBase64 } of fixed) {
+    const salt = base64ToBuf(saltBase64);
+    const rawKek = await argon2id({
+      password: normalizeRecoveryCode(input),
+      salt,
+      iterations: DEFAULT_KDF_PARAMS.iterations,
+      parallelism: DEFAULT_KDF_PARAMS.parallelism,
+      memorySize: DEFAULT_KDF_PARAMS.memorySize,
+      hashLength: DEFAULT_KDF_PARAMS.hashLength,
+      outputType: 'binary',
+    });
+    results.push({
+      input,
+      saltBase64,
+      kdf: {
+        name: 'Argon2id',
+        memorySize: DEFAULT_KDF_PARAMS.memorySize,
+        iterations: DEFAULT_KDF_PARAMS.iterations,
+        parallelism: DEFAULT_KDF_PARAMS.parallelism,
+        hashLength: DEFAULT_KDF_PARAMS.hashLength,
+      },
+      expectedKekBase64: bufToBase64(rawKek),
+    });
+  }
+  return results;
+}
+
 const specDir = path.resolve(import.meta.dirname, '../../spec');
 
 describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', () => {
@@ -517,6 +611,19 @@ describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', ()
     expect(fixtures.length).toBeGreaterThan(0);
     fs.mkdirSync(specDir, { recursive: true });
     fs.writeFileSync(path.join(specDir, 'align-chords-with-lyrics.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/recovery-code-vectors.json from the real normalizeRecoveryCode + Argon2id (Phase 12 cross-repo test vector)', async () => {
+    const normalize = buildRecoveryCodeNormalizeFixtures();
+    const kek = await buildRecoveryCodeKekFixtures();
+    expect(normalize.length).toBeGreaterThan(30);
+    expect(kek.length).toBeGreaterThanOrEqual(2);
+    // Pins the "no trailing separator" landmine directly: 25 alphabet chars
+    // (divisible by 5) must NOT come out with a trailing hyphen.
+    expect(normalize.find((f) => f.input === 'ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2').output)
+      .toBe('ABCDE-FGHJK-LMNPQ-RSTUV-WXYZ2');
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'recovery-code-vectors.json'), JSON.stringify({ normalize, kek }, null, 2) + '\n');
   });
 
   it('writes (once) or re-verifies spec/envelope-v2.json against createAccountKeys (Phase 6 cross-repo test vector)', async () => {

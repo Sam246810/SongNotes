@@ -56,6 +56,19 @@ export default function SignupPage() {
     }
   }
 
+  function handleDownloadCode() {
+    const content = `SongNotes recovery code\n\n${recoveryCode}\n\nKeep this somewhere safe — it's the only way to get your encrypted songs back if you ever forget your password. It won't be shown again.`;
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'songnotes-recovery-code.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.card}>
@@ -92,6 +105,14 @@ export default function SignupPage() {
                 id="signup-copy-recovery-btn"
               >
                 {copied ? 'Copied!' : 'Copy to clipboard'}
+              </button>
+              <button
+                className={styles.submitBtn}
+                type="button"
+                onClick={handleDownloadCode}
+                id="signup-download-recovery-btn"
+              >
+                Download as file
               </button>
               <button
                 className={styles.submitBtn}

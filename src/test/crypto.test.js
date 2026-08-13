@@ -12,6 +12,7 @@ import {
   unlockWithRecoveryCode,
   rewrapWithNewPassphrase,
   migrateWrapIfNeeded,
+  regenerateRecoveryWrap,
 } from '../crypto/accountKeys';
 
 describe('kdf: deriveKEK', () => {
@@ -234,6 +235,60 @@ describe('accountKeys: envelope-encryption key hierarchy', () => {
     // Recovery code still unlocks the same DEK — untouched by the passphrase reset.
     const viaRecovery = await unlockWithRecoveryCode(newEnvelope, recoveryCode);
     expect(await decryptJSON(viaRecovery, envelopeCt)).toEqual(probe);
+  });
+
+  it('regenerateRecoveryWrap mints a new code, old code stops working, passphrase untouched', async () => {
+    const oldCode = generateRecoveryCode();
+    const { dek, envelope } = await createAccountKeys('a-passphrase', oldCode);
+
+    const { envelope: newEnvelope, recoveryCode: newCode } = await regenerateRecoveryWrap(envelope, dek);
+    expect(newCode).not.toBe(oldCode);
+
+    // dekId and verifier are unchanged -- this is a same-DEK operation, not a rotation.
+    expect(newEnvelope.dekId).toBe(envelope.dekId);
+    expect(newEnvelope.verifier).toEqual(envelope.verifier);
+
+    const probe = { still: 'works' };
+    const envelopeCt = await encryptJSON(dek, probe);
+
+    // New code unlocks the same DEK.
+    const viaNewCode = await unlockWithRecoveryCode(newEnvelope, newCode);
+    expect(await decryptJSON(viaNewCode, envelopeCt)).toEqual(probe);
+
+    // Old code no longer works against the new envelope.
+    await expect(unlockWithRecoveryCode(newEnvelope, oldCode)).rejects.toThrow();
+
+    // Passphrase wrap is completely untouched -- the account password still works.
+    const viaPassphrase = await unlockWithPassphrase(newEnvelope, 'a-passphrase');
+    expect(await decryptJSON(viaPassphrase, envelopeCt)).toEqual(probe);
+  });
+
+  it('regenerateRecoveryWrap upgrades a v1 envelope to v2 as a side effect', async () => {
+    const passphrase = 'legacy-passphrase';
+    const oldCode = generateRecoveryCode();
+    const passSalt = generateSalt();
+    const recoverySalt = generateSalt();
+    const dek = await generateContentKey();
+    const passKek = await deriveKEK(passphrase, passSalt, PBKDF2_KDF_PARAMS);
+    const recoveryKek = await deriveKEK(oldCode, recoverySalt, PBKDF2_KDF_PARAMS);
+    const v1Envelope = {
+      v: 1,
+      passphrase: { kdf: serializeKdfParams(passSalt, PBKDF2_KDF_PARAMS), wrapped: await wrapContentKey(passKek, dek) },
+      recovery: { kdf: serializeKdfParams(recoverySalt, PBKDF2_KDF_PARAMS), wrapped: await wrapContentKey(recoveryKek, dek) },
+    };
+
+    const { envelope: upgraded, recoveryCode: newCode } = await regenerateRecoveryWrap(v1Envelope, dek);
+    expect(upgraded.v).toBe(2);
+    expect(upgraded.dekId).toEqual(expect.any(String));
+    expect(upgraded.verifier).toBeTruthy();
+
+    const probe = { still: 'works' };
+    const envelopeCt = await encryptJSON(dek, probe);
+    const viaNewCode = await unlockWithRecoveryCode(upgraded, newCode);
+    expect(await decryptJSON(viaNewCode, envelopeCt)).toEqual(probe);
+    // The old (v1, PBKDF2) passphrase wrap is carried over verbatim and still works.
+    const viaPassphrase = await unlockWithPassphrase(upgraded, passphrase);
+    expect(await decryptJSON(viaPassphrase, envelopeCt)).toEqual(probe);
   });
 
   it('creates a v2 envelope: wraps[] list, dekId, verifier, no v1 fixed fields', async () => {

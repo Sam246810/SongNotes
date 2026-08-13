@@ -333,7 +333,7 @@ const SongLine = React.forwardRef(function SongLine(
       </div>
 
       {isEmpty && !isActive && !locked && (
-        <div className={styles.emptyHint}>↵ delete this line with Backspace</div>
+        <div className={styles.emptyHint}>⌫ Backspace to delete this empty line</div>
       )}
     </div>
   );

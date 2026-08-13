@@ -161,4 +161,24 @@
   color: var(--accent-hover);
 }
 
+/* Shortcuts help modal content */
+.shortcutList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shortcutKey {
+  display: inline-block;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 2px 6px;
+  margin-right: 4px;
+  color: var(--text-primary);
+}
+
 

@@ -1,5 +1,14 @@
 import styles from './SongMetaBar.module.css';
 
+const KEY_OPTIONS = [
+  'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B',
+  'Cm', 'C#m', 'Dm', 'D#m', 'Ebm', 'Em', 'Fm', 'F#m', 'Gm', 'G#m', 'Am', 'A#m', 'Bbm', 'Bm',
+];
+
+const TUNING_OPTIONS = [
+  'Standard', 'Drop D', 'Half Step Down', 'Full Step Down', 'Open D', 'Open G', 'Open C', 'Open E', 'DADGAD',
+];
+
 /**
  * A small reference strip at the top of the lyric sheet — BPM, Key, Guitar
  * Tuning, and Capo position, all optional free-text fields, plus a Transpose
@@ -30,10 +39,14 @@ export default function SongMetaBar({ song, onUpdateMeta, onTranspose }) {
           id="song-meta-key"
           className={styles.metaInput}
           type="text"
+          list="song-meta-key-options"
           value={song.key || ''}
           onChange={(e) => onUpdateMeta({ key: e.target.value })}
           placeholder="—"
         />
+        <datalist id="song-meta-key-options">
+          {KEY_OPTIONS.map((k) => <option key={k} value={k} />)}
+        </datalist>
       </div>
 
       <div className={styles.metaField}>
@@ -42,10 +55,14 @@ export default function SongMetaBar({ song, onUpdateMeta, onTranspose }) {
           id="song-meta-tuning"
           className={styles.metaInput}
           type="text"
+          list="song-meta-tuning-options"
           value={song.tuning || ''}
           onChange={(e) => onUpdateMeta({ tuning: e.target.value })}
           placeholder="Standard"
         />
+        <datalist id="song-meta-tuning-options">
+          {TUNING_OPTIONS.map((t) => <option key={t} value={t} />)}
+        </datalist>
       </div>
 
       <div className={styles.metaField}>

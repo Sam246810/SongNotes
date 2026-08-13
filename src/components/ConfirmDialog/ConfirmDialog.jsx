@@ -25,7 +25,7 @@ export default function ConfirmDialog({
     <div className={styles.overlay} onClick={onCancel || onConfirm}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <h2 className={styles.modalTitle}>{title}</h2>
-        <p className={styles.modalText}>{message}</p>
+        <div className={styles.modalText}>{message}</div>
         <div className={styles.modalActions}>
           {hasCancel && (
             <button className={styles.cancelBtn} onClick={onCancel} id={cancelId}>
