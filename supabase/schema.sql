@@ -132,3 +132,26 @@ create policy "own songs" on public.songs
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+-- Self-service account deletion (src/auth/DeleteAccountPage.jsx, linked to from the
+-- Android app -- Google Play requires an actual account+data deletion, not a
+-- "contact support" placeholder). Deleting the auth.users row is the one part of
+-- this no RLS policy can grant directly -- the anon/authenticated roles have no
+-- privilege over the `auth` schema -- so this is a SECURITY DEFINER function
+-- instead, scoped to auth.uid() so it can only ever delete the caller's own
+-- account. Every user_keys, user_keys_history, and songs row cascades from
+-- auth.users via `on delete cascade` above, so there's nothing else to clean up
+-- here.
+create or replace function public.delete_own_account()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+revoke all on function public.delete_own_account() from public;
+grant execute on function public.delete_own_account() to authenticated;

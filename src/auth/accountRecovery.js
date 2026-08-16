@@ -186,4 +186,36 @@ export async function changePassword({
   await keysAdapter.update(rewrapped, current.rev);
 }
 
+/**
+ * Permanently deletes the signed-in user's account and everything that
+ * references it. Irreversible; the caller is responsible for a typed
+ * confirmation before calling this, same contract as rotateAndPurge.
+ *
+ * The actual delete happens server-side via the `delete_own_account` Postgres
+ * RPC (see supabase/schema.sql) rather than a client-side DELETE, because
+ * removing the auth.users row itself needs privilege the authenticated role
+ * doesn't have directly. That function is scoped to auth.uid(), and every
+ * user_keys / user_keys_history / songs row cascades from auth.users, so one
+ * RPC call is the entire deletion — nothing else needs purging here.
+ *
+ * @param {{authClient?: object, rpc?: (fn: string) => Promise<{error: any}>}} [args]
+ */
+export async function deleteAccount({
+  authClient = supabase.auth,
+  rpc = (fn) => supabase.rpc(fn),
+} = {}) {
+  const { error } = await rpc('delete_own_account');
+  if (error) throw error;
+
+  clearSession();
+  // Best-effort: the account is already gone server-side at this point, so
+  // signOut's only remaining job is clearing Supabase's local-storage copy of
+  // the now-invalid session — a failure here doesn't leave anything undeleted.
+  try {
+    await authClient.signOut();
+  } catch (e) {
+    console.error('Failed to clear local session after account deletion', e);
+  }
+}
+
 export { unlockWithPassphrase };

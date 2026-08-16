@@ -183,6 +183,9 @@ export default function AccountPage() {
           </>
         )}
 
+        <Link className={`${styles.guestLink} ${styles.section}`} to="/delete-account">
+          Delete account…
+        </Link>
         <Link className={styles.guestLink} to="/">← Back to SongNotes</Link>
       </div>
     </div>

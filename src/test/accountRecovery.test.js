@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   recoverWithRecoveryCode, rotateAndPurge, regenerateRecoveryCode, changePassword, hasAccountKeys,
+  deleteAccount,
 } from '../auth/accountRecovery';
 import { createAccountKeys, generateRecoveryCode, unlockWithPassphrase } from '../crypto/accountKeys';
 import { encryptJSON, decryptJSON } from '../crypto/envelope';
-import { clearSession, getDEK } from '../crypto/keyManager';
+import { clearSession, getDEK, establishDEK } from '../crypto/keyManager';
 
 /**
  * In-memory stand-in for SupabaseUserKeysAdapter — same shape (get/create/update),
@@ -316,6 +317,47 @@ describe('changePassword', () => {
 
     await expect(unlockWithPassphrase(keysAdapter.row.envelope, oldPassword)).rejects.toThrow();
     await expect(unlockWithPassphrase(keysAdapter.row.envelope, newPassword)).resolves.toBeTruthy();
+  });
+});
+
+describe('deleteAccount', () => {
+  beforeEach(() => clearSession());
+
+  it('calls the delete_own_account RPC, clears the DEK session, and signs out', async () => {
+    const dek = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    await establishDEK(dek, USER_ID, 'dek-1');
+    expect(getDEK()).toBeTruthy();
+
+    const rpcCalls = [];
+    const rpc = async (fn) => { rpcCalls.push(fn); return { error: null }; };
+    let signOutCalls = 0;
+    const authClient = { signOut: async () => { signOutCalls++; return { error: null }; } };
+
+    await deleteAccount({ authClient, rpc });
+
+    expect(rpcCalls).toEqual(['delete_own_account']);
+    expect(signOutCalls).toBe(1);
+    expect(getDEK()).toBeNull();
+  });
+
+  it('propagates an RPC error and leaves the session alone (no signOut attempted)', async () => {
+    const rpc = async () => ({ error: new Error('permission denied') });
+    let signOutCalls = 0;
+    const authClient = { signOut: async () => { signOutCalls++; return { error: null }; } };
+
+    await expect(deleteAccount({ authClient, rpc })).rejects.toThrow('permission denied');
+    expect(signOutCalls).toBe(0);
+  });
+
+  it('still clears the DEK session even if signOut itself fails (best-effort cleanup)', async () => {
+    const dek = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    await establishDEK(dek, USER_ID, 'dek-1');
+
+    const rpc = async () => ({ error: null });
+    const authClient = { signOut: async () => { throw new Error('network error'); } };
+
+    await expect(deleteAccount({ authClient, rpc })).resolves.toBeUndefined();
+    expect(getDEK()).toBeNull();
   });
 });
 
