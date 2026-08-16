@@ -30,8 +30,8 @@ function AccountKeyGate() {
       // Re-fetch: this unlocks every DEK-only song affected this session, not just
       // the one currently open.
       await hydrate();
-    } catch {
-      setError('Incorrect password.');
+    } catch (err) {
+      setError(err.message || 'Incorrect password.');
     } finally {
       setSubmitting(false);
     }

@@ -23,8 +23,8 @@ export default function PrivacyScreen({ onUnlock }) {
     try {
       await unlockAccountKey(password);
       onUnlock();
-    } catch {
-      setError('Incorrect password.');
+    } catch (err) {
+      setError(err.message || 'Incorrect password.');
     } finally {
       setSubmitting(false);
     }

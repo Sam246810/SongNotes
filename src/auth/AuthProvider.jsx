@@ -77,8 +77,27 @@ export default function AuthProvider({ children }) {
       let recoveryCode = null;
       if (data?.user) {
         const keysAdapter = new SupabaseUserKeysAdapter(supabase, data.user.id);
+
+        // Fetching the envelope row is infrastructure (network/schema/RLS), not
+        // a password check -- a failure here must NOT be folded into
+        // keyUnlockFailed below. Not hypothetical: a missing `envelope_rev`
+        // column on the live database once made this exact fetch fail for
+        // every account, and every sign-in showed "your saved encryption key
+        // doesn't match this password" -- actively false, and it sent people
+        // toward entering a recovery code that could never have helped, since
+        // nothing was wrong with their password OR their envelope.
+        let current;
         try {
-          const current = await keysAdapter.get();
+          current = await keysAdapter.get();
+        } catch (fetchError) {
+          console.error('Failed to fetch account encryption key on login (infrastructure, not a password issue)', fetchError);
+          throw new Error(
+            "Signed in, but couldn't reach your account's encryption key. " +
+            "This isn't a wrong-password issue — try again in a moment."
+          );
+        }
+
+        try {
           if (!current) {
             // First sign-in for an account with no envelope yet (e.g. the
             // confirm-email gap above, or any legacy account). `.create()` — not
@@ -147,10 +166,28 @@ export default function AuthProvider({ children }) {
       const currentUser = session?.user;
       if (!currentUser) throw new Error('You must be signed in to unlock encryption.');
       const keysAdapter = new SupabaseUserKeysAdapter(supabase, currentUser.id);
-      const current = await keysAdapter.get();
+
+      // Same distinction as signIn above: fetching the row is infrastructure,
+      // not a password check. Callers (PrivacyScreen, Editor.jsx's
+      // AccountKeyGate) show err.message directly, so this must read clearly
+      // on its own rather than being swallowed into a blanket "wrong password".
+      let current;
+      try {
+        current = await keysAdapter.get();
+      } catch (fetchError) {
+        console.error('Failed to fetch account encryption key (infrastructure, not a password issue)', fetchError);
+        throw new Error(
+          "Couldn't reach your account's encryption key. This isn't a wrong-password issue — try again in a moment."
+        );
+      }
       if (!current) throw new Error('No account encryption key found yet.');
-      const dek = await unlockWithPassphrase(current.envelope, password); // throws if password is wrong
-      await establishDEK(dek, currentUser.id, current.envelope.dekId);
+
+      try {
+        const dek = await unlockWithPassphrase(current.envelope, password);
+        await establishDEK(dek, currentUser.id, current.envelope.dekId);
+      } catch {
+        throw new Error('Incorrect password.');
+      }
     },
 
     /** Sends a Supabase password-reset email — see ForgotPasswordPage. */
