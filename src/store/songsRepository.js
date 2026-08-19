@@ -41,6 +41,40 @@ function saveToStorage(songs) {
   }
 }
 
+/**
+ * Removes every account-scoped local artifact this module (and migrateLocal.js) writes:
+ * the per-user cloud cache of server rows, and the per-user "already migrated" flags.
+ *
+ * Nothing used to delete these — the only references to `cacheKey` were the constructor,
+ * a read, and a write — so an account's cached rows outlived both sign-out AND account
+ * deletion, sitting in localStorage indefinitely. The cached rows are ciphertext and the
+ * DEK is wiped alongside them, so this was never a plaintext leak; what it did leak was
+ * metadata (song count, row ids, timestamps, dek_id), and it quietly undercut the
+ * "delete my account and data" claim the Play Store / GDPR flows are evaluated against —
+ * the server side of deletion was complete, the device side wasn't.
+ *
+ * Prefix-sweeps every user's entry rather than only the active one, matching the
+ * defense-in-depth reasoning already applied to the DEK sweep in crypto/keyManager.js:
+ * a crashed or force-closed session can leave an entry behind for an account that is no
+ * longer the active one, and that's exactly the copy nobody would think to clear.
+ *
+ * Deliberately does NOT touch `songnotes_songs` (guest-mode songs). Those are plaintext
+ * and device-owned rather than account-owned — a guest who happens to sign in to an
+ * account has not asked for their local drafts to be destroyed.
+ */
+export function clearAccountLocalCaches() {
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('songnotes_cloud_cache:') || key.startsWith('songnotes_migrated:'))) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch (e) {
+    console.error('SongNotes: failed to clear local account caches', e);
+  }
+}
+
 function getOrCreateGuestId() {
   let guestId = sessionStorage.getItem('__songnotes_guest_session_id');
   if (!guestId) {

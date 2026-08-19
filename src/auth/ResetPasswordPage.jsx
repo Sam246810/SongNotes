@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { hasAccountKeys, recoverWithRecoveryCode, rotateAndPurge } from './accountRecovery';
+import { MIN_PASSWORD_LENGTH, PASSWORD_HELP_TEXT, validateNewPassword } from './passwordPolicy';
 import styles from './AuthPage.module.css';
 
 const RESET_CONFIRM_PHRASE = 'DELETE MY SONGS';
@@ -85,6 +86,11 @@ export default function ResetPasswordPage() {
       setError('Passwords do not match.');
       return;
     }
+    const policyError = validateNewPassword(newPassword);
+    if (policyError) {
+      setError(policyError);
+      return;
+    }
     setSubmitting(true);
     try {
       if (hasKeys) {
@@ -108,6 +114,11 @@ export default function ResetPasswordPage() {
     setError(null);
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match.');
+      return;
+    }
+    const policyError = validateNewPassword(newPassword);
+    if (policyError) {
+      setError(policyError);
       return;
     }
     setSubmitting(true);
@@ -218,7 +229,7 @@ export default function ResetPasswordPage() {
                   className={styles.input}
                   type="password"
                   autoComplete="new-password"
-                  minLength={6}
+                  minLength={MIN_PASSWORD_LENGTH}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
@@ -230,7 +241,7 @@ export default function ResetPasswordPage() {
                   className={styles.input}
                   type="password"
                   autoComplete="new-password"
-                  minLength={6}
+                  minLength={MIN_PASSWORD_LENGTH}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -268,7 +279,7 @@ export default function ResetPasswordPage() {
                   className={styles.input}
                   type="password"
                   autoComplete="new-password"
-                  minLength={6}
+                  minLength={MIN_PASSWORD_LENGTH}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
@@ -280,7 +291,7 @@ export default function ResetPasswordPage() {
                   className={styles.input}
                   type="password"
                   autoComplete="new-password"
-                  minLength={6}
+                  minLength={MIN_PASSWORD_LENGTH}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required

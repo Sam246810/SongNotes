@@ -3,6 +3,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { clearSession as clearCryptoSession, establishDEK } from '../crypto/keyManager';
 import { createAccountKeys, unlockWithPassphrase, migrateWrapIfNeeded } from '../crypto/accountKeys';
 import { SupabaseUserKeysAdapter } from '../lib/userKeysAdapter';
+import { clearAccountLocalCaches } from '../store/songsRepository';
 import { AuthContext } from './AuthContext';
 
 /** Postgres unique_violation — see signIn's create-if-missing branch below. */
@@ -201,7 +202,8 @@ export default function AuthProvider({ children }) {
 
     async signOut() {
       if (!isSupabaseConfigured) return;
-      clearCryptoSession(); // wipe the in-memory DEK
+      await clearCryptoSession();   // wipe the DEK: in memory and in IndexedDB
+      clearAccountLocalCaches();    // and the cached ciphertext rows it decrypted
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     },

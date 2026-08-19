@@ -8,7 +8,7 @@ import {
   regenerateRecoveryWrap,
 } from '../crypto/accountKeys';
 import { establishDEK, clearSession } from '../crypto/keyManager';
-import { CloudSongsRepository, SupabaseSongsAdapter } from '../store/songsRepository';
+import { CloudSongsRepository, SupabaseSongsAdapter, clearAccountLocalCaches } from '../store/songsRepository';
 
 /**
  * The forgot-password / recovery-code state machine, deliberately kept out of
@@ -133,7 +133,8 @@ export async function rotateAndPurge({
 
   // The old DEK is dead the moment the envelope above lands — drop it before
   // touching anything else so nothing downstream can encrypt under it by mistake.
-  clearSession();
+  // Awaited so the persisted copy in IndexedDB is gone too, not just the in-memory one.
+  await clearSession();
 
   // Reuses CloudSongsRepository purely for its purge logic and its cacheKey math
   // (userId-derived, so it matches the real app repo's localStorage cache entry)
@@ -207,7 +208,13 @@ export async function deleteAccount({
   const { error } = await rpc('delete_own_account');
   if (error) throw error;
 
-  clearSession();
+  await clearSession();
+  // The server side of deletion is complete at this point (every user_keys,
+  // user_keys_history and songs row cascades from auth.users), but the DEVICE still
+  // held this account's cached ciphertext rows and migration flags — nothing in the
+  // codebase ever removed them. A user who asked for deletion should not be left with
+  // their song count, row ids and timestamps sitting in localStorage afterwards.
+  clearAccountLocalCaches();
   // Best-effort: the account is already gone server-side at this point, so
   // signOut's only remaining job is clearing Supabase's local-storage copy of
   // the now-invalid session — a failure here doesn't leave anything undeleted.

@@ -359,6 +359,30 @@ describe('deleteAccount', () => {
     await expect(deleteAccount({ authClient, rpc })).resolves.toBeUndefined();
     expect(getDEK()).toBeNull();
   });
+
+  it('wipes the cached ciphertext rows and migration flags off the device', async () => {
+    // The server side of deletion cascades from auth.users, but nothing used to remove
+    // the LOCAL cache — an account's encrypted rows, row ids and timestamps outlived
+    // deletion in localStorage indefinitely. Verified live against a real deleted
+    // account during the August 2026 review, hence this regression test.
+    localStorage.setItem(`songnotes_cloud_cache:${USER_ID}`, JSON.stringify([{ id: 'song-1', content: { ct: 'ciphertext' } }]));
+    localStorage.setItem('songnotes_cloud_cache:some-other-user', JSON.stringify([{ id: 'song-2' }]));
+    localStorage.setItem(`songnotes_migrated:${USER_ID}`, 'true');
+    localStorage.setItem('unrelated_key', 'keep me');
+
+    const rpc = async () => ({ error: null });
+    const authClient = { signOut: async () => ({ error: null }) };
+    await deleteAccount({ authClient, rpc });
+
+    expect(localStorage.getItem(`songnotes_cloud_cache:${USER_ID}`)).toBeNull();
+    expect(localStorage.getItem(`songnotes_migrated:${USER_ID}`)).toBeNull();
+    // Swept for every user, not just the active one: a crashed session can leave an
+    // entry behind for an account that is no longer current, and that is exactly the
+    // copy nobody would think to clear.
+    expect(localStorage.getItem('songnotes_cloud_cache:some-other-user')).toBeNull();
+    // ...but nothing outside the two namespaces, including guest-mode songs.
+    expect(localStorage.getItem('unrelated_key')).toBe('keep me');
+  });
 });
 
 describe('hasAccountKeys', () => {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import useAuth from './useAuth';
+import { MIN_PASSWORD_LENGTH, PASSWORD_HELP_TEXT, validateNewPassword } from './passwordPolicy';
 import styles from './AuthPage.module.css';
 
 export default function SignupPage() {
@@ -21,6 +22,11 @@ export default function SignupPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
+    const policyError = validateNewPassword(password);
+    if (policyError) {
+      setError(policyError);
+      return;
+    }
     setSubmitting(true);
     try {
       const data = await signUp(email, password);
@@ -151,12 +157,13 @@ export default function SignupPage() {
                 className={styles.input}
                 type="password"
                 autoComplete="new-password"
-                minLength={6}
+                minLength={MIN_PASSWORD_LENGTH}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </label>
+            <p className={styles.infoText}>{PASSWORD_HELP_TEXT}</p>
             {error && <div className={styles.errorText}>{error}</div>}
             <button className={styles.submitBtn} type="submit" disabled={submitting} id="signup-submit-btn">
               {submitting ? 'Creating account…' : 'Create account'}

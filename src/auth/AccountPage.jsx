@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import useAuth from './useAuth';
 import { regenerateRecoveryCode, changePassword } from './accountRecovery';
-import { getDEK, isUnlocked as dekIsUnlocked, establishDEK } from '../crypto/keyManager';
+import { MIN_PASSWORD_LENGTH, PASSWORD_HELP_TEXT, validateNewPassword } from './passwordPolicy';
+import { getWrappableDEK, establishDEK } from '../crypto/keyManager';
 import { unlockWithPassphrase } from '../crypto/accountKeys';
 import { SupabaseUserKeysAdapter } from '../lib/userKeysAdapter';
 import { supabase } from '../lib/supabaseClient';
@@ -27,7 +28,12 @@ export default function AccountPage() {
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState(null);
   const [unlocking, setUnlocking] = useState(false);
-  const [unlocked, setUnlocked] = useState(dekIsUnlocked());
+  // Gated on the *wrappable* (extractable) DEK, not merely "unlocked": both actions
+  // below rewrap the envelope, and `crypto.subtle.wrapKey` rejects the non-extractable
+  // key a restored session carries. So after a reload this asks for the password again
+  // even though songs are readable — which is also just sound practice for a surface
+  // that changes the account password. See crypto/keyManager.js.
+  const [unlocked, setUnlocked] = useState(() => getWrappableDEK() !== null);
 
   const [newCode, setNewCode] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
@@ -64,7 +70,7 @@ export default function AccountPage() {
     setRegenerateError(null);
     setRegenerating(true);
     try {
-      const { recoveryCode } = await regenerateRecoveryCode({ userId: user.id, dek: getDEK() });
+      const { recoveryCode } = await regenerateRecoveryCode({ userId: user.id, dek: getWrappableDEK() });
       setNewCode(recoveryCode);
     } catch (err) {
       setRegenerateError(err.message || 'Failed to regenerate your recovery code.');
@@ -80,9 +86,14 @@ export default function AccountPage() {
       setPasswordError('Passwords do not match.');
       return;
     }
+    const policyError = validateNewPassword(newPassword);
+    if (policyError) {
+      setPasswordError(policyError);
+      return;
+    }
     setChangingPassword(true);
     try {
-      await changePassword({ userId: user.id, dek: getDEK(), newPassword });
+      await changePassword({ userId: user.id, dek: getWrappableDEK(), newPassword });
       setPasswordChanged(true);
       setNewPassword('');
       setConfirmPassword('');
@@ -144,7 +155,7 @@ export default function AccountPage() {
             </div>
 
             <div className={`${styles.form} ${styles.section}`}>
-              <p className={styles.infoText}>Change your account password.</p>
+              <p className={styles.infoText}>Change your account password. {PASSWORD_HELP_TEXT}</p>
               {passwordChanged ? (
                 <p className={styles.infoText}>Password changed.</p>
               ) : (
@@ -155,7 +166,7 @@ export default function AccountPage() {
                       className={styles.input}
                       type="password"
                       autoComplete="new-password"
-                      minLength={6}
+                      minLength={MIN_PASSWORD_LENGTH}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
@@ -167,7 +178,7 @@ export default function AccountPage() {
                       className={styles.input}
                       type="password"
                       autoComplete="new-password"
-                      minLength={6}
+                      minLength={MIN_PASSWORD_LENGTH}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required

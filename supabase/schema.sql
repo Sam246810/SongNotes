@@ -77,7 +77,10 @@ create table if not exists public.songs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   encrypted boolean not null default true,
-  -- If encrypted: { content: {iv,ct}, ck: { wrappedByDek | wrappedBySong } } (see src/crypto).
+  -- If encrypted: the flat envelope { v, alg, iv, ct } that encryptJSON produces -- see
+  -- src/crypto/envelope.js and WIRE-FORMAT-v2 §2. (This comment previously described a
+  -- nested `{ content: {iv,ct}, ck: {...} }` shape with a per-song key; no code has ever
+  -- written that -- every row is encrypted directly under the account DEK, no `ck`.)
   -- If not encrypted (legacy rows only -- nothing writes these anymore): the plain
   -- song object { title, lines, createdAt, updatedAt, locked }.
   content jsonb not null,
@@ -153,5 +156,19 @@ begin
 end;
 $$;
 
-revoke all on function public.delete_own_account() from public;
+-- `anon` is revoked EXPLICITLY, not just via PUBLIC. Supabase's default privileges
+-- grant EXECUTE on new functions in `public` directly to the `anon` and `authenticated`
+-- roles, and `revoke ... from public` does not remove a grant held directly by a role --
+-- so the line below used to be a no-op against `anon`, and an unauthenticated POST to
+-- /rest/v1/rpc/delete_own_account returned 204 (the function ran) instead of 42501.
+--
+-- That was harmless in effect -- `auth.uid()` is null for an anonymous caller, so
+-- `where id = auth.uid()` matched zero rows -- but it left a SECURITY DEFINER function
+-- that deletes from auth.users reachable by anyone holding the publishable key, which
+-- ships in the client bundle. Its safety rested entirely on one WHERE clause; widening
+-- that clause later (adding a parameter, say) would have been instantly exploitable
+-- rather than caught by the privilege boundary this is supposed to provide.
+--
+-- Re-verify after applying: an unauthenticated call must now return 42501, not 204.
+revoke all on function public.delete_own_account() from public, anon;
 grant execute on function public.delete_own_account() to authenticated;
