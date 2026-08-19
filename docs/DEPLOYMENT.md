@@ -19,57 +19,55 @@ Because this is a Vite SPA using `react-router` (`BrowserRouter`, not
 catch-all rewrite to `index.html` — verified working against the live
 deployment.
 
-## Security hardening — two steps that are NOT in this repo
+## Security hardening — status
 
-The August 2026 security review's code-side fixes are all committed. Two controls live
-outside the repo and must be applied by hand; until they are, the committed changes are
-only half of each fix.
+The August 2026 security review's fixes are committed. One step lived outside the
+repo and has been applied; one is a deliberate, owner-made decision, recorded here.
 
-### 1. Re-run `supabase/schema.sql` (closes the anon-executable RPC)
+### 1. `supabase/schema.sql` re-run — done, verified 2026-08-19
 
-`delete_own_account` is a `SECURITY DEFINER` function that deletes from `auth.users`, and
-the `anon` role holds EXECUTE on it. Supabase's default privileges grant EXECUTE on new
-functions in `public` directly to `anon`, and `revoke ... from public` does **not** remove
-a grant held directly by a role — so the original revoke was a no-op. An unauthenticated
-POST to `/rest/v1/rpc/delete_own_account` returned `204` (the function ran).
-
-It deleted nothing — `auth.uid()` is null for an anonymous caller, so `where id =
-auth.uid()` matched zero rows — but it left that function reachable by anyone holding the
-publishable key, which ships in the client bundle. `schema.sql` now revokes from `anon`
-explicitly. Paste and run the file again, then verify:
+`delete_own_account` is a `SECURITY DEFINER` function that deletes from `auth.users`. It
+used to be executable by the `anon` role: Supabase's default privileges grant EXECUTE on
+new `public` functions directly to `anon`, and the original `revoke ... from public` never
+touched that direct grant, so an unauthenticated POST returned `204` (the function ran,
+though it deleted nothing — `auth.uid()` is null for an anonymous caller). `schema.sql` now
+revokes from `anon` explicitly, and the owner re-ran it against the live database.
+Confirmed:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' -X POST "$SUPABASE_URL/rest/v1/rpc/delete_own_account" -H "apikey: $SUPABASE_ANON_KEY" -H 'Content-Type: application/json' -d '{}'
+curl -s -X POST "$SUPABASE_URL/rest/v1/rpc/delete_own_account" -H "apikey: $SUPABASE_ANON_KEY" -H 'Content-Type: application/json' -d '{}'
+# {"code":"42501","details":null,"hint":null,"message":"permission denied for function delete_own_account"}
 ```
 
-Expect **401/403 with `42501`**. A `204` means the revoke did not take.
+`42501 permission denied` — fixed. (If this ever regresses back to `204`, the schema needs
+re-running again.)
 
-### 2. Raise the server-side minimum password length — read the Android note first
+### 2. Password minimum — set to 8, owner decision
 
-Supabase Dashboard → Authentication → Providers → minimum password length. The client now
-requires 12 characters (`src/auth/passwordPolicy.js`), but client-side length is trivially
-bypassed; the dashboard setting is the binding control.
+A pure security read of this architecture argues for a longer minimum: the account
+password is a KDF input, not just a login credential, and a short one is the real floor
+under "unreadable even to someone with full database access" even with Argon2id in front
+of it (~28 bits at the old 6-character default; the recovery code, ~100 bits, was never
+the weak link). The original recommendation was 12.
 
-Why it matters here specifically: the server holds `user_keys.envelope`, containing the
-account DEK wrapped by a KEK derived from this password. Anyone with a copy of that table
-can attack it offline with no rate limiting. At the old 6-character default that is ~28
-bits — Argon2id at 64 MiB makes each guess expensive but cannot save a keyspace that
-small. The recovery code is ~100 bits and was never the weak link.
+**The owner chose 8 instead — a deliberate compromise, not an oversight** — trading some
+of that margin against staying close to a length people don't fight the signup form over.
+`src/auth/passwordPolicy.js`'s `MIN_PASSWORD_LENGTH` is set to 8 and enforced in real JS
+(not just the bypassable HTML `minLength`). **The Supabase dashboard's server-side minimum
+(Authentication → Providers → minimum password length) must be set to 8 to match** —
+client-side length alone is advisory, not a binding control.
 
-**This one setting is shared with the Android client, so it is a decision, not a
-formality:**
+**This is shared with the Android client, so raising the server minimum has one
+consequence to know about:**
 
 - **Safe:** sign-in never checks length (LoginPage deliberately has no `minLength`), so
-  every existing account — including Android-created 6-character ones — keeps working on
-  both platforms. Nobody is locked out.
-- **Affected:** signup and password-change *on Android*, which still shows a 6-character
-  minimum in its own UI. Those users would hit a server rejection the Android UI may
-  render poorly. Fixing that is an Android-repo change and was explicitly out of scope.
-
-So: raise it if you accept that Android-side rough edge, or defer it until the Android
-client's minimum is raised to match. Deferring leaves the web client's 12-character
-requirement in place for web users, which is still a real improvement — it just isn't
-enforced against a determined caller.
+  every existing account — including any Android-created 6-character one — keeps working
+  everywhere. Nobody already signed up gets locked out.
+- **Affected:** signup and password-change *on Android*, whose own UI still shows a
+  6-character minimum (a separate repo, not touched by this work). A user could type a
+  6-or-7-character password there, have Android's UI accept it, and have the server
+  reject it — a rough edge until Android's own minimum is raised to match. Not this
+  round's scope.
 
 ## Before this app can go to the Play Store
 
