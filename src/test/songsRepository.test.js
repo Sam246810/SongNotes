@@ -307,10 +307,24 @@ describe('CloudSongsRepository', () => {
     });
 
     it('a losing optimistic-concurrency race keeps the edit as a new conflict-copy song instead of dropping it', async () => {
-      // Real timers here, not fake -- the conflict path chains a second real
-      // async encryptJSON call (for the conflict copy) after the failed push, and
-      // advanceTimersByTimeAsync's microtask flushing isn't reliably deep enough
-      // for that extra hop; a short real wait is simpler and just as fast.
+      // flushPending(), not a timer wait of any kind -- it clears the debounce timer
+      // and awaits _pushOne (and, on a lost race, _writeConflictCopy's own async chain)
+      // directly, so the push and its conflict-copy fallback are done by the time this
+      // await returns. No race against wall-clock time to get right.
+      //
+      // This used to be `await new Promise(r => setTimeout(r, 150))`, betting that a
+      // 150ms real wait was always enough to outlast the 50ms debounce plus the
+      // conflict-copy's own async hop. It was flaky under load: a slow/throttled
+      // CI environment (this repo saw one test run take environment:206s against a
+      // normal ~30s) can make even a "3x margin" wait insufficient, and a fixed sleep
+      // has no way to detect that it wasn't -- the test just asserts on whatever state
+      // happened to exist when the timer fired, race lost or not. flushPending()
+      // removes the race structurally instead of widening the margin on a guess.
+      //
+      // fake timers were tried and rejected for this same reason, for the opposite
+      // failure mode: vi.advanceTimersByTimeAsync's microtask flushing isn't reliably
+      // deep enough to drain the conflict path's extra real async hop, so it could
+      // under-run instead. flushPending() sidesteps timers, real or fake, entirely.
       await repo.create(makeSong());
       await repo.update('song-1', makeSong({ title: 'My Local Edit' }));
 
@@ -319,7 +333,7 @@ describe('CloudSongsRepository', () => {
       const remoteRow = adapter.rows.get('song-1');
       adapter.rows.set('song-1', { ...remoteRow, rev: remoteRow.rev + 1 });
 
-      await new Promise((resolve) => setTimeout(resolve, 150)); // let this device's now-stale push fire and lose
+      await repo.flushPending(); // let this device's now-stale push fire and lose
 
       // The original row is untouched by the loser -- still whatever "another device" wrote.
       expect(adapter.rows.get('song-1').rev).toBe(remoteRow.rev + 1);
