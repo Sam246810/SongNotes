@@ -2,14 +2,36 @@
 
 ## Status: live on Vercel (deployed 2026-08-18)
 
-- Production URL: https://song-notes-jet.vercel.app
+- Production URL: https://www.songnotes.cloud (also reachable at
+  https://song-notes-jet.vercel.app, which still works as the underlying
+  `*.vercel.app` domain)
 - Project: `ubexsa/song-notes` (dashboard: https://vercel.com/ubexsa/song-notes)
 - Deploys: `git push` to `main` auto-deploys via Vercel's GitHub integration;
   `vercel --prod` also works from a local checkout once `vercel link` has run.
 - Env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) are set in the
   Vercel project across Production, Preview, and Development — see
   `.env.example` for what they are and why the anon key is safe to expose.
-- No custom domain yet — still on the `*.vercel.app` subdomain.
+
+### Custom domain — `songnotes.cloud`, connected 2026-08-20
+
+Registered on Namecheap; DNS stays on Namecheap (not delegated to Vercel's
+nameservers) since renewal is cheaper there ($27/yr vs Vercel's $24/yr is a
+wash, but keeping DNS separate leaves room for other records like email
+later without needing Vercel to manage them). Records set in Namecheap's
+Advanced DNS, replacing the default parking records (parking CNAME and URL
+redirect on `@`, which conflict with an apex A record and had to be deleted
+first):
+
+| Type  | Host | Value                                    |
+|-------|------|-------------------------------------------|
+| A     | `@`  | `216.198.79.1`                             |
+| CNAME | `www`| `96e7f08278a866d2.vercel-dns-017.com`      |
+
+The CNAME target is the project-specific value Vercel's domain settings
+page recommends (part of Vercel's expanded IP range) rather than the
+generic `cname.vercel-dns.com` — both work, but the specific one is what
+Vercel's dashboard shows for this project. `songnotes.cloud` (apex)
+redirects (308) to `www.songnotes.cloud`, which serves the app.
 
 Because this is a Vite SPA using `react-router` (`BrowserRouter`, not
 `HashRouter` — see `src/main.jsx`), a direct load of a route like
@@ -78,7 +100,7 @@ there rather than here:
 
 1. Update `WebLinks.kt`'s `WEB_DELETE_ACCOUNT_URL` in the Android repo from
    the `https://example.com/delete-account` placeholder to
-   `https://song-notes-jet.vercel.app/delete-account`.
+   `https://www.songnotes.cloud/delete-account`.
 2. Play Console → App content → Data safety → Account deletion. Play checks
    that field independently of what the app links to — filling in one
    doesn't populate the other.
