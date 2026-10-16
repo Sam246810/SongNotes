@@ -126,4 +126,17 @@ describe('Editor: long lines wrap instead of splitting', () => {
     expect(savedLines()[0].chords).toEqual([{ i: 15, c: 'Am' }]);
     expect(screen.getAllByLabelText('Chord input').map((el) => el.value.trimEnd())).toEqual(['', '      Am']);
   });
+
+  it('keeps the caret after each letter typed into a full-width chord row', async () => {
+    // A wrapped row fills the width, so its chord row is padded to the cap and
+    // every letter typed trades a padding space; the caret must stay put.
+    openSong([{ id: 'p1', lyrics: 'abcdefghijkl mnop', chords: [] }]);
+    const user = await typeAt(0, 2, '{ArrowUp}');
+    for (const [key, text] of [['G', '  G'], ['m', '  Gm'], ['7', '  Gm7']]) {
+      await user.keyboard(key);
+      expect(document.activeElement.value).toBe(text.padEnd(COLUMNS));
+      expect(document.activeElement.selectionStart).toBe(text.length);
+    }
+    expect(savedLines()[0].chords).toEqual([{ i: 2, c: 'Gm7' }]);
+  });
 });

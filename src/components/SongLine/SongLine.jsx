@@ -257,7 +257,11 @@ function SongLine({
     const chords = replaceRowChords(line, starts, k, accepted.text);
     // Keyed to the line as it will be after this edit, so the draft survives it.
     const key = JSON.stringify([chords, starts]);
-    setChordEdit({ row: k, text: accepted.text, key, caret: accepted.caret === el.selectionStart ? null : accepted.caret });
+    // When the cap changed the text (a full row gives up a padding space for
+    // each letter typed), React writes the new value into the input, which
+    // puts the browser's caret at the end -- so put it back after the letter.
+    const unchanged = accepted.text === el.value && accepted.caret === el.selectionStart;
+    setChordEdit({ row: k, text: accepted.text, key, caret: unchanged ? null : accepted.caret });
     onReplaceLine(line.id, [{ ...line, chords }]);
   }
 
