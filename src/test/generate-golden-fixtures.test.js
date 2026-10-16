@@ -22,7 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   CHORD_DB, normalizeChordName, tokenizeChordLine, lookupChord,
-  formatFretsForInput, parseFretsInput, alignChordsWithLyrics,
+  formatFretsForInput, parseFretsInput,
 } from '../utils/chords.js';
 import { transposeChordToken, transposeChordsLine } from '../utils/transpose.js';
 import { looksLikeChordLine, parseLyricsText } from '../utils/lyricsImport.js';
@@ -357,14 +357,14 @@ function buildExportToTextFixtures() {
       ],
     },
   ];
-  // The real app always keeps chords aligned to lyrics length (every edit
-  // runs alignChordsWithLyrics) -- apply it here too so a fixture's chords
-  // string round-trips correctly through the wire-format anchor
-  // representation SongNotes-Android's Song.lines actually stores (anchors
-  // are reconstructed against lyrics.length, so an unaligned fixture would
-  // fail there for a reason that has nothing to do with exportToText itself).
+  // Pad each chords string to its lyrics' length, the shape anchorsToChordsLine
+  // renders (and songAsText hands exportToText) -- so a fixture's chords string
+  // round-trips correctly through the wire-format anchor representation
+  // SongNotes-Android's Song.lines actually stores (anchors are reconstructed
+  // against lyrics.length, so an unpadded fixture would fail there for a
+  // reason that has nothing to do with exportToText itself).
   for (const song of songs) {
-    for (const line of song.lines) line.chords = alignChordsWithLyrics(line.chords, line.lyrics);
+    for (const line of song.lines) line.chords = line.chords.padEnd(line.lyrics.length);
   }
   return songs.map((song) => ({ input: song, output: exportToText(song) }));
 }
@@ -382,21 +382,6 @@ function buildParseFretsInputFixtures() {
     'x x x x x x', '0 0 0 0 0 0', 'x 25 2 0 1 0', '   ',
   ];
   return inputs.map((input) => ({ input, output: parseFretsInput(input) }));
-}
-
-// alignChordsWithLyrics: the hand-crafted cases from chords.test.js
-// (both-empty, padding-shorter, trimming-longer-if-whitespace-only,
-// NOT-trimming-longer-if-real-content) plus a couple of extra
-// null/undefined-parameter edge cases.
-function buildAlignChordsWithLyricsFixtures() {
-  const pairs = [
-    ['', ''], [null, null],
-    ['C', 'Hello'], ['C G', 'Hello world'],
-    ['C    ', 'Hi'], ['C G   ', 'Hello'],
-    ['C    G', 'Hi'], ['C  Am  ', 'Hi'],
-    [null, 'Hello'], ['C', null], ['', 'Hello'], ['C', ''],
-  ];
-  return pairs.map(([chords, lyrics]) => ({ chords, lyrics, output: alignChordsWithLyrics(chords, lyrics) }));
 }
 
 // Envelope v2 cross-repo test vector (SongNotes-Android Phase 6): builds a REAL
@@ -604,13 +589,6 @@ describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', ()
     expect(fixtures.length).toBeGreaterThan(0);
     fs.mkdirSync(specDir, { recursive: true });
     fs.writeFileSync(path.join(specDir, 'parse-frets-input.json'), JSON.stringify(fixtures, null, 2) + '\n');
-  });
-
-  it('writes spec/align-chords-with-lyrics.json from the real alignChordsWithLyrics', () => {
-    const fixtures = buildAlignChordsWithLyricsFixtures();
-    expect(fixtures.length).toBeGreaterThan(0);
-    fs.mkdirSync(specDir, { recursive: true });
-    fs.writeFileSync(path.join(specDir, 'align-chords-with-lyrics.json'), JSON.stringify(fixtures, null, 2) + '\n');
   });
 
   it('writes spec/recovery-code-vectors.json from the real normalizeRecoveryCode + Argon2id (Phase 12 cross-repo test vector)', async () => {

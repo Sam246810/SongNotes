@@ -354,6 +354,16 @@ and the web client know nothing about it.
 
 Field-by-field, and what changed from v1:
 
+- **A line is a paragraph of any length.** Each entry in `lines` is one real line
+  the user made (with Enter, a pasted newline, or "add line"), however long — not
+  one screen row. Wrapping is display-only: each app soft-wraps a line to whatever
+  width and font size it's shown at, and plain-text/PDF exports wrap it to the page
+  (`wrapSongToColumns` — `src/utils/lineWrap.js` / Android's `LineWrap.kt`; `.txt`
+  wraps at 60 columns on both). Wrapped rows are never stored, so a line's `id`
+  stays the same however it re-wraps, and its anchors (`i`) always index the whole
+  paragraph's `lyrics`. Songs written by older web versions may have long lines
+  already split into ~75-character lines; those simply read as separate paragraphs.
+
 - **`meta.bpm` / `meta.capo` are numbers, not strings.** v1 had them as `''`-default
   strings for no real reason. `bpm: 0` and `capo: 0` both mean "unset" (there's no
   meaningful song at 0 BPM, so this is an unambiguous sentinel — don't use `null`,

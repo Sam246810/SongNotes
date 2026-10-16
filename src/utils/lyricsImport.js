@@ -101,8 +101,9 @@ const META_HEADER_PATTERNS = {
 
 /**
  * Parses raw imported text (from a pasted textarea, a .txt file, or PDF text
- * extraction) into the same { chords, lyrics } line shape the editor already
- * uses everywhere else — see createLine/alignChordsWithLyrics in songsStore.js.
+ * extraction) into { chords, lyrics } lines, each chords row a string padded
+ * to sit over its lyrics — addSong in songsStore.js turns them into chord
+ * anchors.
  * Detection runs independently per line, so a false positive/negative on one
  * line never affects the rest of the song; the result is always meant to be
  * hand-edited afterward like any other pasted text.

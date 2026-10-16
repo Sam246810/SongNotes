@@ -32,7 +32,7 @@ function makeSong(overrides = {}) {
   return {
     id: 'song-1',
     title: 'Super Secret Title',
-    lines: [{ id: 'line-1', chords: 'Am', lyrics: 'super secret lyrics' }],
+    lines: [{ id: 'line-1', chords: [{ i: 0, c: 'Am' }], lyrics: 'super secret lyrics' }],
     isReadOnly: false,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
@@ -123,7 +123,7 @@ describe('CloudSongsRepository', () => {
       await vi.advanceTimersByTimeAsync(0);
       const ctAfterCreate = [...adapter.rows.values()][0].content.ct;
 
-      await repo.update('song-1', makeSong({ lines: [{ id: 'line-1', chords: 'G', lyrics: 'edited lyrics' }] }));
+      await repo.update('song-1', makeSong({ lines: [{ id: 'line-1', chords: [{ i: 0, c: 'G' }], lyrics: 'edited lyrics' }] }));
       await vi.advanceTimersByTimeAsync(60); // let the debounced push fire
 
       const rowAfterUpdate = [...adapter.rows.values()][0];
@@ -154,41 +154,46 @@ describe('CloudSongsRepository', () => {
     });
   });
 
-  describe('wire-format v2: chords stored as anchors, not the padded editing string', () => {
-    it('stores chords[] as {i,c} anchors in the encrypted content, not the padded string', async () => {
+  describe('wire-format v2: lines are stored as the app holds them', () => {
+    it('stores chords[] as {i,c} anchors in the encrypted content, and reads them back unchanged', async () => {
       const song = makeSong({
-        lines: [{ id: 'line-1', chords: 'G          C', lyrics: 'Amazing grace, how sweet' }],
+        lines: [{ id: 'line-1', chords: [{ i: 0, c: 'G' }, { i: 11, c: 'C' }], lyrics: 'Amazing grace, how sweet' }],
       });
       await repo.create(song);
 
       const dek = getDEK();
       const remoteRow = [...adapter.rows.values()][0];
       const decryptedContent = await decryptJSON(dek, remoteRow.content);
-      expect(decryptedContent.lines[0].chords).toEqual([{ i: 0, c: 'G' }, { i: 11, c: 'C' }]);
+      expect(decryptedContent.lines).toEqual(song.lines);
 
-      // The app-facing Song object gets a padded string back (re-aligned to the
-      // lyrics length via alignChordsWithLyrics, same as everywhere else in the
-      // app) -- callers (the editor, transpose, etc.) never need to know storage
-      // uses anchors, just that G is at column 0 and C is at column 11.
       const [listed] = await repo.list();
-      expect(listed.lines[0].chords.slice(0, 12)).toBe('G          C');
-      expect(listed.lines[0].chords.length).toBeGreaterThanOrEqual(song.lines[0].lyrics.length);
+      expect(listed.lines).toEqual(song.lines);
+    });
+
+    it('round-trips a paragraph-length line whole, with chords on what would be different wrapped rows', async () => {
+      // A chord ending one row and a chord starting the next overlap if the
+      // paragraph's chords are ever flattened into one padded string; as
+      // anchors they never meet, so nothing moves or merges on save + reopen.
+      const lyrics = 'the quick brown fox jumps over the lazy dog and keeps on running far away';
+      const chords = [{ i: 8, c: 'Am' }, { i: 10, c: 'G' }, { i: 40, c: 'Dsus4' }];
+      await repo.create(makeSong({ lines: [{ id: 'line-1', lyrics, chords }] }));
+      const [listed] = await repo.list();
+      expect(listed.lines).toEqual([{ id: 'line-1', lyrics, chords }]);
     });
 
     it('round-trips a chord placed past the end of a short lyric line (valid per wire-format §4)', async () => {
-      const song = makeSong({
-        lines: [{ id: 'line-1', chords: '          Dsus4', lyrics: 'Oh' }],
-      });
+      const song = makeSong({ lines: [{ id: 'line-1', chords: [{ i: 10, c: 'Dsus4' }], lyrics: 'Oh' }] });
       await repo.create(song);
       const [listed] = await repo.list();
-      expect(listed.lines[0].chords).toBe('          Dsus4');
+      expect(listed.lines[0].chords).toEqual([{ i: 10, c: 'Dsus4' }]);
     });
 
     it('round-trips an all-instrumental line with empty lyrics', async () => {
-      const song = makeSong({ lines: [{ id: 'line-1', chords: 'G   C   D', lyrics: '' }] });
+      const chords = [{ i: 0, c: 'G' }, { i: 4, c: 'C' }, { i: 8, c: 'D' }];
+      const song = makeSong({ lines: [{ id: 'line-1', chords, lyrics: '' }] });
       await repo.create(song);
       const [listed] = await repo.list();
-      expect(listed.lines[0].chords.trim().split(/\s+/)).toEqual(['G', 'C', 'D']);
+      expect(listed.lines[0].chords).toEqual(chords);
     });
 
     it('reads a real pre-existing encrypted row whose content still has the old padded-string chords (written before this conversion existed)', async () => {
@@ -208,7 +213,7 @@ describe('CloudSongsRepository', () => {
       const songs = await repo.list();
       const listed = songs.find((s) => s.id === 'old-song');
       expect(listed.title).toBe('Old Song');
-      expect(listed.lines[0].chords.slice(0, 7)).toBe('Am    G');
+      expect(listed.lines[0].chords).toEqual([{ i: 0, c: 'Am' }, { i: 6, c: 'G' }]);
     });
   });
 

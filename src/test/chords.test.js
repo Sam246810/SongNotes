@@ -4,7 +4,6 @@ import {
   normalizeChordName,
   lookupChord,
   tokenizeChordLine,
-  alignChordsWithLyrics,
   formatFretsForInput,
   parseFretsInput,
 } from '../utils/chords';
@@ -347,29 +346,3 @@ describe('CHORD_DB structure', () => {
     }
   });
 });
-
-// ─────────────────────────────────────────────
-// alignChordsWithLyrics
-// ─────────────────────────────────────────────
-describe('alignChordsWithLyrics', () => {
-  it('returns empty string if both parameters are empty/null', () => {
-    expect(alignChordsWithLyrics('', '')).toBe('');
-    expect(alignChordsWithLyrics(null, null)).toBe('');
-  });
-
-  it('pads chords with trailing spaces if chords are shorter than lyrics', () => {
-    expect(alignChordsWithLyrics('C', 'Hello')).toBe('C    ');
-    expect(alignChordsWithLyrics('C G', 'Hello world')).toBe('C G        ');
-  });
-
-  it('trims trailing spaces from chords if chords are longer than lyrics and extra characters are only whitespace', () => {
-    expect(alignChordsWithLyrics('C    ', 'Hi')).toBe('C ');
-    expect(alignChordsWithLyrics('C G   ', 'Hello')).toBe('C G  ');
-  });
-
-  it('does NOT trim trailing chords or non-spaces if chords are longer than lyrics', () => {
-    expect(alignChordsWithLyrics('C    G', 'Hi')).toBe('C    G');
-    expect(alignChordsWithLyrics('C  Am  ', 'Hi')).toBe('C  Am  ');
-  });
-});
-

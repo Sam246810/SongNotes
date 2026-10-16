@@ -1,8 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useLayoutEffect } from 'react';
 import useSongsStore from '../../store/songsStore';
 import useAuth from '../../auth/useAuth';
 import SongLine from '../SongLine/SongLine';
+import useLyricMetrics, { LYRIC_FONT, CHORD_FONT } from '../SongLine/useLyricMetrics';
+import { joinParagraphs } from '../../utils/paragraphEditing';
 import SongMetaBar from './SongMetaBar';
+import PrintSheet from './PrintSheet';
 import Toolbar from '../Toolbar/Toolbar';
 import PianoPanel from '../PianoPanel/PianoPanel';
 import DAWPanel from '../DAWPanel/DAWPanel';
@@ -61,16 +64,27 @@ function AccountKeyGate() {
   );
 }
 
+// Room left at a row's right edge for the caret, so a row exactly at
+// capacity never scrolls its input sideways by the caret's width.
+const CARET_SLACK_PX = 2;
+
+/** The song's lines as the store holds them right now (handlers run between renders). */
+function currentLines(songId) {
+  return useSongsStore.getState().songs.find((s) => s.id === songId)?.lines ?? [];
+}
+
 /**
  * Editor — full song editing view.
- * Manages focus state and delegates all store mutations to songsStore.
+ * Each song line is a paragraph that SongLine wraps to the width measured
+ * here. Coordinates the caret across lines (a focus request names the line
+ * and where in it) and delegates all store mutations to songsStore.
  */
 export default function Editor() {
   const {
-    songs, activeSongId, updateLine, addLineAfter, deleteLine, splitLine, mergeLineWithPrevious,
-    updateSongMeta, transposeSong, setCustomChord, removeCustomChord,
+    songs, activeSongId, replaceLines, updateSongMeta, transposeSong, setCustomChord, removeCustomChord,
   } = useSongsStore();
   const song = songs.find((s) => s.id === activeSongId) ?? null;
+  const songId = song?.id;
 
   const [showScratchpad, setShowScratchpad] = useState(false);
   const [showPiano, setShowPiano] = useState(true);
@@ -87,93 +101,83 @@ export default function Editor() {
     });
   }, []);
 
-  // focusState: { lineId: string, track: 'chords' | 'lyrics' } | null
-  const [focusState, setFocusState] = useState(null);
-  // pendingFocus: after adding/deleting we control where focus goes next
-  const [pendingFocus, setPendingFocus] = useState(null);
+  // How many characters fit across a row: the row's text width (measured off
+  // an empty stand-in with a row's padding) over one monospace glyph.
+  const { glyphWidth, chordLetterSpacing } = useLyricMetrics();
+  const [measureEl, setMeasureEl] = useState(null);
+  const [rowWidth, setRowWidth] = useState(0);
+  // Measured once as it mounts, not left to the ResizeObserver's first report:
+  // a browser delivers those only when it renders a frame, which it doesn't
+  // for a tab in the background, and the lines would sit unwrapped until then.
+  const measureRef = useCallback((el) => {
+    setMeasureEl(el);
+    if (el) setRowWidth(el.getBoundingClientRect().width);
+  }, []);
+  useLayoutEffect(() => {
+    if (!measureEl || typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(([entry]) => setRowWidth(entry.contentRect.width));
+    observer.observe(measureEl);
+    return () => observer.disconnect();
+  }, [measureEl]);
+  // Unwrapped until there's a width to wrap to.
+  const columns = rowWidth > 0 ? Math.max(1, Math.floor((rowWidth - CARET_SLACK_PX) / glyphWidth)) : Infinity;
 
-  const handleFocused = useCallback((lineId, track) => {
-    setFocusState({ lineId, track });
-    setPendingFocus(null);
+  // Where the caret should go next: { seq, lineId, track, offset? | row, column }.
+  const [focusRequest, setFocusRequest] = useState(null);
+  const requestFocus = useCallback((request) => {
+    setFocusRequest((prev) => ({ ...request, seq: (prev?.seq ?? 0) + 1 }));
+  }, []);
+  const handleFocusApplied = useCallback((seq) => {
+    setFocusRequest((prev) => (prev?.seq === seq ? null : prev));
   }, []);
 
-  const handleChange = useCallback(
-    (lineId, changes) => {
-      if (!song) return;
-      updateLine(song.id, lineId, changes);
+  const handleReplaceLine = useCallback(
+    (lineId, newLines, focus) => {
+      const idx = currentLines(songId).findIndex((l) => l.id === lineId);
+      if (idx === -1) return;
+      replaceLines(songId, idx, 1, newLines);
+      if (focus) requestFocus(focus);
     },
-    [song, updateLine]
+    [songId, replaceLines, requestFocus]
   );
 
-  const handleEnter = useCallback(
+  // Backspace at the start of a line: it joins onto the end of the line above.
+  const handleJoinWithPrevious = useCallback(
     (lineId) => {
-      if (!song) return;
-      const newId = addLineAfter(song.id, lineId);
-      setPendingFocus({ lineId: newId, track: 'lyrics' });
+      const lines = currentLines(songId);
+      const idx = lines.findIndex((l) => l.id === lineId);
+      if (idx <= 0) return;
+      const above = lines[idx - 1];
+      replaceLines(songId, idx - 1, 2, [joinParagraphs(above, lines[idx])]);
+      requestFocus({ lineId: above.id, track: 'lyrics', offset: above.lyrics.length });
     },
-    [song, addLineAfter]
+    [songId, replaceLines, requestFocus]
   );
 
+  // Delete at the end of a line: the line below joins onto it.
+  const handleJoinWithNext = useCallback(
+    (lineId) => {
+      const lines = currentLines(songId);
+      const idx = lines.findIndex((l) => l.id === lineId);
+      if (idx === -1 || idx === lines.length - 1) return;
+      const line = lines[idx];
+      replaceLines(songId, idx, 2, [joinParagraphs(line, lines[idx + 1])]);
+      requestFocus({ lineId: line.id, track: 'lyrics', offset: line.lyrics.length });
+    },
+    [songId, replaceLines, requestFocus]
+  );
+
+  // The caret leaves a line: into the last row of the line above, or the
+  // first row of the line below, at `column`.
   const handleNavigate = useCallback(
-    (lineId, direction) => {
-      if (!song) return;
-      const idx = song.lines.findIndex((l) => l.id === lineId);
-
-      if (direction === 'chords') {
-        setPendingFocus({ lineId, track: 'chords' });
-      } else if (direction === 'lyrics') {
-        setPendingFocus({ lineId, track: 'lyrics' });
-      } else if (direction === 'up') {
-        if (idx > 0) {
-          setPendingFocus({ lineId: song.lines[idx - 1].id, track: 'lyrics' });
-        }
-      } else if (direction === 'down') {
-        if (idx < song.lines.length - 1) {
-          setPendingFocus({ lineId: song.lines[idx + 1].id, track: 'lyrics' });
-        }
-      }
+    (lineId, direction, track, column) => {
+      const lines = currentLines(songId);
+      const idx = lines.findIndex((l) => l.id === lineId);
+      const target = lines[direction === 'prev' ? idx - 1 : idx + 1];
+      if (idx === -1 || !target) return;
+      requestFocus({ lineId: target.id, track, row: direction === 'prev' ? 'last' : 'first', column });
     },
-    [song]
-  );
-
-  const handleDelete = useCallback(
-    (lineId) => {
-      if (!song) return;
-      const idx = song.lines.findIndex((l) => l.id === lineId);
-      deleteLine(song.id, lineId);
-      // Focus previous line lyrics, or first line
-      const prevIdx = Math.max(0, idx - 1);
-      const targetLine = song.lines[prevIdx];
-      if (targetLine && targetLine.id !== lineId) {
-        setPendingFocus({ lineId: targetLine.id, track: 'lyrics' });
-      } else if (song.lines.length > 1) {
-        const nextLine = song.lines.find((l) => l.id !== lineId);
-        if (nextLine) setPendingFocus({ lineId: nextLine.id, track: 'lyrics' });
-      }
-    },
-    [song, deleteLine]
-  );
-
-  const handleSplit = useCallback(
-    (lineId, splitIndex, track, caretIndex) => {
-      if (!song) return;
-      const targetFocus = splitLine(song.id, lineId, splitIndex, track, caretIndex);
-      if (targetFocus) {
-        setPendingFocus(targetFocus);
-      }
-    },
-    [song, splitLine]
-  );
-
-  const handleMergeWithPrevious = useCallback(
-    (lineId) => {
-      if (!song) return;
-      const targetFocus = mergeLineWithPrevious(song.id, lineId);
-      if (targetFocus) {
-        setPendingFocus(targetFocus);
-      }
-    },
-    [song, mergeLineWithPrevious]
+    [songId, requestFocus]
   );
 
   const handleUpdateMeta = useCallback(
@@ -192,20 +196,20 @@ export default function Editor() {
     [song, transposeSong]
   );
 
+  // Keyed on the id alone (like the line handlers above) so typing, which
+  // changes `song` on every keystroke, doesn't re-render every SongLine.
   const handleSaveVoicing = useCallback(
     (chordName, voicing) => {
-      if (!song) return;
-      setCustomChord(song.id, chordName, voicing);
+      if (songId) setCustomChord(songId, chordName, voicing);
     },
-    [song, setCustomChord]
+    [songId, setCustomChord]
   );
 
   const handleResetVoicing = useCallback(
     (chordName) => {
-      if (!song) return;
-      removeCustomChord(song.id, chordName);
+      if (songId) removeCustomChord(songId, chordName);
     },
-    [song, removeCustomChord]
+    [songId, removeCustomChord]
   );
 
 
@@ -235,33 +239,36 @@ export default function Editor() {
       />
       <div className={`${styles.editorBody} ${showScratchpad ? styles.hasScratchpad : ''}`}>
         <div className={styles.editorScroll}>
-          <div className={styles.linesContainer}>
+          <div
+            className={styles.linesContainer}
+            style={{
+              '--lyric-font': LYRIC_FONT,
+              '--chord-font': CHORD_FONT,
+              '--chord-letter-spacing': `${chordLetterSpacing}px`,
+            }}
+          >
             <SongMetaBar song={song} onUpdateMeta={handleUpdateMeta} onTranspose={handleTranspose} />
-            {song.lines.map((line) => {
-              const isActive = focusState?.lineId === line.id;
-              const isFocusTarget = pendingFocus?.lineId === line.id ? pendingFocus.track : null;
-              const focusCaretIndex = pendingFocus?.lineId === line.id ? pendingFocus.caretIndex : null;
-              return (
-                <SongLine
-                  key={line.id}
-                  line={line}
-                  locked={false}
-                  isActive={isActive}
-                  focusTarget={isFocusTarget}
-                  focusCaretIndex={focusCaretIndex}
-                  onFocused={handleFocused}
-                  onChange={handleChange}
-                  onEnter={handleEnter}
-                  onNavigate={handleNavigate}
-                  onDelete={handleDelete}
-                  onSplit={handleSplit}
-                  onMergeWithPrevious={handleMergeWithPrevious}
-                  customChords={song.customChords}
-                  onSaveVoicing={handleSaveVoicing}
-                  onResetVoicing={handleResetVoicing}
-                />
-              );
-            })}
+            <div ref={measureRef} className={styles.rowMeasure} aria-hidden="true" />
+            {song.lines.map((line, index) => (
+              <SongLine
+                key={line.id}
+                line={line}
+                isFirst={index === 0}
+                columns={columns}
+                glyphWidth={glyphWidth}
+                locked={false}
+                focusRequest={focusRequest?.lineId === line.id ? focusRequest : null}
+                onFocusApplied={handleFocusApplied}
+                onRequestFocus={requestFocus}
+                onReplaceLine={handleReplaceLine}
+                onJoinWithPrevious={handleJoinWithPrevious}
+                onJoinWithNext={handleJoinWithNext}
+                onNavigate={handleNavigate}
+                customChords={song.customChords}
+                onSaveVoicing={handleSaveVoicing}
+                onResetVoicing={handleResetVoicing}
+              />
+            ))}
           </div>
         </div>
         {showScratchpad && (
@@ -275,6 +282,7 @@ export default function Editor() {
           />
         )}
       </div>
+      <PrintSheet song={song} />
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { exportToText } from '../utils/export';
+import { exportToText, songAsText, TEXT_EXPORT_COLUMNS } from '../utils/export';
 import { createSong, createLine } from '../store/songsStore';
+import { wrapSongToColumns } from '../utils/lineWrap';
+import { anchorsToChordsLine } from '../utils/chordAnchors';
 
 // ─────────────────────────────────────────────
 // exportToText
@@ -72,6 +74,51 @@ describe('exportToText', () => {
 });
 
 // ─────────────────────────────────────────────
+// songAsText (what .txt export writes)
+// ─────────────────────────────────────────────
+describe('songAsText', () => {
+  it('wraps at the same 60 columns as the Android app', () => {
+    expect(TEXT_EXPORT_COLUMNS).toBe(60);
+  });
+
+  it('prints a short line exactly as exportToText would', () => {
+    const song = { title: 'T', lines: [{ id: 'a', lyrics: 'Hello world', chords: [{ i: 0, c: 'Am' }, { i: 6, c: 'G' }] }] };
+    expect(songAsText(song)).toBe('T\n=\n\nAm    G    \nHello world');
+  });
+
+  it('wraps a paragraph into rows, each chord over its word, every line within 60 columns', () => {
+    const lyrics = 'Well I wandered down the long road home tonight, and the stars were burning out one by one above me';
+    // wandered, and, burning, above -- and an ending chord far past the lyrics.
+    const chords = [{ i: 7, c: 'G' }, { i: 49, c: 'C' }, { i: 68, c: 'D' }, { i: 91, c: 'Am' }, { i: 116, c: 'Em' }];
+    const body = songAsText({ title: 'Road', lines: [{ id: 'a', lyrics, chords }] }).split('\n').slice(3);
+    expect(body).toEqual([
+      ' '.repeat(7) + 'G' + ' '.repeat(41) + 'C' + ' '.repeat(6),
+      'Well I wandered down the long road home tonight, and the', // hanging space trimmed
+      ' '.repeat(11) + 'D' + ' '.repeat(22) + 'Am' + ' '.repeat(6),
+      'stars were burning out one by one above me',
+      'Em', // would have run past column 60: continues on a chords-only row
+    ]);
+    for (const row of body) expect(row.length).toBeLessThanOrEqual(TEXT_EXPORT_COLUMNS);
+    expect(body[1].slice(7, 10)).toBe('wan');
+    expect(body[1].slice(49, 52)).toBe('and');
+    expect(body[3].slice(11, 14)).toBe('bur');
+    expect(body[3].slice(34, 37)).toBe('abo');
+  });
+
+  it('matches the Android app on its own wrapSongToColumns + formatSongAsText case (at 12 columns)', () => {
+    // LineWrapTest.kt: `formatSongAsText of a wrapped song keeps every chord over its word`.
+    // songAsText is fixed at 60 columns, so run the same steps at 12 here.
+    const line = { id: 'a', lyrics: 'the quick brown fox jumps', chords: [{ i: 4, c: 'G' }, { i: 16, c: 'C' }, { i: 20, c: 'D' }] };
+    const wrapped = wrapSongToColumns({ title: 'T', lines: [line] }, 12);
+    const text = exportToText({
+      ...wrapped,
+      lines: wrapped.lines.map((l) => ({ ...l, chords: anchorsToChordsLine(l.lyrics.length, l.chords) })),
+    });
+    expect(text).toBe('T\n=\n\n    G    \nthe quick\n      C  \nbrown fox\nD    \njumps');
+  });
+});
+
+// ─────────────────────────────────────────────
 // createSong / createLine (store factories)
 // ─────────────────────────────────────────────
 describe('createSong', () => {
@@ -102,13 +149,13 @@ describe('createLine', () => {
   it('creates an empty line by default', () => {
     const line = createLine();
     expect(line).toHaveProperty('id');
-    expect(line).toHaveProperty('chords', '');
+    expect(line).toHaveProperty('chords', []);
     expect(line).toHaveProperty('lyrics', '');
   });
 
-  it('accepts initial chord and lyric values', () => {
-    const line = createLine('Am G', 'Hello');
-    expect(line.chords).toBe('Am G ');
+  it('accepts initial lyrics and chord anchors', () => {
+    const line = createLine('Hello', [{ i: 0, c: 'Am' }, { i: 3, c: 'G' }]);
+    expect(line.chords).toEqual([{ i: 0, c: 'Am' }, { i: 3, c: 'G' }]);
     expect(line.lyrics).toBe('Hello');
   });
 

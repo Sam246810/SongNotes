@@ -6,9 +6,9 @@ import styles from './Toolbar.module.css';
 
 const SHORTCUTS = [
   { keys: 'Tab', desc: 'jump between the chord and lyric track on this line' },
-  { keys: 'Enter', desc: 'start a new line below' },
-  { keys: '⌫ Backspace', desc: 'at the start of an empty line, deletes it' },
-  { keys: '↑ / ↓', desc: 'move to the line above / below' },
+  { keys: 'Enter', desc: 'split the line at the caret (long lines wrap on their own)' },
+  { keys: '⌫ Backspace', desc: 'at the start of a line, joins it onto the line above' },
+  { keys: '↑ / ↓', desc: 'move between chord and lyric rows' },
   { keys: 'Click a chord', desc: 'edit it directly — hover to see its diagram' },
 ];
 
@@ -66,7 +66,7 @@ export default function Toolbar({ song, showScratchpad, onToggleScratchpad }) {
   }
 
   return (
-    <div className={`${styles.toolbar} no-print`}>
+    <div className={styles.toolbar}>
       {/* Title */}
       <div className={styles.titleArea}>
         {editingTitle ? (

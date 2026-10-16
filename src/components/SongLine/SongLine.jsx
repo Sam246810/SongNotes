@@ -1,187 +1,301 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import ChordTokenDisplay from '../ChordTokenDisplay/ChordTokenDisplay';
+import {
+  rowStarts, rowOfOffset, layoutParagraph, replaceRowChords, editLyrics, splitParagraph, insertText,
+  capChordInput, charLengthBefore, charLengthAt,
+} from '../../utils/paragraphEditing';
 import styles from './SongLine.module.css';
 
 /**
- * SongLine — one row of the editor comprising a chord track and a lyric track.
+ * SongLine — one saved line of a song: a paragraph, however long, drawn as
+ * rows that soft-wrap to the editor's width. Each row is a chord track over a
+ * lyric track. Wrapping is display-only (see utils/paragraphEditing.js): the
+ * rows are cut afresh from the paragraph on every render, so words flow
+ * between rows as you type or delete, and the line is saved whole.
  *
- * The chord track has two modes:
- *  - EDIT mode (input focused): shows a plain <input> for typing
- *  - DISPLAY mode (blurred): shows ChordTokenDisplay with hoverable chord diagrams
+ * Editing follows a normal text editor (and the Android app):
+ *  - Typing past the edge moves the word down whole; the space before it
+ *    hangs at the end of the row above.
+ *  - Typing the space after a word that exactly fills its row moves the caret
+ *    to a fresh empty row, which lasts only while the caret is on it.
+ *  - Backspace at the start of a wrapped row deletes the character before it
+ *    (normally the hanging space); at the start of the line it asks the
+ *    parent to join this line onto the previous one.
+ *  - Enter splits the line at the caret into two lines.
+ *
+ * Each row's chord track has two modes:
+ *  - EDIT mode (input focused): a plain <input>, hard-capped at `columns`
+ *    characters so it never scrolls sideways or spills onto another row.
+ *  - DISPLAY mode (blurred): ChordTokenDisplay with hoverable chord diagrams.
  *
  * Props:
- *   line         { id, chords, lyrics }
- *   locked       boolean — when true, inputs are read-only
- *   isActive     boolean — whether this line currently has focus
- *   focusTarget  'chords' | 'lyrics' | null — controlled focus from parent
- *   onFocused    (lineId, track) => void
- *   onChange     (lineId, { chords?, lyrics? }) => void
- *   onEnter      (lineId) => void
- *   onNavigate   (lineId, direction) => void  direction: 'up' | 'down' | 'chords' | 'lyrics'
- *   onDelete     (lineId) => void
+ *   line          { id, lyrics, chords: [{ i, c }] }
+ *   isFirst       boolean — the song's first line (backspace at its start does nothing)
+ *   columns       number  — how many monospace characters fit across a row
+ *   glyphWidth    number  — the advance of one character, in px
+ *   locked        boolean — when true, inputs are read-only
+ *   focusRequest  { seq, track: 'lyrics'|'chords', offset?, row?: number|'first'|'last', column? } | null
+ *                 — where the parent wants the caret, for this line only: a
+ *                   paragraph offset, or a row and column
+ *   onFocusApplied   (seq) => void
+ *   onRequestFocus   (request) => void — asks the parent to place the caret (request has a lineId)
+ *   onReplaceLine    (lineId, newLines, focusRequest?) => void — this line becomes `newLines`
+ *   onJoinWithPrevious (lineId) => void
+ *   onJoinWithNext     (lineId) => void
+ *   onNavigate       (lineId, 'prev'|'next', track, column) => void — caret leaves this line
  *   customChords     object? — this song's own voicings, keyed by normalized chord name
  *   onSaveVoicing    fn?     — (chordName, voicing) => void — omit to disable voicing editing
  *   onResetVoicing   fn?     — (chordName) => void
  */
-function getCharacterIndexFromClick(e, containerEl) {
-  try {
-    let range;
-    if (document.caretRangeFromPoint) {
-      range = document.caretRangeFromPoint(e.clientX, e.clientY);
-    } else if (e.rangeParent) {
-      range = document.createRange();
-      range.setStart(e.rangeParent, e.rangeOffset);
-    }
+function SongLine({
+  line,
+  isFirst,
+  columns,
+  glyphWidth,
+  locked,
+  focusRequest,
+  onFocusApplied,
+  onRequestFocus,
+  onReplaceLine,
+  onJoinWithPrevious,
+  onJoinWithNext,
+  onNavigate,
+  customChords,
+  onSaveVoicing,
+  onResetVoicing,
+}) {
+  const containerRef = useRef(null);
+  const lyricRefs = useRef([]);
+  const chordRefs = useRef([]);
+  // Paragraph offset of the lyric caret while it's in this line, else null.
+  const [caret, setCaret] = useState(null);
+  // The chord row being edited: { row, text, key, caret }. `text` keeps what
+  // was typed (alignment spaces included) while `key` still matches the line
+  // it was typed into; `caret`, when set, is still to be applied.
+  const [chordEdit, setChordEdit] = useState(null);
+  // While an IME composes a word, the rows stay cut where they were (the
+  // composing row just grows) — moving text out from under a composition
+  // would break it. Re-wrapped when the composition ends.
+  const [frozen, setFrozen] = useState(null);
 
-    if (!range) return null;
+  const lyrics = line.lyrics;
 
-    const textNode = range.startContainer;
-    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return null;
+  // A row and column from the parent resolve to an offset against the rows as
+  // they stand; an explicit offset is used as is.
+  const baseStarts = rowStarts(lyrics, columns);
+  const requestedOffset = focusRequest?.track === 'lyrics'
+    ? (typeof focusRequest.offset === 'number'
+      ? focusRequest.offset
+      : offsetAt(lyrics, baseStarts, resolveRow(baseStarts, focusRequest.row), focusRequest.column))
+    : null;
+  const caretOffset = requestedOffset ?? caret;
+  const starts = frozen
+    ? frozen.starts.map((s, k) => (k > frozen.row ? s + lyrics.length - frozen.length : s))
+    : rowStarts(lyrics, columns, caretOffset !== null && caretOffset >= lyrics.length);
+  const rows = layoutParagraph(line, starts, columns);
+  const lastRow = rows.length - 1;
+  const chordsKey = JSON.stringify([line.chords, starts]);
 
-    let offset = range.startOffset;
-    let found = false;
-
-    const walker = document.createTreeWalker(containerEl, NodeFilter.SHOW_TEXT);
-    let node;
-    while ((node = walker.nextNode())) {
-      if (node === textNode) {
-        found = true;
-        break;
-      }
-      offset += node.textContent.length;
-    }
-
-    return found ? offset : null;
-  } catch (err) {
-    console.warn('Failed to calculate caret index from click', err);
-    return null;
+  // The chords-track text of row k: what's being typed into it, unless the
+  // line has since changed under it (then the draft is stale).
+  function chordText(k) {
+    return chordEdit && chordEdit.row === k && chordEdit.key === chordsKey ? chordEdit.text : rows[k].chords;
   }
-}
 
-function getCharWidth(el) {
-  try {
-    const testSpan = document.createElement('span');
-    const style = window.getComputedStyle(el);
-    testSpan.style.font = style.font;
-    testSpan.style.letterSpacing = style.letterSpacing;
-    testSpan.style.visibility = 'hidden';
-    testSpan.style.position = 'absolute';
-    testSpan.style.whiteSpace = 'pre';
-    testSpan.textContent = 'a';
-    document.body.appendChild(testSpan);
-    const width = testSpan.getBoundingClientRect().width;
-    document.body.removeChild(testSpan);
-    return width || 8;
-  } catch {
-    return 8;
+  function startChordEdit(k, column) {
+    const text = rows[k].chords;
+    const col = Math.min(Math.max(column, 0), columns);
+    // Pad out to the clicked column, so the caret lands where the click did
+    // even past the last chord. Trailing spaces never become chords.
+    setChordEdit({ row: k, text: text.padEnd(col), key: chordsKey, caret: col });
   }
-}
 
-function getMaxChars(el) {
-  // Use a stable max character limit (75 chars) so line breaks are consistent
-  // and never fluctuate when side panels (DAW or Piano) are opened, expanded, or resized.
-  return 75;
-}
-
-
-const SongLine = React.forwardRef(function SongLine(
-  {
-    line,
-    locked,
-    isActive,
-    focusTarget,
-    focusCaretIndex,
-    onFocused,
-    onChange,
-    onEnter,
-    onNavigate,
-    onDelete,
-    onSplit,
-    onMergeWithPrevious,
-    customChords,
-    onSaveVoicing,
-    onResetVoicing,
-  },
-  _ref
-) {
-
-  const chordsRef = useRef(null);
-  const lyricsRef = useRef(null);
-  const [chordEditMode, setChordEditMode] = useState(false);
-  const userTypedRef = useRef(false);
-
-  // Controlled focus from parent
-  useEffect(() => {
-    if (focusTarget === 'chords' && chordsRef.current) {
-      setChordEditMode(true);
-      // Small delay so the input is rendered before we focus it
-      setTimeout(() => {
-        if (chordsRef.current) {
-          chordsRef.current.focus();
-          if (typeof focusCaretIndex === 'number') {
-            chordsRef.current.setSelectionRange(focusCaretIndex, focusCaretIndex);
-          }
-        }
-      }, 0);
-    } else if (focusTarget === 'lyrics' && lyricsRef.current) {
-      lyricsRef.current.focus();
-      if (typeof focusCaretIndex === 'number') {
-        lyricsRef.current.setSelectionRange(focusCaretIndex, focusCaretIndex);
+  // Apply a caret placement requested by the parent.
+  useLayoutEffect(() => {
+    if (!focusRequest) return;
+    if (focusRequest.track === 'chords') {
+      const k = resolveRow(starts, focusRequest.row);
+      startChordEdit(k, focusRequest.column ?? 0);
+    } else {
+      const k = rowOfOffset(starts, requestedOffset);
+      const el = lyricRefs.current[k];
+      if (el) {
+        const local = requestedOffset - starts[k];
+        if (document.activeElement !== el) el.focus();
+        el.setSelectionRange(local, local);
       }
+      setCaret(requestedOffset);
     }
-  }, [focusTarget, focusCaretIndex]);
+    onFocusApplied(focusRequest.seq);
+    // Runs once per request; `starts`/`requestedOffset` are derived from it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusRequest]);
 
-  // Overflow shifting (auto-split) based on stable character limit
-  useEffect(() => {
-    if (locked || !isActive || !userTypedRef.current) return;
+  // Apply a chord-row caret placement (from a click, a key, or the parent).
+  useLayoutEffect(() => {
+    if (chordEdit?.caret == null) return;
+    const el = chordRefs.current[chordEdit.row];
+    if (el) {
+      if (document.activeElement !== el) el.focus();
+      el.setSelectionRange(chordEdit.caret, chordEdit.caret);
+    }
+    setChordEdit((ce) => (ce ? { ...ce, caret: null } : ce));
+  }, [chordEdit]);
 
-    // Reset the typing flag so subsequent non-typing renders don't split
-    userTypedRef.current = false;
+  // --- Lyrics ---
 
-    // Check lyric input overflow
-    const lyricEl = lyricsRef.current;
-    if (lyricEl) {
-      const text = line.lyrics;
-      const maxChars = getMaxChars(lyricEl);
-      const overflows = text.length >= maxChars;
+  function rowEnd(k) {
+    return k < lastRow ? starts[k + 1] : lyrics.length;
+  }
 
-      if (overflows) {
-        let splitIdx = text.lastIndexOf(' ', maxChars);
-        if (splitIdx === -1 || splitIdx < maxChars / 2) {
-          splitIdx = maxChars - 1;
-        }
+  function focusOffset(offset) {
+    onRequestFocus({ lineId: line.id, track: 'lyrics', offset });
+  }
 
-        if (splitIdx > 0 && splitIdx < text.length) {
-          const caretIndex = lyricEl.selectionStart || 0;
-          const newCaretIndex = Math.max(0, caretIndex - splitIdx);
-          onSplit(line.id, splitIdx, 'lyrics', newCaretIndex);
-          return; // Stop processing chords if lyrics overflowed
-        }
+  function handleLyricsChange(k, e) {
+    const el = e.target;
+    const newLyrics = lyrics.slice(0, starts[k]) + el.value + lyrics.slice(rowEnd(k));
+    const offset = starts[k] + el.selectionStart;
+    const edited = editLyrics(line, newLyrics, offset);
+    if (frozen || e.nativeEvent.isComposing) {
+      if (!frozen) setFrozen({ starts, row: k, length: lyrics.length });
+      setCaret(offset);
+      onReplaceLine(line.id, [edited]);
+    } else {
+      onReplaceLine(line.id, [edited], { lineId: line.id, track: 'lyrics', offset });
+    }
+  }
+
+  function handleCompositionStart(k) {
+    setFrozen({ starts, row: k, length: lyrics.length });
+  }
+
+  function handleCompositionEnd(k, e) {
+    setFrozen(null);
+    focusOffset(starts[k] + e.target.selectionStart);
+  }
+
+  function deleteRange(from, to, focusAt) {
+    const newLyrics = lyrics.slice(0, from) + lyrics.slice(to);
+    onReplaceLine(line.id, [editLyrics(line, newLyrics, from)], { lineId: line.id, track: 'lyrics', offset: focusAt });
+  }
+
+  function handleLyricsKey(k, e) {
+    if (locked) return;
+    const el = e.currentTarget;
+    const { selectionStart: selStart, selectionEnd: selEnd, value } = el;
+    const collapsed = selStart === selEnd;
+    const offset = starts[k] + selStart;
+    // The furthest the caret goes on a row: before the space a wrap hung at
+    // its end, since after it is the start of the next row.
+    const maxLocal = k < lastRow && value.endsWith(' ') ? value.length - 1 : value.length;
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const trimmed = editLyrics(line, lyrics.slice(0, offset) + lyrics.slice(starts[k] + selEnd), offset);
+      const [before, after] = splitParagraph(trimmed, offset);
+      onReplaceLine(line.id, [before, after], { lineId: after.id, track: 'lyrics', offset: 0 });
+    } else if (e.key === 'Backspace' && collapsed && selStart === 0) {
+      e.preventDefault();
+      if (k > 0) {
+        // A wrapped row's start is the same spot as the end of the row above:
+        // delete the character before it (normally the hanging space).
+        const del = charLengthBefore(lyrics, offset);
+        deleteRange(offset - del, offset, offset - del);
+      } else if (!isFirst) {
+        onJoinWithPrevious(line.id);
       }
+    } else if (e.key === 'Delete' && collapsed && selStart === value.length) {
+      e.preventDefault();
+      if (k < lastRow) deleteRange(offset, offset + charLengthAt(lyrics, offset), offset);
+      else onJoinWithNext(line.id);
+    } else if (e.key === 'ArrowLeft' && collapsed && selStart === 0 && !e.shiftKey) {
+      e.preventDefault();
+      if (k > 0) focusOffset(offset - charLengthBefore(lyrics, offset));
+      else onNavigate(line.id, 'prev', 'lyrics', Infinity);
+    } else if (e.key === 'ArrowRight' && collapsed && selStart >= maxLocal && !e.shiftKey) {
+      e.preventDefault();
+      if (k < lastRow) focusOffset(offset + charLengthAt(lyrics, offset));
+      else onNavigate(line.id, 'next', 'lyrics', 0);
+    } else if (e.key === 'ArrowUp' || e.key === 'Tab') {
+      e.preventDefault();
+      startChordEdit(k, selStart);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (k < lastRow) focusOffset(offsetAt(lyrics, starts, k + 1, selStart));
+      else onNavigate(line.id, 'next', 'lyrics', selStart);
     }
+  }
 
-    // Check chords input overflow
-    const chordEl = chordsRef.current;
-    if (chordEl && chordEditMode) {
-      const text = line.chords;
-      const maxChars = getMaxChars(chordEl);
-      const overflows = text.length >= maxChars;
-
-      if (overflows) {
-        let splitIdx = text.lastIndexOf(' ', maxChars);
-        if (splitIdx === -1 || splitIdx < maxChars / 2) {
-          splitIdx = maxChars - 1;
-        }
-
-        if (splitIdx > 0 && splitIdx < text.length) {
-          const caretIndex = chordEl.selectionStart || 0;
-          const newCaretIndex = Math.max(0, caretIndex - splitIdx);
-          onSplit(line.id, splitIdx, 'chords', newCaretIndex);
-        }
-      }
+  function handleLyricsSelect(k, e) {
+    const el = e.target;
+    // A click past the end of a row that wraps lands before its hanging space,
+    // as in any text editor: after it is the next row's first word, and
+    // typing there would glue onto that word.
+    if (k < lastRow && el.selectionStart === el.selectionEnd &&
+      el.selectionStart === el.value.length && el.value.endsWith(' ')) {
+      el.setSelectionRange(el.value.length - 1, el.value.length - 1);
     }
-  }, [line.lyrics, line.chords, isActive, chordEditMode, locked, onSplit]);
+    setCaret(starts[k] + el.selectionStart);
+  }
 
+  function handleLyricsPaste(k, e) {
+    if (locked) return;
+    e.preventDefault();
+    const el = e.currentTarget;
+    const text = e.clipboardData.getData('text');
+    const { paragraphs, caret: [pk, at] } = insertText(line, starts[k] + el.selectionStart, starts[k] + el.selectionEnd, text);
+    onReplaceLine(line.id, paragraphs, { lineId: paragraphs[pk].id, track: 'lyrics', offset: at });
+  }
+
+  // --- Chords ---
+
+  function handleChordsChange(k, e) {
+    const el = e.target;
+    const accepted = capChordInput(chordText(k), el.value, el.selectionStart, columns);
+    if (!accepted) return; // React puts the old value back
+    const chords = replaceRowChords(line, starts, k, accepted.text);
+    // Keyed to the line as it will be after this edit, so the draft survives it.
+    const key = JSON.stringify([chords, starts]);
+    setChordEdit({ row: k, text: accepted.text, key, caret: accepted.caret === el.selectionStart ? null : accepted.caret });
+    onReplaceLine(line.id, [{ ...line, chords }]);
+  }
+
+  function handleChordsKey(k, e) {
+    if (locked) return;
+    const column = e.currentTarget.selectionStart;
+    if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key === 'Tab') {
+      e.preventDefault();
+      onRequestFocus({ lineId: line.id, track: 'lyrics', row: k, column });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (k > 0) onRequestFocus({ lineId: line.id, track: 'lyrics', row: k - 1, column });
+      else onNavigate(line.id, 'prev', 'lyrics', column);
+    }
+    // Backspace at column 0 deliberately does nothing: a chord row never
+    // joins anything.
+  }
+
+  function handleChordsFocus(k) {
+    if (chordEdit?.row !== k) setChordEdit({ row: k, text: rows[k].chords, key: chordsKey, caret: null });
+    // The lyric caret has left — unless this is the chord track of the empty
+    // row the caret opened, which would vanish with it.
+    if (!(k === lastRow && caretOffset !== null && caretOffset >= lyrics.length)) setCaret(null);
+  }
+
+  function handleChordDisplayClick(k, e) {
+    if (locked) return;
+    const el = e.currentTarget;
+    const left = el.getBoundingClientRect().left + parseFloat(getComputedStyle(el).paddingLeft || '0');
+    startChordEdit(k, Math.round((e.clientX - left) / glyphWidth));
+  }
+
+  function handleBlur(e) {
+    if (containerRef.current?.contains(e.relatedTarget)) return;
+    setCaret(null);
+    setChordEdit(null);
+    setFrozen(null);
+  }
 
   const inputProps = {
     spellCheck: false,
@@ -191,152 +305,99 @@ const SongLine = React.forwardRef(function SongLine(
     readOnly: locked,
   };
 
-  function handleKey(track, e) {
-    if (locked) return;
-
-    const el = e.currentTarget;
-    const atStart = el.selectionStart === 0 && el.selectionEnd === 0;
-
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      onEnter(line.id);
-    } else if (e.key === 'ArrowUp') {
-      if (track === 'lyrics') {
-        e.preventDefault();
-        onNavigate(line.id, 'chords');
-      } else if (track === 'chords') {
-        e.preventDefault();
-        onNavigate(line.id, 'up');
-      }
-    } else if (e.key === 'ArrowDown') {
-      if (track === 'chords') {
-        e.preventDefault();
-        onNavigate(line.id, 'lyrics');
-      } else if (track === 'lyrics') {
-        e.preventDefault();
-        onNavigate(line.id, 'down');
-      }
-    } else if (e.key === 'Backspace' && atStart) {
-      if (track === 'lyrics') {
-        e.preventDefault();
-        onMergeWithPrevious(line.id);
-      } else if (track === 'chords') {
-        const empty = line.chords.trim() === '' && line.lyrics.trim() === '';
-        if (empty) {
-          e.preventDefault();
-          onDelete(line.id);
-        }
-      }
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      if (track === 'lyrics') onNavigate(line.id, 'chords');
-      else onNavigate(line.id, 'lyrics');
-    }
-  }
-
-  function handleChordFocus() {
-    setChordEditMode(true);
-    onFocused(line.id, 'chords');
-  }
-
-  function handleChordBlur() {
-    setChordEditMode(false);
-  }
-
-  const isEmpty = !line.chords.trim() && !line.lyrics.trim();
+  const isActive = caret !== null || chordEdit !== null;
+  const isEmpty = !lyrics.trim() && line.chords.length === 0;
 
   return (
     <div
-      className={`${styles.songLine} ${isActive ? styles.active : ''} ${locked ? styles.locked : ''} editor-song-line`}
+      ref={containerRef}
+      className={`${styles.songLine} ${isActive ? styles.active : ''} ${locked ? styles.locked : ''}`}
       data-line-id={line.id}
+      onBlur={handleBlur}
     >
-      {/* === Chord track === */}
-      <div className={styles.trackRow}>
-        <div className={styles.trackChord}>
-          {/* Hidden-but-focusable input — always in DOM */}
-          <input
-            ref={chordsRef}
-            className={`${styles.inputChord} ${chordEditMode ? styles.inputVisible : styles.inputHidden}`}
-            type="text"
-            value={line.chords}
-            placeholder="Chords…"
-            onChange={(e) => {
-              userTypedRef.current = true;
-              const caret = e.target.selectionStart;
-              onChange(line.id, { chords: e.target.value });
-              setTimeout(() => {
-                if (chordsRef.current) {
-                  chordsRef.current.setSelectionRange(caret, caret);
-                }
-              }, 0);
-            }}
-            onKeyDown={(e) => handleKey('chords', e)}
-            onFocus={handleChordFocus}
-            onBlur={handleChordBlur}
-            aria-label="Chord input"
-            {...inputProps}
-          />
-          {/* Token display — shown when not in edit mode */}
-          {!chordEditMode && (
-            <ChordTokenDisplay
-              value={line.chords}
-              locked={locked}
-              customChords={customChords}
-              onSaveVoicing={onSaveVoicing}
-              onResetVoicing={onResetVoicing}
-              onClick={(e) => {
-                if (!locked) {
-                  const clickedIndex = getCharacterIndexFromClick(e, e.currentTarget);
-                  setChordEditMode(true);
-                  setTimeout(() => {
-                    if (chordsRef.current) {
-                      chordsRef.current.focus();
-                      if (clickedIndex !== null) {
-                        chordsRef.current.setSelectionRange(clickedIndex, clickedIndex);
-                      } else {
-                        chordsRef.current.setSelectionRange(line.chords.length, line.chords.length);
-                      }
-                    }
-                  }, 0);
-                }
-              }}
-            />
-          )}
-        </div>
-      </div>
+      {rows.map((row, k) => {
+        const editingChords = chordEdit?.row === k;
+        return (
+          <div key={k}>
+            {/* === Chord track === */}
+            <div className={styles.trackRow}>
+              <div className={styles.trackChord}>
+                {/* Hidden-but-focusable input — always in DOM */}
+                <input
+                  ref={(el) => { chordRefs.current[k] = el; }}
+                  className={`${styles.inputChord} ${editingChords ? styles.inputVisible : styles.inputHidden}`}
+                  type="text"
+                  value={chordText(k)}
+                  // A wrapped row is the rest of the line above, not a line
+                  // of its own to prompt for.
+                  placeholder={k === 0 ? 'Chords…' : ''}
+                  onChange={(e) => handleChordsChange(k, e)}
+                  onKeyDown={(e) => handleChordsKey(k, e)}
+                  onFocus={() => handleChordsFocus(k)}
+                  aria-label="Chord input"
+                  {...inputProps}
+                />
+                {!editingChords && (
+                  <ChordTokenDisplay
+                    value={row.chords}
+                    locked={locked}
+                    customChords={customChords}
+                    onSaveVoicing={onSaveVoicing}
+                    onResetVoicing={onResetVoicing}
+                    onClick={(e) => handleChordDisplayClick(k, e)}
+                  />
+                )}
+              </div>
+            </div>
 
-      {/* === Lyric track === */}
-      <div className={styles.trackRow}>
-        <div className={styles.trackLyric}>
-          <input
-            ref={lyricsRef}
-            className={styles.inputLyric}
-            type="text"
-            value={line.lyrics}
-            placeholder={isActive ? 'Lyrics…' : ''}
-            onChange={(e) => {
-              userTypedRef.current = true;
-              const caret = e.target.selectionStart;
-              onChange(line.id, { lyrics: e.target.value });
-              setTimeout(() => {
-                if (lyricsRef.current) {
-                  lyricsRef.current.setSelectionRange(caret, caret);
-                }
-              }, 0);
-            }}
-            onKeyDown={(e) => handleKey('lyrics', e)}
-            onFocus={() => onFocused(line.id, 'lyrics')}
-            aria-label="Lyric input"
-            {...inputProps}
-          />
-        </div>
-      </div>
+            {/* === Lyric track === */}
+            <div className={styles.trackRow}>
+              <div className={styles.trackLyric}>
+                <input
+                  ref={(el) => { lyricRefs.current[k] = el; }}
+                  className={styles.inputLyric}
+                  type="text"
+                  value={row.lyrics}
+                  placeholder={k === 0 && isActive ? 'Lyrics…' : ''}
+                  onChange={(e) => handleLyricsChange(k, e)}
+                  onKeyDown={(e) => handleLyricsKey(k, e)}
+                  onSelect={(e) => handleLyricsSelect(k, e)}
+                  onFocus={(e) => { setChordEdit(null); setCaret(starts[k] + e.target.selectionStart); }}
+                  onPaste={(e) => handleLyricsPaste(k, e)}
+                  onCompositionStart={() => handleCompositionStart(k)}
+                  onCompositionEnd={(e) => handleCompositionEnd(k, e)}
+                  aria-label="Lyric input"
+                  {...inputProps}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      })}
 
-      {isEmpty && !isActive && !locked && (
-        <div className={styles.emptyHint}>⌫ Backspace to delete this empty line</div>
+      {isEmpty && !isActive && !locked && !isFirst && (
+        <div className={styles.emptyHint}>⌫ Backspace at the start of an empty line deletes it</div>
       )}
     </div>
   );
-});
+}
 
-export default SongLine;
+/** Row index for a row given as a number, 'first' or 'last'. */
+function resolveRow(starts, row) {
+  if (row === 'last') return starts.length - 1;
+  if (typeof row !== 'number') return 0;
+  return Math.min(Math.max(row, 0), starts.length - 1);
+}
+
+/**
+ * The paragraph offset at `column` of row `k`, clamped to the row — and to
+ * before the space a wrap hung at its end, which belongs to the next row.
+ */
+function offsetAt(text, starts, k, column) {
+  const start = starts[k];
+  const end = k < starts.length - 1 ? starts[k + 1] : text.length;
+  const maxLocal = k < starts.length - 1 && text[end - 1] === ' ' ? end - start - 1 : end - start;
+  return start + Math.min(Math.max(column, 0), maxLocal);
+}
+
+export default React.memo(SongLine);

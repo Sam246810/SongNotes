@@ -1,3 +1,5 @@
+import { withAnchorChords } from '../utils/chordAnchors';
+
 const LEGACY_KEY = 'songnotes_songs';
 const BACKUP_KEY = 'songnotes_songs_migrated_backup';
 
@@ -26,9 +28,10 @@ export function markMigrated(userId) {
  */
 export async function migrateLocalSongsToCloud(repo, userId, songs) {
   for (const song of songs) {
-    // Strip the guestSessionId tag when sending to the remote repository
+    // Strip the guestSessionId tag when sending to the remote repository. Guest
+    // songs saved by older versions hold chords as v1 padded strings.
     const { guestSessionId, ...cleanSong } = song;
-    await repo.create(cleanSong);
+    await repo.create({ ...cleanSong, lines: withAnchorChords(cleanSong.lines) });
   }
 
   // Backup current state

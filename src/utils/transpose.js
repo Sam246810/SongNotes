@@ -48,9 +48,9 @@ export function transposeChordToken(raw, semitones) {
  * "Recognized" uses the same CHORD_DB lookup the editor's chord track already
  * relies on elsewhere, so this only ever touches tokens a user would actually
  * see rendered as a chord. A token changing width (e.g. "F#" -> "G") shifts
- * whatever comes after it on the same line, same as transposing in any other
- * chord-chart tool — callers should re-run alignChordsWithLyrics afterward
- * (songsStore's updateLine/transposeSong already do).
+ * whatever comes after it in the string, so songsStore's transposeSong calls
+ * this once per chord anchor rather than over a whole chords row: each chord
+ * keeps its own position.
  */
 export function transposeChordsLine(chordsLine, semitones) {
   if (!chordsLine || !semitones) return chordsLine;

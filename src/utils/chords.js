@@ -237,24 +237,3 @@ export function parseFretsInput(raw) {
   const baseFret = played.length === 0 || Math.max(...played) <= 4 ? 1 : Math.min(...played);
   return { frets, baseFret };
 }
-
-/**
- * Ensures chords line aligns in length with lyrics line.
- * - Pads with trailing spaces if chords are shorter.
- * - Trims trailing spaces if chords are longer, but only if they are spaces (no chord symbols).
- */
-export function alignChordsWithLyrics(chords, lyrics) {
-  const chordsStr = chords || '';
-  const lyricsStr = lyrics || '';
-  if (chordsStr.length < lyricsStr.length) {
-    return chordsStr + ' '.repeat(lyricsStr.length - chordsStr.length);
-  }
-  if (chordsStr.length > lyricsStr.length) {
-    const extra = chordsStr.slice(lyricsStr.length);
-    if (/^\s*$/.test(extra)) {
-      return chordsStr.slice(0, lyricsStr.length);
-    }
-  }
-  return chordsStr;
-}
-

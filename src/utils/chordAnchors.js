@@ -1,13 +1,13 @@
 /**
- * Conversions between this app's own internal editor model (a chords row
- * space-padded to align above its lyrics row) and the wire-format v2
- * per-chord-anchor shape (`{i, c}`) that `songs.content` is actually stored
- * as (see `docs/WIRE-FORMAT-v2.md` section 4) -- the same model the Android
- * app's editor natively uses, and what makes a chord's stored position immune
- * to that chord's own token width changing (e.g. on transpose, `F#` -> `G`
- * no longer needs to shift every subsequent chord's column, because position
- * was never encoded as a column in storage, only in the padded-string
- * *editing* representation).
+ * Conversions between a chords row space-padded to align above its lyrics
+ * (wire-format v1, the plain-text export, and the editor's chord input) and
+ * the wire-format v2 per-chord-anchor shape (`{i, c}`, see
+ * `docs/WIRE-FORMAT-v2.md` section 4) that both apps hold songs in. Anchors
+ * make a chord's position immune to its own token width changing (e.g. on
+ * transpose, `F#` -> `G` doesn't shift every later chord's column) and to
+ * how a line is wrapped: a padded string spanning a whole paragraph can't
+ * even hold a chord ending one wrapped row next to a chord starting the next
+ * without overlapping them.
  *
  * Ported line-for-line from SongNotes-Android's own
  * `core/domain/ChordAnchors.kt` (written directly from the wire-format spec,
@@ -51,4 +51,14 @@ export function anchorsToChordsLine(lyricsLength, chords) {
     }
   }
   return chars.join('');
+}
+
+/**
+ * `lines` with every `chords` as anchors. Songs saved before the app held
+ * chords as anchors -- guest songs in localStorage, and cloud rows written
+ * before the v2 conversion -- still have v1's padded string there, and
+ * there's no version marker to gate on, so this checks the runtime type.
+ */
+export function withAnchorChords(lines) {
+  return lines.map((l) => (Array.isArray(l.chords) ? l : { ...l, chords: chordsLineToAnchors(l.chords) }));
 }

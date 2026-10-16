@@ -53,6 +53,22 @@ describe('migrateLocal', () => {
     expect(hasMigrated('user-1')).toBe(true);
   });
 
+  it('imports guest songs saved with v1 padded chord strings as chord anchors', async () => {
+    const songs = [{
+      id: 'a', title: 'Old', guestSessionId: 'g', createdAt: 't', updatedAt: 't',
+      lines: [{ id: 'l1', chords: 'Am    G   ', lyrics: 'a lyric from before' }],
+    }];
+    localStorage.setItem(LEGACY_KEY, JSON.stringify(songs));
+    const create = vi.fn().mockResolvedValue(undefined);
+
+    await migrateLocalSongsToCloud({ create }, 'user-1', songs);
+
+    expect(create).toHaveBeenCalledWith({
+      id: 'a', title: 'Old', createdAt: 't', updatedAt: 't',
+      lines: [{ id: 'l1', chords: [{ i: 0, c: 'Am' }, { i: 6, c: 'G' }], lyrics: 'a lyric from before' }],
+    });
+  });
+
   it('leaves the legacy key intact and does not mark migrated if a create fails partway', async () => {
     const songs = makeSongs();
     localStorage.setItem(LEGACY_KEY, JSON.stringify(songs));

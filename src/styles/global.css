@@ -161,12 +161,16 @@ body {
   100% { background-position: 200% center; }
 }
 
-/* Print styles for PDF export */
+/* Print styles for PDF export: with a song open, print its PrintSheet (the
+   song wrapped to the page) instead of the app -- and anything else portaled
+   into <body>, like a chord diagram left open under the mouse -- and let it
+   run onto as many pages as it needs rather than the app's one fixed-height
+   screen. */
 @media print {
-  body { background: white; color: black; }
-  .no-print { display: none !important; }
-  .editor-song-line {
-    break-inside: avoid;
-    margin-bottom: 0.5rem;
+  html, body {
+    height: auto;
+    overflow: visible;
+    background: white;
   }
+  body:has(> .print-sheet) > :not(.print-sheet) { display: none !important; }
 }

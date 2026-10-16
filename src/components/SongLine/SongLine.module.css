@@ -43,11 +43,11 @@
 }
 
 .inputChord {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 14px;
-  font-weight: 700;
+  /* Fonts come from the editor (see useLyricMetrics.js): both tracks share one
+     monospace glyph width, so a chord's column is the letter it sits over. */
+  font: var(--chord-font);
   color: var(--chord-color);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--chord-letter-spacing);
 }
 
 /* Two-mode chord track helpers */
@@ -74,11 +74,9 @@
 }
 
 .inputLyric {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 15px;
-  font-weight: 500;
+  font: var(--lyric-font);
   color: var(--lyric-color);
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .inputLyric::placeholder {

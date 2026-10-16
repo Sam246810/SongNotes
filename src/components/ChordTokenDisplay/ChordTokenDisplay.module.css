@@ -5,12 +5,12 @@
   padding: 2px 12px;
   min-height: 24px;
   cursor: text;
-  /* Match chord input font exactly */
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  /* Match the chord input exactly (the editor sets these, see
+     useLyricMetrics.js) so each chord sits at its lyric letter's column. */
+  font: var(--chord-font);
+  letter-spacing: var(--chord-letter-spacing);
   line-height: 1.6;
+  overflow: hidden;
   white-space: pre;
 }
 
@@ -30,7 +30,10 @@
 .unknown {
   color: var(--text-muted);
   border-radius: 3px;
+  /* Room for the hover highlight without taking any width: a token wider
+     than its characters would push every chord after it off its column. */
   padding: 0 1px;
+  margin: 0 -1px;
   white-space: pre;
   cursor: default;
   transition: background var(--transition-fast), color var(--transition-fast);
@@ -46,7 +49,8 @@
   color: var(--chord-color);
   position: relative;
   border-radius: 3px;
-  padding: 0 1px;
+  padding: 0 1px; /* see .unknown */
+  margin: 0 -1px;
   cursor: default;
   transition: background var(--transition-fast), color var(--transition-fast);
   white-space: pre;

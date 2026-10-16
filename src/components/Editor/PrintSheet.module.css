@@ -1,0 +1,51 @@
+/* Only ever printed: see PrintSheet.jsx and the @media print rules in global.css. */
+.sheet {
+  display: none;
+}
+
+@media print {
+  .sheet {
+    display: block;
+    /* Paper, whatever the on-screen theme: Cozy Dark's cream text would
+       vanish on a white page. Same chord/lyric colours as the light theme. */
+    color: #2a221b;
+    background: #fff;
+    font-family: var(--font-sans);
+  }
+}
+
+.title {
+  font-size: 20pt;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 6pt;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  font-size: 10pt;
+  color: #5e4c3a;
+  margin-bottom: 14pt;
+}
+
+/* One size and family for both, so a chord's column is its letter's column. */
+.chords,
+.lyrics {
+  font-family: var(--font-mono);
+  font-size: 11pt;
+  line-height: 1.4;
+  white-space: pre;
+}
+
+.chords {
+  font-weight: 700;
+  color: #b45309;
+}
+
+.entry {
+  break-inside: avoid;
+}
+
+.blank {
+  height: calc(11pt * 1.4);
+}

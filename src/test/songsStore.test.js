@@ -14,66 +14,48 @@ describe('songsStore actions', () => {
     });
   });
 
-  it('splits a line into two', () => {
+  it('replaceLines splices lines in place and persists the result', async () => {
     const songId = useSongsStore.getState().addSong('Test Song');
-    const songBefore = useSongsStore.getState().songs.find(s => s.id === songId);
-    const lineId = songBefore.lines[0].id;
+    const [first] = useSongsStore.getState().songs.find((s) => s.id === songId).lines;
 
-    // Set initial text
-    useSongsStore.getState().updateLine(songId, lineId, {
-      chords: 'Am  C  G',
-      lyrics: 'The quick brown fox',
-    });
+    // One line becoming two, as Enter does: the first keeps its id.
+    const before = { ...first, lyrics: 'The quick ', chords: [{ i: 4, c: 'Am' }] };
+    const after = { id: 'new-line', lyrics: 'brown fox', chords: [{ i: 0, c: 'G' }] };
+    useSongsStore.getState().replaceLines(songId, 0, 1, [before, after]);
+    expect(useSongsStore.getState().songs.find((s) => s.id === songId).lines).toEqual([before, after]);
 
-    // Split at index 10 ("brown")
-    const targetFocus = useSongsStore.getState().splitLine(songId, lineId, 10, 'lyrics');
-    const songAfter = useSongsStore.getState().songs.find(s => s.id === songId);
+    // Two lines becoming one, as backspace at the start of a line does.
+    const joined = { ...before, lyrics: 'The quick brown fox', chords: [{ i: 4, c: 'Am' }, { i: 10, c: 'G' }] };
+    useSongsStore.getState().replaceLines(songId, 0, 2, [joined]);
+    expect(useSongsStore.getState().songs.find((s) => s.id === songId).lines).toEqual([joined]);
 
-    expect(songAfter.lines).toHaveLength(2);
-    expect(songAfter.lines[0].lyrics).toBe('The quick ');
-    expect(songAfter.lines[1].lyrics).toBe('brown fox');
-
-    // Chords are aligned/split
-    expect(songAfter.lines[0].chords).toBe('Am  C  G  ');
-    expect(songAfter.lines[1].chords).toBe('         ');
-
-    expect(targetFocus).not.toBeNull();
-    expect(targetFocus.lineId).toBe(songAfter.lines[1].id);
-    expect(targetFocus.track).toBe('lyrics');
-    expect(targetFocus.caretIndex).toBe(0);
+    await Promise.resolve();
+    await Promise.resolve();
+    const stored = JSON.parse(localStorage.getItem('songnotes_songs')).find((s) => s.id === songId);
+    expect(stored.lines).toEqual([joined]);
   });
 
-  it('merges a line with the previous one', () => {
-    const songId = useSongsStore.getState().addSong('Test Song');
-    const songBefore = useSongsStore.getState().songs.find(s => s.id === songId);
-    const line1Id = songBefore.lines[0].id;
-
-    // Add a second line
-    const line2Id = useSongsStore.getState().addLineAfter(songId, line1Id);
-
-    // Set initial texts
-    useSongsStore.getState().updateLine(songId, line1Id, {
-      chords: 'Am  ',
-      lyrics: 'Hello ',
+  it('turns imported padded chord rows into chord anchors', () => {
+    const songId = useSongsStore.getState().addSong('Imported', {
+      lines: [{ chords: 'G          C', lyrics: 'Amazing grace, how sweet' }, { chords: '', lyrics: '' }],
     });
-    useSongsStore.getState().updateLine(songId, line2Id, {
-      chords: 'G',
-      lyrics: 'world',
-    });
+    const { lines } = useSongsStore.getState().songs.find((s) => s.id === songId);
+    expect(lines.map(({ lyrics, chords }) => ({ lyrics, chords }))).toEqual([
+      { lyrics: 'Amazing grace, how sweet', chords: [{ i: 0, c: 'G' }, { i: 11, c: 'C' }] },
+      { lyrics: '', chords: [] },
+    ]);
+  });
 
-    // Merge line 2 with line 1
-    const targetFocus = useSongsStore.getState().mergeLineWithPrevious(songId, line2Id);
-    const songAfter = useSongsStore.getState().songs.find(s => s.id === songId);
-
-    expect(songAfter.lines).toHaveLength(1);
-    expect(songAfter.lines[0].lyrics).toBe('Hello world');
-    // 'Am    ' + 'G    ' -> 'Am    G    '
-    expect(songAfter.lines[0].chords).toBe('Am    G    '); // aligned to 'Hello world' (length 11)
-
-    expect(targetFocus).not.toBeNull();
-    expect(targetFocus.lineId).toBe(line1Id);
-    expect(targetFocus.track).toBe('lyrics');
-    expect(targetFocus.caretIndex).toBe(6); // index of merge boundary
+  it('transposes each chord where it is, so a longer name never shifts the chords after it', () => {
+    const songId = useSongsStore.getState().addSong('Transpose');
+    const lineId = useSongsStore.getState().songs.find((s) => s.id === songId).lines[0].id;
+    useSongsStore.getState().replaceLines(songId, 0, 1, [
+      { id: lineId, lyrics: 'one two three', chords: [{ i: 0, c: 'F' }, { i: 2, c: 'C' }, { i: 8, c: 'Intro' }] },
+    ]);
+    useSongsStore.getState().transposeSong(songId, 1);
+    expect(useSongsStore.getState().songs.find((s) => s.id === songId).lines[0].chords).toEqual([
+      { i: 0, c: 'F#' }, { i: 2, c: 'C#' }, { i: 8, c: 'Intro' },
+    ]);
   });
 
   it('persists a new song via the bound repository', async () => {
@@ -115,6 +97,17 @@ describe('songsStore hydration', () => {
     expect(fakeRepo.list).toHaveBeenCalled();
     expect(useSongsStore.getState().status).toBe('ready');
     expect(useSongsStore.getState().songs).toEqual(fakeSongs);
+  });
+
+  it('loads guest songs saved with v1 padded chord strings as chord anchors', async () => {
+    sessionStorage.setItem('__songnotes_guest_session_id', 'guest-1');
+    localStorage.setItem('songnotes_songs', JSON.stringify([{
+      id: 'old', title: 'Old', guestSessionId: 'guest-1',
+      lines: [{ id: 'l1', chords: 'Am    G   ', lyrics: 'a lyric from before' }],
+    }]));
+    useSongsStore.setState({ repo: new LocalSongsRepository() });
+    await useSongsStore.getState().hydrate();
+    expect(useSongsStore.getState().songs[0].lines[0].chords).toEqual([{ i: 0, c: 'Am' }, { i: 6, c: 'G' }]);
   });
 
   it('transitions to error status when the repo fails to load', async () => {

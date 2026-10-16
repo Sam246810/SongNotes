@@ -17,15 +17,13 @@
 .editorScroll {
   flex: 1;
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden; /* lines wrap to the width instead of scrolling */
   padding: 40px 24px;
-  min-width: 360px;
   background: var(--workspace-bg);
 }
 
 .linesContainer {
   max-width: 800px;
-  min-width: 440px;
   margin: 0 auto;
   padding: 48px 40px 64px 80px; /* indent left for margin line */
   background: var(--paper-bg);
@@ -47,6 +45,29 @@
   left: 60px; /* Red margin line */
   width: 1px;
   background: var(--paper-margin);
+}
+
+/* The text area of one row: a SongLine's 3px left border plus its inputs'
+   12px side padding taken off each side. Editor measures this to know how
+   many characters fit across a row. */
+.rowMeasure {
+  height: 0;
+  margin: 0 12px 0 15px;
+}
+
+/* Phone-width windows: drop the wide notebook gutters so lines get the room. */
+@media (max-width: 600px) {
+  .editorScroll {
+    padding: 12px 8px;
+  }
+
+  .linesContainer {
+    padding: 24px 8px 48px 24px;
+  }
+
+  .linesContainer::before {
+    left: 14px;
+  }
 }
 
 .emptyState {
