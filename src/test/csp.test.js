@@ -66,6 +66,10 @@ describe('deployment security headers', () => {
     expect(csp.value).toMatch(/connect-src[^;]*supabase\.co/);
     // Exported audio/text and the recovery-code download use blob: object URLs.
     expect(csp.value).toMatch(/media-src[^;]*blob:/);
+    // Argon2id (src/crypto/kdf.js, via hash-wasm) compiles WebAssembly. Without this,
+    // every key derivation throws — sign-in reported it as "your saved encryption key
+    // doesn't match this password", and recovery codes failed with a CSP error.
+    expect(csp.value).toMatch(/script-src[^;]*'wasm-unsafe-eval'/);
   });
 
   it('locks down the directives that have no legitimate use here', () => {

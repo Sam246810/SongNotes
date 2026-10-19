@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import useAuth from './useAuth';
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP_TEXT, validateNewPassword } from './passwordPolicy';
@@ -16,8 +16,14 @@ export default function SignupPage() {
   const [recoveryCode, setRecoveryCode] = useState(null);
   const [hasSession, setHasSession] = useState(false);
   const [copied, setCopied] = useState(false);
+  // With email confirmation off, supabase.auth.signUp() fires onAuthStateChange
+  // (flipping `user` truthy) BEFORE signUp() resolves — and key setup (Argon2id)
+  // takes a while after that. Without this guard the auto-redirect below fired on
+  // that intermediate render and unmounted the page, so the recovery code was
+  // minted but never shown. Same pattern as LoginPage's submittingRef.
+  const submittingRef = useRef(false);
 
-  if (user) return <Navigate to="/" replace />;
+  if (user && !submittingRef.current && step !== 'recoveryCode') return <Navigate to="/" replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -28,6 +34,7 @@ export default function SignupPage() {
       return;
     }
     setSubmitting(true);
+    submittingRef.current = true;
     try {
       const data = await signUp(email, password);
       setHasSession(Boolean(data.session));
@@ -42,6 +49,7 @@ export default function SignupPage() {
         navigate('/');
       }
     } catch (err) {
+      submittingRef.current = false;
       setError(err.message || 'Failed to sign up.');
     } finally {
       setSubmitting(false);
