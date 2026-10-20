@@ -41,6 +41,19 @@ Because this is a Vite SPA using `react-router` (`BrowserRouter`, not
 catch-all rewrite to `index.html` — verified working against the live
 deployment.
 
+### Supabase auth URLs — must match the domain
+
+Supabase dashboard → Authentication → URL Configuration:
+
+- **Site URL:** `https://www.songnotes.cloud`
+- **Redirect URLs:** `https://www.songnotes.cloud/**`, `http://localhost:5173/**`
+
+Email links (signup confirmation → `/login?confirmed=1`, password reset →
+`/reset-password`) ask for a redirect via `emailRedirectTo` / `redirectTo`,
+but Supabase only honours URLs on that allow-list. Anything else silently
+falls back to the Site URL, which is `http://localhost:3000` on a new
+project. That's what confirmation emails were doing as of 2026-10-20.
+
 ## Security hardening — status
 
 The August 2026 security review's fixes are committed. One step lived outside the
