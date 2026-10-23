@@ -105,16 +105,45 @@ export async function unlockWithRecoveryCode(envelope, recoveryCode) {
   return unlockWithType(envelope, 'recovery', 'recovery-code', normalizeRecoveryCode(recoveryCode));
 }
 
+/**
+ * The ONLY error that means "this secret doesn't open this envelope". Callers
+ * use it to choose between the wrong-password/recovery UI and a plain "try
+ * again" error, so it must stay narrow: anything else (Argon2id failing to load
+ * its WebAssembly under a strict CSP, KDF bounds, a malformed envelope, the
+ * network) is an environment or data problem that a recovery code or "start
+ * fresh" can't fix. A CSP that blocked hash-wasm once made every sign-in report
+ * a key mismatch, which pushed people toward deleting their songs.
+ */
+export class KeyMismatchError extends Error {
+  constructor(message = "That password or recovery code doesn't match this account's encryption key.", options) {
+    super(message, options);
+    this.name = 'KeyMismatchError';
+  }
+}
+
+export function isKeyMismatchError(err) {
+  return err instanceof KeyMismatchError;
+}
+
 async function unlockWithType(envelope, v1Field, v2Type, secret) {
   const wrap = findWrap(envelope, v1Field, v2Type);
   const { salt, ...kdfParams } = deserializeKdfParams(wrap.kdf);
+  // Not wrapped in a try: a KDF failure is never a mismatch (see KeyMismatchError).
   const kek = await deriveKEK(secret, salt, kdfParams);
-  const dek = await unwrapContentKey(kek, wrapToLegacyShape(wrap));
+  let dek;
+  try {
+    dek = await unwrapContentKey(kek, wrapToLegacyShape(wrap));
+  } catch (e) {
+    // WebCrypto reports an AES-GCM tag failure (wrong KEK) as OperationError.
+    if (e?.name === 'OperationError') throw new KeyMismatchError(undefined, { cause: e });
+    throw e;
+  }
   if (envelope.v >= 2 && !(await checkDekVerifier(dek, envelope.verifier))) {
     // Correct KDF inputs unwrapped *a* key (GCM tag matched), but it isn't the DEK
     // this envelope's verifier was computed for -- shouldn't happen outside a bug
     // or a tampered envelope, but fail loudly rather than silently trusting it.
-    throw new Error('DEK verifier mismatch after unwrap');
+    // Still a mismatch: deterministic for this envelope, so retrying won't help.
+    throw new KeyMismatchError('DEK verifier mismatch after unwrap');
   }
   return dek;
 }

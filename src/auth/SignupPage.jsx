@@ -5,14 +5,16 @@ import { MIN_PASSWORD_LENGTH, PASSWORD_HELP_TEXT, validateNewPassword } from './
 import styles from './AuthPage.module.css';
 
 export default function SignupPage() {
-  const { configured, user, signUp } = useAuth();
+  const { configured, user, signUp, signOut } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   // 'form' -> (recoveryCode, if account-key setup succeeded) -> confirmSent | app
+  //        -> keySetupFailed (account created, encryption not) -> sign in again
   const [step, setStep] = useState('form');
+  const [keySetupFailed, setKeySetupFailed] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState(null);
   const [hasSession, setHasSession] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -23,7 +25,7 @@ export default function SignupPage() {
   // minted but never shown. Same pattern as LoginPage's submittingRef.
   const submittingRef = useRef(false);
 
-  if (user && !submittingRef.current && step !== 'recoveryCode') return <Navigate to="/" replace />;
+  if (user && !submittingRef.current && step !== 'recoveryCode' && step !== 'keySetupFailed') return <Navigate to="/" replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -38,11 +40,14 @@ export default function SignupPage() {
     try {
       const data = await signUp(email, password);
       setHasSession(Boolean(data.session));
+      setKeySetupFailed(Boolean(data.keySetupFailed));
       if (data.recoveryCode) {
-        // Account-key setup can fail silently (see AuthProvider.signUp's own
-        // try/catch) — only show this step when there's actually a code to show.
+        // Shown even when keySetupFailed: the envelope (and its recovery wrap)
+        // is already stored, so this is the code's only chance to be seen.
         setRecoveryCode(data.recoveryCode);
         setStep('recoveryCode');
+      } else if (data.keySetupFailed) {
+        setStep('keySetupFailed');
       } else if (!data.session) {
         setStep('confirmSent');
       } else {
@@ -56,7 +61,19 @@ export default function SignupPage() {
     }
   }
 
+  // Signing in again is what finishes key setup (see AuthProvider.signUp), so
+  // send the user there rather than into an app with no encryption key.
+  async function handleSignInAgain() {
+    try {
+      await signOut();
+    } catch (e) {
+      console.error('Failed to sign out after encryption setup failure', e);
+    }
+    navigate('/login');
+  }
+
   function handleRecoveryCodeContinue() {
+    if (keySetupFailed) return handleSignInAgain();
     if (hasSession) navigate('/');
     else setStep('confirmSent');
   }
@@ -111,6 +128,12 @@ export default function SignupPage() {
               again.
             </p>
             <div className={styles.recoveryCode}>{recoveryCode}</div>
+            {keySetupFailed && (
+              <div className={styles.errorText}>
+                Encryption couldn't finish setting up on this device (not a password
+                problem). After saving this code, sign in again to finish.
+              </div>
+            )}
             <div className={styles.form}>
               <button
                 className={styles.submitBtn}
@@ -135,6 +158,25 @@ export default function SignupPage() {
                 id="signup-recovery-continue-btn"
               >
                 I've saved it — continue
+              </button>
+            </div>
+          </>
+        )}
+
+        {configured && step === 'keySetupFailed' && (
+          <>
+            <div className={styles.errorText}>
+              Your account was created, but encryption couldn't be set up on this
+              device. This isn't a password problem — sign in again to finish setup.
+            </div>
+            <div className={styles.form}>
+              <button
+                className={styles.submitBtn}
+                type="button"
+                onClick={handleSignInAgain}
+                id="signup-key-setup-retry-btn"
+              >
+                Sign in again
               </button>
             </div>
           </>

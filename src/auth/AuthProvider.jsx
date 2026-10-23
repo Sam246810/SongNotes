@@ -1,13 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { clearSession as clearCryptoSession, establishDEK } from '../crypto/keyManager';
-import { createAccountKeys, unlockWithPassphrase, migrateWrapIfNeeded } from '../crypto/accountKeys';
+import {
+  createAccountKeys, unlockWithPassphrase, migrateWrapIfNeeded, isKeyMismatchError,
+} from '../crypto/accountKeys';
 import { SupabaseUserKeysAdapter } from '../lib/userKeysAdapter';
 import { clearAccountLocalCaches } from '../store/songsRepository';
 import { AuthContext } from './AuthContext';
 
 /** Postgres unique_violation — see signIn's create-if-missing branch below. */
 const PG_UNIQUE_VIOLATION = '23505';
+
+/**
+ * For key-setup/unlock failures that are NOT a password/key mismatch -- Argon2id
+ * failing to load its WebAssembly (a CSP without 'wasm-unsafe-eval' did exactly
+ * this on every sign-in), KDF bounds, a malformed envelope, a failed write.
+ * These must never reach the mismatch UI, whose remedies (recovery code, "start
+ * fresh") can't fix them and the latter of which deletes encrypted songs.
+ */
+const KEY_SETUP_ERROR_MESSAGE =
+  "Signed in, but couldn't set up encryption on this device. " +
+  "This isn't a password problem — try again in a moment.";
 
 /**
  * Wraps Supabase's auth session in React state. Automatically derives & unlocks
@@ -50,24 +63,41 @@ export default function AuthProvider({ children }) {
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
       let recoveryCode = null;
+      // The auth account already exists at this point, so a key-setup failure is
+      // reported (keySetupFailed) rather than thrown — but never silently: it used
+      // to be swallowed, landing the user in the app with no DEK and no word why.
+      // Signing in again recovers, via signIn's `!current` branch (no envelope
+      // stored) or its normal unlock (envelope stored, only establishDEK failed).
+      let keySetupFailed = false;
       // With email confirmation enabled, signUp() returns a user but NO session —
-      // any write attempted here would fail Row Level Security (silently caught
-      // below), leaving a recovery code nobody ever sees and an envelope wrap
-      // whose secret is gone forever. Only attempt key setup with a real session;
-      // the first post-confirmation SIGN-IN (see the `!env` branch below) mints
-      // and surfaces the code instead.
+      // any write attempted here would fail Row Level Security, leaving a recovery
+      // code nobody ever sees and an envelope wrap whose secret is gone forever.
+      // Only attempt key setup with a real session; the first post-confirmation
+      // SIGN-IN (see the `!current` branch below) mints and surfaces the code instead.
       if (data?.user && data?.session) {
+        const keysAdapter = new SupabaseUserKeysAdapter(supabase, data.user.id);
+        let created = null;
         try {
-          const keysAdapter = new SupabaseUserKeysAdapter(supabase, data.user.id);
-          const created = await createAccountKeys(password);
+          created = await createAccountKeys(password);
           await keysAdapter.create(created.envelope);
-          await establishDEK(created.dek, data.user.id, created.envelope.dekId);
-          recoveryCode = created.recoveryCode;
         } catch (e) {
           console.error('Failed to setup account encryption key on signup', e);
+          created = null;
+          keySetupFailed = true;
+        }
+        if (created) {
+          // The envelope is stored now, recovery wrap included — its code must be
+          // shown even if establishing the DEK locally fails below.
+          recoveryCode = created.recoveryCode;
+          try {
+            await establishDEK(created.dek, data.user.id, created.envelope.dekId);
+          } catch (e) {
+            console.error('Failed to establish account encryption key on signup', e);
+            keySetupFailed = true;
+          }
         }
       }
-      return { ...data, recoveryCode };
+      return { ...data, recoveryCode, keySetupFailed };
     },
 
     async signIn(email, password) {
@@ -141,6 +171,11 @@ export default function AuthProvider({ children }) {
             }
           }
         } catch (e) {
+          if (!isKeyMismatchError(e)) {
+            // Environment/infrastructure, not the password: see KEY_SETUP_ERROR_MESSAGE.
+            console.error('Failed to set up account encryption key on login (not a password issue)', e);
+            throw new Error(KEY_SETUP_ERROR_MESSAGE, { cause: e });
+          }
           // Wrong password would already have failed signInWithPassword above, so this
           // means the stored envelope doesn't match the current password — most likely
           // the account password was changed since encryption was set up (including via
@@ -186,8 +221,13 @@ export default function AuthProvider({ children }) {
       try {
         const dek = await unlockWithPassphrase(current.envelope, password);
         await establishDEK(dek, currentUser.id, current.envelope.dekId);
-      } catch {
-        throw new Error('Incorrect password.');
+      } catch (e) {
+        if (isKeyMismatchError(e)) throw new Error('Incorrect password.');
+        console.error('Failed to unlock account encryption key (not a password issue)', e);
+        throw new Error(
+          "Couldn't unlock encryption on this device. This isn't a wrong-password issue — try again in a moment.",
+          { cause: e }
+        );
       }
     },
 
