@@ -60,7 +60,15 @@ export default function AuthProvider({ children }) {
 
     async signUp(email, password) {
       if (!isSupabaseConfigured) throw new Error('Accounts are not configured for this deployment.');
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      // Without emailRedirectTo the confirm link falls back to the Supabase project's
+      // Site URL (localhost:3000 out of the box). It also has to land on /login, not
+      // '/': the link signs the user in with no password, and key setup needs one —
+      // see LoginPage's `confirmed` handling.
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/login?confirmed=1` },
+      });
       if (error) throw error;
       let recoveryCode = null;
       // The auth account already exists at this point, so a key-setup failure is

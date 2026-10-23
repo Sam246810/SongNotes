@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import useAuth from './useAuth';
 import { recoverWithRecoveryCode, rotateAndPurge } from './accountRecovery';
 import styles from './AuthPage.module.css';
@@ -7,8 +7,26 @@ import styles from './AuthPage.module.css';
 const RESET_CONFIRM_PHRASE = 'DELETE MY SONGS';
 
 export default function LoginPage() {
-  const { configured, user, signIn } = useAuth();
+  const { configured, user, signIn, signOut } = useAuth();
   const navigate = useNavigate();
+  // Arrived from the signup confirmation email. That link signs the user in from
+  // the URL alone — no password, so no account encryption key gets created (only a
+  // password sign-in can do that, see AuthProvider.signIn) and they'd land in the
+  // app unable to unlock or save anything. Drop that link-only session and ask for
+  // one real sign-in, which creates the key and shows the recovery code.
+  const [searchParams] = useSearchParams();
+  const justConfirmed = searchParams.get('confirmed') === '1';
+  const [clearingLinkSession, setClearingLinkSession] = useState(justConfirmed);
+  const linkSessionClearedRef = useRef(false); // StrictMode runs effects twice in dev
+  useEffect(() => {
+    if (!justConfirmed || !configured || linkSessionClearedRef.current) return;
+    linkSessionClearedRef.current = true;
+    signOut()
+      .catch((e) => console.error('Failed to clear email-confirmation session', e))
+      .finally(() => setClearingLinkSession(false));
+    // Once per landing; signOut's identity changes with every session update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [justConfirmed, configured]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -45,10 +63,11 @@ export default function LoginPage() {
   // that intermediate render and racing ahead of us.
   const submittingRef = useRef(false);
 
-  if (user && !keyMismatch && !submittingRef.current) return <Navigate to="/" replace />;
+  if (user && !keyMismatch && !submittingRef.current && !clearingLinkSession) return <Navigate to="/" replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (clearingLinkSession) return; // its signOut() would land right after our sign-in
     setError(null);
     setSubmitting(true);
     submittingRef.current = true;
@@ -261,6 +280,12 @@ export default function LoginPage() {
             )}
             <Link className={styles.guestLink} to="/">Continue without resetting →</Link>
           </div>
+        )}
+
+        {configured && justConfirmed && !keyMismatch && !freshRecoveryCode && (
+          <p className={styles.infoText}>
+            Email confirmed! Sign in once to finish setting up encryption for your songs.
+          </p>
         )}
 
         {configured && !keyMismatch && !freshRecoveryCode && (
