@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   rowStarts, rowOfOffset, renderChordAnchors, layoutParagraph, replaceRowChords, moveChordsForEdit,
   editLyrics, splitParagraph, joinParagraphs, insertText, capChordInput, charLengthBefore, charLengthAt,
+  mapOffsetThroughEdit,
 } from '../utils/paragraphEditing';
 
 const line = (lyrics, chords = [], id = 'p') => ({ id, lyrics, chords });
@@ -175,5 +176,21 @@ describe('charLengthBefore / charLengthAt', () => {
     expect(charLengthBefore('ab', 2)).toBe(1);
     expect(charLengthAt('🎸a', 0)).toBe(2);
     expect(charLengthAt('ab', 0)).toBe(1);
+  });
+});
+
+describe('mapOffsetThroughEdit', () => {
+  it('keeps a caret before the change, and carries one after it along', () => {
+    expect(mapOffsetThroughEdit('the cat sat', 'the big cat sat', 2)).toBe(2);
+    expect(mapOffsetThroughEdit('the cat sat', 'the big cat sat', 9)).toBe(13);
+    expect(mapOffsetThroughEdit('the cat sat', 'cat sat', 9)).toBe(5);
+  });
+
+  it('puts a caret inside the changed words at the end of what replaced them', () => {
+    expect(mapOffsetThroughEdit('a dog here', 'a horse here', 3)).toBe(7);
+  });
+
+  it('stays within the new text', () => {
+    expect(mapOffsetThroughEdit('abc', '', 2)).toBe(0);
   });
 });

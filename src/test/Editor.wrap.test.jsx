@@ -145,4 +145,22 @@ describe('Editor: long lines wrap instead of splitting', () => {
     }
     expect(savedLines()[0].chords).toEqual([{ i: 2, c: 'Gm7' }]);
   });
+
+  it('keeps the caret on the same words when a sync merge changes the line being typed in', async () => {
+    openSong([{ id: 'p1', lyrics: 'cat sat', chords: [] }]);
+    await typeAt(0, 3, 's');
+    expect(caret()).toEqual([0, 4]);
+
+    // Another device's edit, merged in: a word before the caret.
+    act(() => {
+      useSongsStore.getState().applySyncEvent({
+        type: 'merged',
+        songId: 's1',
+        song: { ...useSongsStore.getState().songs[0], lines: [{ id: 'p1', lyrics: 'the cats sat', chords: [] }] },
+      });
+    });
+
+    expect(lyricRows()).toEqual(['the cats sat']);
+    expect(caret()).toEqual([0, 8]); // still right after "cats", not at the end
+  });
 });

@@ -140,6 +140,23 @@ export function moveChordsForEdit(chords, oldText, newText, caret) {
 }
 
 /**
+ * Where a caret at `offset` in `oldText` belongs after the text changed to
+ * `newText` by an edit made elsewhere (a sync merge): unchanged text before the
+ * change keeps it in place, text after it carries it along, and a caret inside
+ * the changed span goes to the end of what replaced it.
+ */
+export function mapOffsetThroughEdit(oldText, newText, offset) {
+  let start = 0;
+  while (start < oldText.length && start < newText.length && oldText[start] === newText[start]) start++;
+  let suffix = 0;
+  while (suffix < Math.min(oldText.length, newText.length) - start &&
+    oldText[oldText.length - 1 - suffix] === newText[newText.length - 1 - suffix]) suffix++;
+  if (offset <= start) return Math.min(offset, newText.length);
+  if (offset >= oldText.length - suffix) return offset + newText.length - oldText.length;
+  return newText.length - suffix;
+}
+
+/**
  * `line` with its lyrics replaced by `newLyrics`, edited with the caret
  * ending at `caret`, its chords moved along with the text (see
  * `moveChordsForEdit`).

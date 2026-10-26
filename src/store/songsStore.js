@@ -71,16 +71,12 @@ const useSongsStore = create((set, get) => ({
   // Defaults to guest-mode local storage; swapped for a CloudSongsRepository after login.
   repo: new LocalSongsRepository(),
 
-  // Set when a sync conflict moved one of this device's edits into a copy:
-  // { songId, copyId, copyTitle }. Shown until dismissed.
-  syncNotice: null,
-
   setRepo: (repo) => {
     unsubscribeRepo?.();
     unsubscribeRepo = repo.subscribe?.((event) => {
-      if (event.type === 'conflict' && get().repo === repo) get().applyConflict(event);
+      if (get().repo === repo) get().applySyncEvent(event);
     }) ?? null;
-    set({ repo, status: 'idle', songs: [], activeSongId: null, syncNotice: null });
+    set({ repo, status: 'idle', songs: [], activeSongId: null });
   },
 
   hydrate: async () => {
@@ -130,31 +126,36 @@ const useSongsStore = create((set, get) => ({
   },
 
   /**
-   * A push of one of this device's edits lost to another device's write. The
-   * repo has saved the edit as `copy`; the song itself now shows `current`,
-   * the version that won (null: it was deleted there; undefined: couldn't be
-   * fetched, so it stays as it is until the next refresh). Runs synchronously
-   * inside the repo's conflict handling, so the next edit starts from `current`.
+   * A change the repo made to a song on its own while syncing
+   * (CloudSongsRepository.subscribe, docs/SYNC-MERGE.md):
+   *   merged    another device's edit and this one's, combined -- shown in
+   *             place, so the next keystroke edits the merged song
+   *   restored  this device deleted it, another device had edited it: it's back
+   *   removed   gone from the server
+   * Runs synchronously inside the repo's sync step.
    */
-  applyConflict: ({ songId, current, copy }) => {
-    set((state) => {
-      let songs = state.songs;
-      let { activeSongId } = state;
-      if (current === null) {
-        songs = songs.filter((s) => s.id !== songId);
-        if (activeSongId === songId) activeSongId = copy.id;
-      } else if (current) {
-        songs = songs.map((s) => (s.id === songId ? withSessionState(current, s) : s));
-      }
-      return {
-        songs: [...songs, copy],
-        activeSongId,
-        syncNotice: { songId, copyId: copy.id, copyTitle: copy.title },
-      };
-    });
+  applySyncEvent: (event) => {
+    if (event.type === 'merged') {
+      set((state) => ({
+        songs: state.songs.map((s) => (s.id === event.songId ? withSessionState(event.song, s) : s)),
+      }));
+    } else if (event.type === 'restored') {
+      set((state) => {
+        const exists = state.songs.some((s) => s.id === event.song.id);
+        return {
+          songs: exists
+            ? state.songs.map((s) => (s.id === event.song.id ? withSessionState(event.song, s) : s))
+            : [...state.songs, event.song],
+        };
+      });
+    } else if (event.type === 'removed') {
+      set((state) => {
+        const songs = state.songs.filter((s) => s.id !== event.songId);
+        return { songs, activeSongId: activeAfterRemoving(songs, state.activeSongId, event.songId) };
+      });
+      useDawSession.getState().clearSong(event.songId);
+    }
   },
-
-  dismissSyncNotice: () => set({ syncNotice: null }),
 
   // --- Song-level actions ---
   // `lines`, when given, is a plain [{chords, lyrics}, ...] array with each

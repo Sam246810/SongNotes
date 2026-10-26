@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 import ChordTokenDisplay from '../ChordTokenDisplay/ChordTokenDisplay';
 import {
   rowStarts, rowOfOffset, layoutParagraph, replaceRowChords, editLyrics, splitParagraph, insertText,
-  capChordInput, charLengthBefore, charLengthAt,
+  capChordInput, charLengthBefore, charLengthAt, mapOffsetThroughEdit,
 } from '../../utils/paragraphEditing';
 import styles from './SongLine.module.css';
 
@@ -142,6 +142,35 @@ function SongLine({
     setChordEdit((ce) => (ce ? { ...ce, caret: null } : ce));
   }, [chordEdit]);
 
+  // A merge with another device's edit can change this line's words while
+  // it's being typed in. Move the caret through that change, instead of the
+  // browser dropping it at the end of the row. Own edits don't count: those
+  // already put the caret where it belongs.
+  const shownLyrics = useRef(lyrics);
+  const ownLyrics = useRef(null);
+  function replaceOwnLyrics(newLines, focus) {
+    ownLyrics.current = newLines.find((l) => l.id === line.id)?.lyrics ?? null;
+    onReplaceLine(line.id, newLines, focus);
+  }
+  useLayoutEffect(() => {
+    const before = shownLyrics.current;
+    shownLyrics.current = lyrics;
+    const own = ownLyrics.current;
+    ownLyrics.current = null;
+    if (before === lyrics || own === lyrics || caret === null || focusRequest) return;
+    if (!lyricRefs.current.includes(document.activeElement)) return;
+    const moved = mapOffsetThroughEdit(before, lyrics, caret);
+    const k = rowOfOffset(starts, moved);
+    const el = lyricRefs.current[k];
+    if (el) {
+      if (document.activeElement !== el) el.focus();
+      el.setSelectionRange(moved - starts[k], moved - starts[k]);
+    }
+    setCaret(moved);
+    // Runs when the words change; the rest is read as of that render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lyrics]);
+
   // --- Lyrics ---
 
   function rowEnd(k) {
@@ -160,9 +189,9 @@ function SongLine({
     if (frozen || e.nativeEvent.isComposing) {
       if (!frozen) setFrozen({ starts, row: k, length: lyrics.length });
       setCaret(offset);
-      onReplaceLine(line.id, [edited]);
+      replaceOwnLyrics([edited]);
     } else {
-      onReplaceLine(line.id, [edited], { lineId: line.id, track: 'lyrics', offset });
+      replaceOwnLyrics([edited], { lineId: line.id, track: 'lyrics', offset });
     }
   }
 
@@ -177,7 +206,7 @@ function SongLine({
 
   function deleteRange(from, to, focusAt) {
     const newLyrics = lyrics.slice(0, from) + lyrics.slice(to);
-    onReplaceLine(line.id, [editLyrics(line, newLyrics, from)], { lineId: line.id, track: 'lyrics', offset: focusAt });
+    replaceOwnLyrics([editLyrics(line, newLyrics, from)], { lineId: line.id, track: 'lyrics', offset: focusAt });
   }
 
   function handleLyricsKey(k, e) {
@@ -194,7 +223,7 @@ function SongLine({
       e.preventDefault();
       const trimmed = editLyrics(line, lyrics.slice(0, offset) + lyrics.slice(starts[k] + selEnd), offset);
       const [before, after] = splitParagraph(trimmed, offset);
-      onReplaceLine(line.id, [before, after], { lineId: after.id, track: 'lyrics', offset: 0 });
+      replaceOwnLyrics([before, after], { lineId: after.id, track: 'lyrics', offset: 0 });
     } else if (e.key === 'Backspace' && collapsed && selStart === 0) {
       e.preventDefault();
       if (k > 0) {
@@ -245,7 +274,7 @@ function SongLine({
     const el = e.currentTarget;
     const text = e.clipboardData.getData('text');
     const { paragraphs, caret: [pk, at] } = insertText(line, starts[k] + el.selectionStart, starts[k] + el.selectionEnd, text);
-    onReplaceLine(line.id, paragraphs, { lineId: paragraphs[pk].id, track: 'lyrics', offset: at });
+    replaceOwnLyrics(paragraphs, { lineId: paragraphs[pk].id, track: 'lyrics', offset: at });
   }
 
   // --- Chords ---

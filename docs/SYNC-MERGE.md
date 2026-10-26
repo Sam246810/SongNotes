@@ -11,10 +11,10 @@
 
 | Piece | Web | Android |
 |---|---|---|
-| Per-line / per-field edit timestamps | planned | planned |
-| Stored base (last server-confirmed version) | planned | planned |
-| Merge engine + shared fixture `spec/song-merge.json` | planned | planned |
-| Conflict copies removed, merge on a lost push | planned | planned |
+| Per-line / per-field edit timestamps | done | planned |
+| Stored base (last server-confirmed version) | done | planned |
+| Merge engine + shared fixture `spec/song-merge.json` | done | planned |
+| Conflict copies removed, merge on a lost push | done | planned |
 | Stale-editor fix | n/a | planned |
 | Auto-sync on app open/resume | n/a (tabs refresh on focus) | planned |
 | Split/join-aware merge (rough edges 1–2) | later | later |

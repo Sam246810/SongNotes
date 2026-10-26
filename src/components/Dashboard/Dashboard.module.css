@@ -198,13 +198,6 @@
   transition: color var(--transition-fast);
 }
 
-.itemConflict {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--warning);
-  margin-top: 1px;
-}
-
 .itemDate {
   font-size: 11px;
   color: var(--text-muted);

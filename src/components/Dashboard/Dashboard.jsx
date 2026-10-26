@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useSongsStore from '../../store/songsStore';
-import { splitConflictTitle } from '../../store/songsRepository';
 import useAuth from '../../auth/useAuth';
 import useLocalMigration from '../../auth/useLocalMigration';
 import useDawSession, { selectAnyDawDirty } from '../../audio/dawSession';
@@ -155,9 +154,7 @@ export default function Dashboard({ onPrivacyLock }) {
           </div>
         ) : (
           <ul className={styles.list}>
-            {visibleSongs.map((song) => {
-              const { title, origin: conflictOrigin } = splitConflictTitle(song.title);
-              return (
+            {visibleSongs.map((song) => (
               <li
                 key={song.id}
                 className={`${styles.item} ${song.id === activeSongId ? styles.active : ''}`}
@@ -171,10 +168,7 @@ export default function Dashboard({ onPrivacyLock }) {
               >
                 <div className={styles.itemLeft}>
                   <div className={styles.itemMeta}>
-                    <span className={styles.itemTitle}>{title}</span>
-                    {conflictOrigin && (
-                      <span className={styles.itemConflict}>Conflict copy · {conflictOrigin}</span>
-                    )}
+                    <span className={styles.itemTitle}>{song.title}</span>
                     <span className={styles.itemDate}>
                       {song.lines.length} {song.lines.length === 1 ? 'line' : 'lines'} · {formatDate(song.updatedAt)}
                     </span>
@@ -190,8 +184,7 @@ export default function Dashboard({ onPrivacyLock }) {
                   ✕
                 </button>
               </li>
-              );
-            })}
+            ))}
           </ul>
         )}
       </div>

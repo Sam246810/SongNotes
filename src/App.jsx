@@ -4,7 +4,6 @@ import Editor from './components/Editor/Editor';
 import BookLanding from './components/BookLanding/BookLanding';
 import PrivacyScreen from './components/PrivacyScreen/PrivacyScreen';
 import ConfirmDialog from './components/ConfirmDialog/ConfirmDialog';
-import SyncNotice from './components/SyncNotice/SyncNotice';
 import useSongsStore from './store/songsStore';
 import useCloudSync from './auth/useCloudSync';
 import useAuth from './auth/useAuth';
@@ -103,7 +102,6 @@ export default function App() {
         </button>
 
         <main className={styles.main}>
-          <SyncNotice />
           <Editor />
         </main>
       </div>

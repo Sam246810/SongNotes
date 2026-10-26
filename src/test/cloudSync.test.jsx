@@ -1,11 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
 import useSongsStore from '../store/songsStore';
 import { CloudSongsRepository, LocalSongsRepository } from '../store/songsRepository';
 import { generateContentKey } from '../crypto/envelope';
 import { establishDEK, clearSession } from '../crypto/keyManager';
 import { startForegroundRefresh, REFRESH_INTERVAL_MS } from '../auth/useCloudSync';
-import SyncNotice from '../components/SyncNotice/SyncNotice';
 
 /** In-memory stand-in for the Supabase `songs` table (same as songsRepository.test.js's). */
 class FakeRemoteAdapter {
@@ -92,50 +90,51 @@ describe('store sync with the cloud repository', () => {
     expect(useSongsStore.getState().activeSongId).toBe('song-2');
   });
 
-  it('refresh() never replaces a song with unsent typing; the push that follows takes the conflict path', async () => {
+  // A store edit is encrypted asynchronously before it's queued for pushing.
+  const queued = () => vi.waitFor(() => expect(repo._debounce.has('song-1')).toBe(true));
+
+  it('refresh() never replaces a song with unsent typing; the push that follows merges both edits', async () => {
     useSongsStore.getState().renameSong('song-1', 'Typed here');
-    await editOnAndroid({ title: 'Typed on the phone' });
+    await queued();
+    await editOnAndroid({ lines: [{ id: 'line-1', lyrics: 'verse fixed on the phone', chords: [] }] });
 
     await useSongsStore.getState().refresh();
     expect(songById('song-1').title).toBe('Typed here');
+    expect(songById('song-1').lines[0].lyrics).toBe('first verse');
 
     await repo.flushPending();
-    expect(songById('song-1').title).toBe('Typed on the phone');
-    const copy = useSongsStore.getState().songs.find((s) => s.id !== 'song-1');
-    expect(copy.title).toMatch(/^Typed here \(conflict copy — /);
-    expect(useSongsStore.getState().syncNotice).toEqual({ songId: 'song-1', copyId: copy.id, copyTitle: copy.title });
+    expect(songById('song-1').title).toBe('Typed here');
+    expect(songById('song-1').lines[0].lyrics).toBe('verse fixed on the phone');
+    expect(useSongsStore.getState().songs).toHaveLength(1);
+    expect(useSongsStore.getState().activeSongId).toBe('song-1');
+    expect(adapter.rows.size).toBe(1);
   });
 
-  it('after a conflict, further edits of the song save over the winner instead of making more copies', async () => {
+  it('after a merge, further edits of the song save on top of it', async () => {
     useSongsStore.getState().renameSong('song-1', 'Mine');
-    await editOnAndroid({ title: 'Theirs 1' });
-    await editOnAndroid({ title: 'Theirs 2' });
-    await repo.flushPending();
-    expect(adapter.rows.size).toBe(2);
-
-    useSongsStore.getState().renameSong('song-1', 'Theirs 2, then mine');
-    await vi.waitFor(() => expect(repo._debounce.has('song-1')).toBe(true)); // encrypted and queued
-    await repo.flushPending();
-    useSongsStore.getState().renameSong('song-1', 'And again');
-    await vi.waitFor(() => expect(repo._debounce.has('song-1')).toBe(true)); // encrypted and queued
+    await queued();
+    await editOnAndroid({ bpm: 120 });
+    await editOnAndroid({ bpm: 120, key: 'D' });
     await repo.flushPending();
 
-    expect(adapter.rows.size).toBe(2);
-    const titles = (await android.list()).map((s) => s.title);
-    expect(titles).toContain('And again');
+    useSongsStore.getState().renameSong('song-1', 'Mine, renamed again');
+    await queued();
+    await repo.flushPending();
+
+    expect(adapter.rows.size).toBe(1);
+    const [onThePhone] = await android.list();
+    expect(onThePhone).toMatchObject({ title: 'Mine, renamed again', bpm: 120, key: 'D' });
   });
 
-  it('the notice opens the conflict copy', async () => {
-    useSongsStore.getState().renameSong('song-1', 'Mine');
-    await editOnAndroid({ title: 'Theirs' });
-    await act(() => repo.flushPending());
+  it('a delete here gives way to an edit made on the phone: the song comes back', async () => {
+    await editOnAndroid({ lines: [{ id: 'line-1', lyrics: 'still writing this one', chords: [] }] });
 
-    render(<SyncNotice />);
-    expect(screen.getByRole('status')).toHaveTextContent(/changed on another device/);
-    fireEvent.click(screen.getByRole('button', { name: 'Open my edit' }));
-    const { activeSongId, syncNotice } = useSongsStore.getState();
-    expect(songById(activeSongId).title).toMatch(/^Mine \(conflict copy — /);
-    expect(syncNotice).toBeNull();
+    useSongsStore.getState().deleteSong('song-1');
+    expect(useSongsStore.getState().songs).toHaveLength(0);
+
+    await vi.waitFor(() => expect(useSongsStore.getState().songs.map((x) => x.id)).toEqual(['song-1']));
+    expect(songById('song-1').lines[0].lyrics).toBe('still writing this one');
+    expect(adapter.rows.get('song-1').deleted_at).toBeNull();
   });
 });
 
