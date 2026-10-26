@@ -11,13 +11,18 @@
 
 | Piece | Web | Android |
 |---|---|---|
-| Per-line / per-field edit timestamps | done | planned |
-| Stored base (last server-confirmed version) | done | planned |
-| Merge engine + shared fixture `spec/song-merge.json` | done | planned |
-| Conflict copies removed, merge on a lost push | done | planned |
-| Stale-editor fix | n/a | planned |
-| Auto-sync on app open/resume | n/a (tabs refresh on focus) | planned |
+| Per-line / per-field edit timestamps | done | done |
+| Stored base (last server-confirmed version) | done | done (Room v4) |
+| Merge engine + shared fixture `spec/song-merge.json` | done | done |
+| Conflict copies removed, merge on a lost push | done | done |
+| Stale-editor fix | n/a | done |
+| Auto-sync on app open/resume | n/a (tabs refresh on focus) | done |
 | Split/join-aware merge (rough edges 1–2) | later | later |
+
+Verified: web unit + fixture tests; Android unit + the same fixture; two browsers
+against the live backend (different lines, same line different words, same words,
+delete vs edit both ways); Room v3 -> v4 upgrade on a device with existing songs.
+Not yet verified live: web + Android together, and auto-sync on the phone.
 
 ## The problem this replaces
 

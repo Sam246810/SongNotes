@@ -377,6 +377,23 @@ shape):
   anything unparseable is `0`.
 - `customChords` missing — read as empty.
 
+**Edit stamps** (optional; what a sync merge uses to tell which device's edit is
+newer -- see §5.1 and `docs/SYNC-MERGE.md`). Each is a whole number of
+milliseconds since the Unix epoch, written only when there is one:
+
+- `lines[].editedAt` -- when that line's `lyrics` or `chords` last changed.
+- `fieldEditedAt` -- `{ title?, bpm?, key?, tuning?, capo? }`, per field.
+- `customChordsEditedAt` -- `{ <chord name>: ms }`, per custom voicing, including
+  voicings since removed (the removal's time).
+
+A writer stamps exactly what an edit changed (a changed line, field or voicing gets
+`max(now, its previous stamp + 1)`, so a device's stamps never go backwards);
+unchanged items keep their stamp. A reader drops any stamp that isn't a
+non-negative whole number up to 2^53 - 1 (as if never written); anything without
+a stamp counts as edited at the document's `updatedAt`. Older readers ignore these
+fields, and older writers drop them -- both harmless: merges then fall back to
+`updatedAt`.
+
 `spec/song-documents.json` (§7) pins all of this down case by case.
 
 Field-by-field, and what changed from v1:
@@ -444,7 +461,7 @@ process that reconciles local state with the server, never a read path.
 > only applies once a user has chosen to enable sync. See
 > `docs/handoff/PHASE-13-local-first.md`. The web app is unaffected.
 
-### 5.1 Push (optimistic concurrency, "Tier 0")
+### 5.1 Push (optimistic concurrency, merging a lost race)
 
 ```sql
 update songs
@@ -456,19 +473,42 @@ where id = $2 and rev = $base_rev;
 explicit `rev = rev + 1` here is belt-and-braces; the important part of the
 statement is the `where ... and rev = $base_rev` optimistic-concurrency guard.)
 
-- **0 rows affected** = someone else wrote since you last synced. Fetch the current
-  remote row. If its decrypted content differs from your local base (the version you
-  last synced, not your current edit), **do not overwrite it.** Instead:
-  1. Leave the remote row as-is (it's now canonical for that `id`).
-  2. Insert your local edit as a **new row** with a new `id`, titled
-     `"<original title> (conflict copy — <device name>, <local time>)"`.
-  3. Replace your local copy of the original `id` with the remote row you fetched,
-     so your next edit of that song is based on the winner's `rev`. Keeping your
-     own optimistic copy instead makes every later save of the song lose the same
-     race and write yet another conflict copy.
-  4. Surface both to the user. This is deliberately Dropbox's conflicted-copy model:
-     inelegant, but lossless and immediately understandable. Never silently drop
-     either side.
+As implemented (both clients): the client sends `rev = $base_rev + 1` itself, and
+`$base_rev` is the rev of the **base** -- the server version its unsent change
+started from. Each client keeps that base's content while the change is unsent
+(web: on the cached row, still encrypted; Android: `baseDocJson` on the Room row,
+inside the SQLCipher database) and drops it once the push is confirmed. A client's
+own local revision counter, if it has one, is never sent.
+
+- **0 rows affected** = another device wrote since this change's base. Fetch the
+  current remote row and resolve, then push the result against the remote row's
+  `rev` (at most 3 lost races in a row per song; after that, leave it unsent for
+  the next sync):
+
+  | this device      | server row                      | result |
+  |------------------|---------------------------------|--------|
+  | edit             | edited                          | merge base / local / remote (`docs/SYNC-MERGE.md`), push the merge |
+  | edit             | tombstoned                      | **the edit wins**: push the song live again |
+  | delete           | content unchanged since base    | push the tombstone again |
+  | delete           | edited                          | **the delete gives way**: adopt the server's version |
+  | delete           | tombstoned                      | adopt it; nothing to push |
+
+  A merge that comes out identical to the server's version isn't pushed. A server
+  row this device can't decrypt is never merged with or pushed over; the change
+  stays unsent. **Never create a "conflict copy"** -- earlier versions did; any
+  existing ones are ordinary songs.
+- **The merge** (`mergeSongs(base, local, remote)`, `docs/SYNC-MERGE.md` has the
+  rules in plain words): fields and custom voicings per item; lines matched by
+  `id` (edit beats delete; additions placed after the line they followed); a line
+  edited on both sides merged word by word (tokens: whitespace runs, single
+  punctuation marks, everything else; classic diff3) with chords carried along
+  with the words they sit on; both versions of the line kept, newer first, only
+  when both changed the same words differently. Ties are broken by the §4 stamps,
+  then deterministically, and the losing version of a clashing line gets the id
+  `<line id up to its first "~">~<FNV-1a 32 of its lyrics + chords>` -- so both
+  clients produce identical results; `spec/song-merge.json` (§7) is normative for
+  every detail. Without a known base (data from before bases were stored),
+  nothing can be recognised as deleted, so everything both sides have is kept.
 - **New song:** plain `insert`, client-generated `id` (uuid v4), `rev` defaults to 1
   via the column default.
 - **Delete:** `update songs set deleted_at = now() where id = $1` — never a real SQL
@@ -484,6 +524,8 @@ where user_id = $1 and updated_at > $2  -- $2 = local last_sync_at
 order by updated_at asc;
 ```
 
+- A song with a local change not yet confirmed pushed is **never overwritten** by
+  a pull: its push merges whatever the server has (§5.1).
 - Rows with `deleted_at is not null` → apply as a local delete/tombstone, not an
   upsert.
 - Rows with `deleted_at is null` → decrypt (skip + mark "locked" on failure, same as
@@ -495,11 +537,9 @@ order by updated_at asc;
 
 ### 5.3 Explicitly out of scope for v2
 
-- **Per-line 3-way merge** ("Tier 1") — real, and worth building once the product UI
-  exists, but not part of this initial contract. When it lands, it operates entirely
-  client-side on **decrypted** content (never sent to the server as a diff/op-log),
-  so it doesn't change anything in this document. Lines already carry stable `id`s,
-  which is what makes it feasible later.
+- ~~**Per-line 3-way merge** ("Tier 1")~~ -- **done** (2026-10), see §5.1 and
+  `docs/SYNC-MERGE.md`. It runs entirely client-side on decrypted content; the only
+  wire change was §4's optional edit stamps.
 - **CRDTs / operational transforms.** Not planned. Would require encrypting an
   append-only op log instead of a single blob per song, a second native
   toolchain most likely, and a much harder cross-platform agreement surface than a
@@ -568,6 +608,18 @@ actually used by any implementation.
   `src/test/songDocument.test.js`; Android's `SongDocumentGoldenFixtureTest` runs
   the same file (copied byte-identical into `core/data/src/test/resources/spec/`). Plaintext
   only, so it doesn't replace `song-vectors.json` below.
+- `song-merge.json` — the §5.1 merge, pinned: tokenizer vectors (`{text, tokens}`)
+  and 40+ cases `{ name, id, base | null, local, remote, symmetric, expected }`,
+  every song a §4 document with explicit stamps. Covers fields, custom voicings,
+  line adds/deletes/order, word-level merges, clashes (incl. the clash-copy id),
+  chords moving with words, chords past the end of the lyrics, the two documented
+  rough edges (join / split on one side, edit on the other), the LCS budget, and
+  merging without a base. **Delivered** — generated by
+  `generate-golden-fixtures.test.js` from case inputs with hand-checked
+  expectations (`src/test/fixtures/songMergeCases.js`, asserted by
+  `src/test/songMerge.test.js`); Android's `SongMergeGoldenFixtureTest` reads each
+  case with its own `songFromDocument`, merges, and compares (dates as epoch ms),
+  plus the swap check for `symmetric` cases.
 - `recovery-code-vectors.json` — raw pasted input (with stray casing/spacing/no
   hyphens) → normalized form, plus a few fixed-salt Argon2id (input, salt) → KEK
   vectors, so both platforms' `normalize()` **and** KDF derivation agree, not just
