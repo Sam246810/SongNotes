@@ -7,11 +7,15 @@ import { establishDEK, clearSession, getDEK } from '../crypto/keyManager';
 class FakeRemoteAdapter {
   constructor() {
     this.rows = new Map();
-    this.calls = { list: 0, insert: 0, updateWithRevCheck: 0 };
+    this.calls = { list: 0, getById: 0, insert: 0, updateWithRevCheck: 0 };
   }
   async list() {
     this.calls.list++;
     return [...this.rows.values()];
+  }
+  async getById(id) {
+    this.calls.getById++;
+    return this.rows.get(id) ?? null;
   }
   async insert(row) {
     this.calls.insert++;
@@ -351,6 +355,179 @@ describe('CloudSongsRepository', () => {
       const songs = await repo.list();
       const conflictSong = songs.find((s) => s.id === conflictRow.id);
       expect(conflictSong.title).toMatch(/^My Local Edit \(conflict copy — .+, \d{1,2}:\d{2}.*\)$/);
+    });
+  });
+
+  describe('conflict resolution: the song goes back to the server version', () => {
+    // "Another device": its own cache, same account DEK, same server.
+    function otherDevice() {
+      return new CloudSongsRepository({ adapter, userId: 'user-1', cacheKey: 'other-device-cache', debounceMs: 50 });
+    }
+
+    async function loseARace() {
+      await repo.create(makeSong());
+      await repo.list();
+      const other = otherDevice();
+      await other.list();
+      await repo.update('song-1', makeSong({ title: 'My Local Edit' }));
+      // Two saves there, so the server's rev (3) is past the one this device's
+      // optimistic cache row holds (2) -- with that row left in place, every
+      // later save here expected rev 2 and lost again.
+      await other.update('song-1', makeSong({ title: 'Their first edit' }));
+      await other.flushPending();
+      await other.update('song-1', makeSong({ title: 'Their Edit' }));
+      await other.flushPending();
+      await repo.flushPending(); // loses: the server is at rev 3 already
+      other.dispose();
+    }
+
+    it('two conflicting edits in a row create exactly one conflict copy', async () => {
+      await loseARace();
+      expect(adapter.rows.size).toBe(2);
+
+      // The next edits are made on the version that won -- the store shows it
+      // now -- and have to land on top of it rather than lose the same race again.
+      await repo.update('song-1', makeSong({ title: 'Their Edit, then mine' }));
+      await repo.flushPending();
+      await repo.update('song-1', makeSong({ title: 'And another' }));
+      await repo.flushPending();
+
+      expect(adapter.rows.size).toBe(2);
+      const titles = (await repo.list()).map((s) => s.title).sort();
+      expect(titles).toHaveLength(2);
+      expect(titles[0]).toBe('And another');
+      expect(titles[1]).toMatch(/^My Local Edit \(conflict copy — /);
+      expect(adapter.rows.get('song-1').rev).toBe(5);
+    });
+
+    it('writes the winning server row into the cache and reports it, with the copy, to listeners', async () => {
+      const events = [];
+      repo.subscribe((e) => events.push(e));
+      await loseARace();
+
+      const cached = JSON.parse(localStorage.getItem('songnotes_cloud_cache:user-1')).find((r) => r.id === 'song-1');
+      expect(cached).toEqual(adapter.rows.get('song-1'));
+      expect(events).toHaveLength(1);
+      expect(events[0].type).toBe('conflict');
+      expect(events[0].songId).toBe('song-1');
+      expect(events[0].current.title).toBe('Their Edit');
+      expect(events[0].copy.title).toMatch(/^My Local Edit \(conflict copy — /);
+      expect(adapter.rows.has(events[0].copy.id)).toBe(true);
+    });
+
+    it('puts edits made while the losing push was out into the copy, not over the winner', async () => {
+      const events = [];
+      repo.subscribe((e) => events.push(e));
+      await repo.create(makeSong());
+      await repo.update('song-1', makeSong({ title: 'First keystroke' }));
+      adapter.rows.set('song-1', { ...adapter.rows.get('song-1'), rev: 2 });
+
+      const realUpdate = adapter.updateWithRevCheck.bind(adapter);
+      adapter.updateWithRevCheck = async (...args) => {
+        await repo.update('song-1', makeSong({ title: 'Second keystroke' })); // typed mid-push
+        return realUpdate(...args);
+      };
+      await repo.flushPending();
+      adapter.updateWithRevCheck = realUpdate;
+      await repo.flushPending();
+
+      expect(events).toHaveLength(1);
+      expect(events[0].copy.title).toMatch(/^Second keystroke \(conflict copy — /);
+      expect(adapter.rows.get('song-1').rev).toBe(2);
+      expect(adapter.rows.size).toBe(2);
+    });
+
+    it('reports current: null and drops the cached row when the song is gone from the server', async () => {
+      const events = [];
+      repo.subscribe((e) => events.push(e));
+      await repo.create(makeSong());
+      await repo.update('song-1', makeSong({ title: 'My Local Edit' }));
+      adapter.rows.delete('song-1');
+      await repo.flushPending();
+
+      expect(events[0].current).toBeNull();
+      const cached = JSON.parse(localStorage.getItem('songnotes_cloud_cache:user-1'));
+      expect(cached.map((r) => r.id)).toEqual([events[0].copy.id]);
+    });
+
+    it('rolls the cached rev back when the winner cannot be fetched, so the next refresh adopts it', async () => {
+      const events = [];
+      repo.subscribe((e) => events.push(e));
+      await repo.create(makeSong());
+      await repo.update('song-1', makeSong({ title: 'My Local Edit' }));
+      adapter.rows.set('song-1', { ...adapter.rows.get('song-1'), rev: 2 });
+      adapter.getById = vi.fn().mockRejectedValue(new Error('network down'));
+      await repo.flushPending();
+
+      expect(events[0].current).toBeUndefined();
+      const cached = JSON.parse(localStorage.getItem('songnotes_cloud_cache:user-1')).find((r) => r.id === 'song-1');
+      expect(cached.rev).toBe(1);
+      const { changed } = await repo.refresh();
+      expect(changed.map((s) => s.id)).toEqual(['song-1']);
+    });
+
+    it('an edit made right after create() waits for the insert instead of conflicting with it', async () => {
+      const creating = repo.create(makeSong());
+      await repo.update('song-1', makeSong({ title: 'Typed straight away' }));
+      await creating;
+      await repo.flushPending();
+      expect(adapter.rows.size).toBe(1);
+      expect(adapter.rows.get('song-1').rev).toBe(2);
+    });
+  });
+
+  describe("refresh(): picking up other devices' changes in an open session", () => {
+    it('returns new and newer songs, and ids tombstoned elsewhere', async () => {
+      await repo.create(makeSong());
+      await repo.create(makeSong({ id: 'song-2', title: 'Doomed' }));
+      await repo.list();
+
+      const other = new CloudSongsRepository({ adapter, userId: 'user-1', cacheKey: 'other', debounceMs: 50 });
+      await other.list();
+      await other.update('song-1', makeSong({ title: 'Edited on Android' }));
+      await other.flushPending();
+      await other.create(makeSong({ id: 'song-3', title: 'New on Android' }));
+      await other.remove('song-2');
+      other.dispose();
+
+      const { changed, removed } = await repo.refresh();
+      expect(changed.map((s) => s.title).sort()).toEqual(['Edited on Android', 'New on Android']);
+      expect(removed).toEqual(['song-2']);
+      // ...and the cache now has the server rows, so a second refresh is quiet.
+      expect(await repo.refresh()).toEqual({ changed: [], removed: [] });
+    });
+
+    it('skips a song with an unsent edit, leaving its cached row alone', async () => {
+      vi.useFakeTimers();
+      await repo.create(makeSong());
+      adapter.rows.set('song-1', { ...adapter.rows.get('song-1'), rev: 5 });
+      await repo.update('song-1', makeSong({ title: 'Still typing' }));
+
+      const { changed } = await repo.refresh();
+      expect(changed).toEqual([]);
+      const cached = JSON.parse(localStorage.getItem('songnotes_cloud_cache:user-1')).find((r) => r.id === 'song-1');
+      expect(cached.rev).toBe(2);
+      expect((await repo.get('song-1')).title).toBe('Still typing');
+    });
+  });
+
+  describe('bpm/capo', () => {
+    it('writes them as numbers, 0 for unset, whatever the song held', async () => {
+      await repo.create(makeSong({ bpm: '92', capo: '' }));
+      const content = await decryptJSON(getDEK(), adapter.rows.get('song-1').content);
+      expect(content.bpm).toBe(92);
+      expect(content.capo).toBe(0);
+    });
+
+    it('reads strings from older rows as numbers', async () => {
+      const content = await encryptJSON(getDEK(), {
+        title: 'Old', lines: [], bpm: '120', key: 'G', tuning: '', capo: '',
+        createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+      adapter.rows.set('old', { id: 'old', user_id: 'user-1', encrypted: true, content, rev: 1, deleted_at: null });
+      const [listed] = await repo.list();
+      expect(listed.bpm).toBe(120);
+      expect(listed.capo).toBe(0);
     });
   });
 });

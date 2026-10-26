@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { chordsLineToAnchors } from '../utils/chordAnchors';
 import { transposeChordsLine } from '../utils/transpose';
 import { LocalSongsRepository } from './songsRepository';
+import { toMetaNumber } from './songDocument';
 import useDawSession from '../audio/dawSession';
 
 // -- Factory helpers --
@@ -24,10 +25,11 @@ export function createSong(title = 'Untitled Song', { encrypted = false } = {}) 
     encrypted,
     // Optional reference info shown on the lyric sheet — all blank until the
     // user fills them in; none of these affect playback or storage.
-    bpm: '',
+    // bpm/capo are whole numbers, 0 meaning unset (wire-format v2 section 4).
+    bpm: 0,
     key: '',
     tuning: '',
-    capo: '',
+    capo: 0,
     // User-entered fretboard voicings for this song, keyed by normalized chord
     // name — fills gaps in (or overrides) the built-in CHORD_DB. See
     // setCustomChord/removeCustomChord below.
@@ -39,6 +41,21 @@ export function createSong(title = 'Untitled Song', { encrypted = false } = {}) 
 
 function logPersistError(err) {
   console.error('SongNotes: failed to persist song data', err);
+}
+
+// The bound repo's change listener, if it has one (see setRepo).
+let unsubscribeRepo = null;
+let refreshInFlight = null;
+
+// A song from the repo, keeping this session's UI-only toggle.
+function withSessionState(song, previous) {
+  return previous ? { ...song, isReadOnly: previous.isReadOnly } : song;
+}
+
+// Which song to show once `removedId` is gone -- the same choice deleteSong makes.
+function activeAfterRemoving(songs, activeSongId, removedId) {
+  if (activeSongId !== removedId) return activeSongId;
+  return songs.length > 0 ? songs[songs.length - 1].id : null;
 }
 
 // -- Zustand Store --
@@ -53,7 +70,17 @@ const useSongsStore = create((set, get) => ({
   // Defaults to guest-mode local storage; swapped for a CloudSongsRepository after login.
   repo: new LocalSongsRepository(),
 
-  setRepo: (repo) => set({ repo, status: 'idle', songs: [], activeSongId: null }),
+  // Set when a sync conflict moved one of this device's edits into a copy:
+  // { songId, copyId, copyTitle }. Shown until dismissed.
+  syncNotice: null,
+
+  setRepo: (repo) => {
+    unsubscribeRepo?.();
+    unsubscribeRepo = repo.subscribe?.((event) => {
+      if (event.type === 'conflict' && get().repo === repo) get().applyConflict(event);
+    }) ?? null;
+    set({ repo, status: 'idle', songs: [], activeSongId: null, syncNotice: null });
+  },
 
   hydrate: async () => {
     if (get().status === 'hydrating') return;
@@ -66,6 +93,67 @@ const useSongsStore = create((set, get) => ({
       set({ status: 'error', error });
     }
   },
+
+  /**
+   * Picks up what other devices changed since hydrate() (the repo decides what
+   * counts, skipping any song with edits not yet on the server). A no-op for
+   * repos without refresh() -- guest mode has no other devices -- and while
+   * not hydrated. Concurrent calls share one run.
+   */
+  refresh: () => {
+    const { repo, status } = get();
+    if (status !== 'ready' || typeof repo.refresh !== 'function') return Promise.resolve();
+    if (refreshInFlight) return refreshInFlight;
+    refreshInFlight = (async () => {
+      try {
+        const { changed, removed } = await repo.refresh();
+        if (get().repo !== repo || (changed.length === 0 && removed.length === 0)) return;
+        set((state) => {
+          const byId = new Map(state.songs.map((s) => [s.id, s]));
+          for (const song of changed) byId.set(song.id, withSessionState(song, byId.get(song.id)));
+          let { activeSongId } = state;
+          for (const id of removed) {
+            byId.delete(id);
+            activeSongId = activeAfterRemoving([...byId.values()], activeSongId, id);
+          }
+          return { songs: [...byId.values()], activeSongId };
+        });
+        for (const id of removed) useDawSession.getState().clearSong(id);
+      } catch (e) {
+        console.error('SongNotes: refresh from the server failed', e);
+      } finally {
+        refreshInFlight = null;
+      }
+    })();
+    return refreshInFlight;
+  },
+
+  /**
+   * A push of one of this device's edits lost to another device's write. The
+   * repo has saved the edit as `copy`; the song itself now shows `current`,
+   * the version that won (null: it was deleted there; undefined: couldn't be
+   * fetched, so it stays as it is until the next refresh). Runs synchronously
+   * inside the repo's conflict handling, so the next edit starts from `current`.
+   */
+  applyConflict: ({ songId, current, copy }) => {
+    set((state) => {
+      let songs = state.songs;
+      let { activeSongId } = state;
+      if (current === null) {
+        songs = songs.filter((s) => s.id !== songId);
+        if (activeSongId === songId) activeSongId = copy.id;
+      } else if (current) {
+        songs = songs.map((s) => (s.id === songId ? withSessionState(current, s) : s));
+      }
+      return {
+        songs: [...songs, copy],
+        activeSongId,
+        syncNotice: { songId, copyId: copy.id, copyTitle: copy.title },
+      };
+    });
+  },
+
+  dismissSyncNotice: () => set({ syncNotice: null }),
 
   // --- Song-level actions ---
   // `lines`, when given, is a plain [{chords, lyrics}, ...] array with each
@@ -111,8 +199,12 @@ const useSongsStore = create((set, get) => ({
   },
 
   // Reference info only (bpm/key/tuning/capo) — `changes` is a partial patch,
-  // merged over the song.
+  // merged over the song. bpm/capo may arrive as typed or imported text and
+  // are stored as whole numbers, 0 meaning unset.
   updateSongMeta: (id, changes) => {
+    changes = { ...changes };
+    if ('bpm' in changes) changes.bpm = toMetaNumber(changes.bpm);
+    if ('capo' in changes) changes.capo = toMetaNumber(changes.capo);
     let updatedSong = null;
     set((state) => {
       const songs = state.songs.map((s) => {

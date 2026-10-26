@@ -1,6 +1,7 @@
 import { withAnchorChords } from '../utils/chordAnchors';
 import { getDEK, getActiveDekId } from '../crypto/keyManager';
 import { encryptJSON, decryptJSON } from '../crypto/envelope';
+import { songToDocument, songFromDocument } from './songDocument';
 
 const STORAGE_KEY = 'songnotes_songs';
 
@@ -179,6 +180,13 @@ export class SupabaseSongsAdapter {
     return data;
   }
 
+  /** The row with this id, or null if there's none (or RLS hides it). */
+  async getById(id) {
+    const { data, error } = await this.client.from('songs').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data;
+  }
+
   /**
    * Conditional update — only writes if the row's current `rev` still matches
    * `expectedRev` (optimistic concurrency: `WHERE id = ? AND rev = ?`). Returns
@@ -221,7 +229,7 @@ export class SupabaseSongsAdapter {
  *
  * Composes a local cache of the exact server row shape (i.e. ciphertext, never
  * plaintext) for instant loads and offline resilience, against any adapter exposing
- * { list, insert, updateWithRevCheck }.
+ * { list, getById, insert, updateWithRevCheck }.
  *
  * Sync-v2 (Tier 0, docs/PLAN.md "Phase 7"): every row carries a `rev` (bumped on every
  * write) and a `deleted_at` tombstone instead of a real delete. `_reconcile` compares by
@@ -239,6 +247,14 @@ export class CloudSongsRepository {
     this.cacheKey = cacheKey || `songnotes_cloud_cache:${userId}`;
     this.debounceMs = debounceMs;
     this._debounce = new Map(); // songId -> { timer, song, row, expectedRev }
+    // songId -> count of update/push/remove calls mid-await. refresh() leaves
+    // these rows alone: their cache row is about to be (re)written by that call.
+    this._busy = new Map();
+    // songId -> how many conflicts it has resolved; see _update.
+    this._conflicts = new Map();
+    this._inserts = new Map(); // songId -> settled promise of its in-flight insert
+
+    this._listeners = new Set();
     this._flushAllPending = this._flushAllPending.bind(this);
   }
 
@@ -252,6 +268,42 @@ export class CloudSongsRepository {
     if (typeof window !== 'undefined' && window.removeEventListener) {
       window.removeEventListener('beforeunload', this._flushAllPending);
     }
+  }
+
+  /**
+   * Listen for changes the repository makes on its own, outside any call the
+   * store made: currently only `{ type: 'conflict', songId, current, copy }`
+   * (see _resolveConflict). Returns an unsubscribe function.
+   */
+  subscribe(listener) {
+    this._listeners.add(listener);
+    return () => this._listeners.delete(listener);
+  }
+
+  _emit(event) {
+    for (const listener of this._listeners) {
+      try {
+        listener(event);
+      } catch (e) {
+        console.error('SongNotes: sync listener failed', e);
+      }
+    }
+  }
+
+  async _whileBusy(id, fn) {
+    this._busy.set(id, (this._busy.get(id) ?? 0) + 1);
+    try {
+      return await fn();
+    } finally {
+      const n = this._busy.get(id) - 1;
+      if (n > 0) this._busy.set(id, n);
+      else this._busy.delete(id);
+    }
+  }
+
+  /** True while this song has an edit that isn't confirmed on the server yet. */
+  hasUnsentChanges(id) {
+    return this._debounce.has(id) || this._busy.has(id);
   }
 
   _readCache() {
@@ -313,17 +365,7 @@ export class CloudSongsRepository {
     const dek = getDEK();
     if (!dek) throw new Error('Cannot save: your account encryption key is not unlocked in this session.');
 
-    const content = await encryptJSON(dek, {
-      title: song.title,
-      lines: song.lines.map((l) => ({ id: l.id, lyrics: l.lyrics, chords: l.chords })),
-      bpm: song.bpm,
-      key: song.key,
-      tuning: song.tuning,
-      capo: song.capo,
-      customChords: song.customChords,
-      createdAt: song.createdAt,
-      updatedAt: song.updatedAt,
-    });
+    const content = await encryptJSON(dek, songToDocument(song));
 
     return {
       id: song.id,
@@ -342,16 +384,23 @@ export class CloudSongsRepository {
   async _decryptRow(row) {
     // Backward-compat read path only — nothing writes encrypted:false anymore.
     // These predate the anchor conversion entirely, so `lines[].chords` here
-    // is still v1's padded string.
-    if (!row.encrypted) {
-      return { ...row.content, id: row.id, lines: withAnchorChords(row.content.lines) };
-    }
+    // is still v1's padded string; songFromDocument reads that (and the other
+    // legacy shapes encrypted rows can still hold) too.
+    if (!row.encrypted) return songFromDocument(row.id, row.content);
     const dek = getDEK();
     if (!dek) throw new Error('locked: account DEK unavailable');
-    const content = await decryptJSON(dek, row.content);
-    // Encrypted rows written before the anchor conversion existed still hold
-    // padded strings too; withAnchorChords tolerates both.
-    return { id: row.id, ...content, lines: withAnchorChords(content.lines) };
+    return songFromDocument(row.id, await decryptJSON(dek, row.content));
+  }
+
+  /** The song a cached/remote row shows as: null if tombstoned, else decrypted or a placeholder. */
+  async _songFromRow(row) {
+    if (row.deleted_at) return null;
+    if (this._isFromPreviousKey(row)) return this._placeholderSong(row, 'previous-key');
+    try {
+      return await this._decryptRow(row);
+    } catch {
+      return this._placeholderSong(row);
+    }
   }
 
   /**
@@ -402,47 +451,108 @@ export class CloudSongsRepository {
 
     const songs = [];
     for (const row of rows) {
-      if (row.deleted_at) continue; // tombstoned -- kept in the cache for reconciliation, never shown
-      if (this._isFromPreviousKey(row)) {
-        songs.push(this._placeholderSong(row, 'previous-key'));
-        continue;
-      }
-      try {
-        songs.push(await this._decryptRow(row));
-      } catch {
-        songs.push(this._placeholderSong(row));
-      }
+      // Tombstoned rows come back null -- kept in the cache for reconciliation, never shown.
+      const song = await this._songFromRow(row);
+      if (song) songs.push(song);
     }
     return songs;
   }
 
+  /**
+   * Pulls the server's rows into an already-loaded session (window focus, tab
+   * shown, a periodic tick -- see useCloudSync) and reports only what another
+   * device changed: `{ changed: Song[], removed: id[] }`, `changed` holding new
+   * songs as well as newer versions of known ones. A song with an edit not yet
+   * confirmed on the server is skipped entirely, cache row included: its own
+   * push either lands on top or loses the race and goes through
+   * _resolveConflict, so a refresh never replaces something the user typed.
+   *
+   * Everything after the last await runs synchronously, so the result matches
+   * the cache at the moment it's returned; the store applies it in the next
+   * microtask, before any input event can start another edit.
+   */
+  async refresh() {
+    const remoteRows = await this.adapter.list();
+
+    const snapshot = new Map(this._readCache().map((r) => [r.id, r]));
+    const decrypted = new Map();
+    for (const r of remoteRows) {
+      const cached = snapshot.get(r.id);
+      if (r.deleted_at || (cached && r.rev <= cached.rev)) continue;
+      decrypted.set(r.id, await this._songFromRow(r));
+    }
+
+    const byId = new Map(this._readCache().map((r) => [r.id, r]));
+    const changed = [];
+    const removed = [];
+    for (const r of remoteRows) {
+      if (this.hasUnsentChanges(r.id)) continue;
+      const cached = byId.get(r.id);
+      if (cached && r.rev <= cached.rev) continue;
+      if (r.deleted_at) {
+        if (cached && !cached.deleted_at) removed.push(r.id);
+      } else if (decrypted.has(r.id)) {
+        changed.push(decrypted.get(r.id));
+      } else {
+        continue; // the cache moved under us mid-refresh; the next refresh picks this up
+      }
+      byId.set(r.id, r);
+    }
+    this._writeCache([...byId.values()]);
+    return { changed, removed };
+  }
+
   async get(id) {
     const row = this._readCache().find((r) => r.id === id);
-    if (!row || row.deleted_at) return null;
-    if (this._isFromPreviousKey(row)) return this._placeholderSong(row, 'previous-key');
-    try {
-      return await this._decryptRow(row);
-    } catch {
-      return this._placeholderSong(row);
-    }
+    return row ? this._songFromRow(row) : null;
   }
 
   async create(song) {
-    const row = await this._buildRow(song, 1);
-    const created = await this.adapter.insert(row);
-    this._writeCache([...this._readCache(), created]);
+    await this._insert(song);
     return song;
   }
 
+  /**
+   * Inserts `song` as a new row at rev 1. Until that lands, update() of the same
+   * id waits for it: otherwise an edit made right after creating a song (or
+   * opening a fresh conflict copy) finds no cached row, pushes expecting rev 0,
+   * and loses to its own insert.
+   */
+  _insert(song) {
+    const inserting = this._whileBusy(song.id, async () => {
+      const row = await this._buildRow(song, 1);
+      const created = await this.adapter.insert(row);
+      this._updateCacheRow(created);
+    });
+    const settled = inserting.catch(() => {}).finally(() => {
+      if (this._inserts.get(song.id) === settled) this._inserts.delete(song.id);
+    });
+    this._inserts.set(song.id, settled);
+    return inserting;
+  }
+
   async update(id, song) {
-    const cachedRows = this._readCache();
-    const existingRow = cachedRows.find((r) => r.id === id) ?? null;
+    return this._whileBusy(id, () => this._update(id, song));
+  }
+
+  async _update(id, song) {
+    await this._inserts.get(id);
+    const conflictsBefore = this._conflicts.get(id) ?? 0;
+    const existingRow = this._readCache().find((r) => r.id === id) ?? null;
     const nextRev = (existingRow?.rev ?? 0) + 1;
     const row = await this._buildRow(song, nextRev);
+    if ((this._conflicts.get(id) ?? 0) !== conflictsBefore) {
+      // A conflict resolved while this was encrypting: `song` is an edit of the
+      // version that lost, and the store now shows the winner. Pushing it would
+      // overwrite the winner at a rev that may well match.
+      console.error('SongNotes: dropped an edit of song', id, 'made just before a sync conflict resolved');
+      return song;
+    }
 
     // Cache is written immediately so a reload never loses the latest edit even if
-    // the debounced remote push hasn't fired yet.
-    this._writeCache(existingRow ? cachedRows.map((r) => (r.id === id ? row : r)) : [...cachedRows, row]);
+    // the debounced remote push hasn't fired yet. Re-read rather than reusing the
+    // copy from before the await: other rows may have changed during encryption.
+    this._updateCacheRow(row);
 
     // expectedRev is the rev the SERVER should currently have. Captured once per
     // debounce burst (from the pending entry if one's already in flight, or from
@@ -456,6 +566,10 @@ export class CloudSongsRepository {
   }
 
   async remove(id) {
+    return this._whileBusy(id, () => this._remove(id));
+  }
+
+  async _remove(id) {
     const pending = this._debounce.get(id);
     if (pending) {
       clearTimeout(pending.timer);
@@ -501,13 +615,15 @@ export class CloudSongsRepository {
     this._debounce.set(id, { timer, song, row, expectedRev });
   }
 
-  async _pushOne(id, song, row, expectedRev) {
-    const result = await this.adapter.updateWithRevCheck(id, row, expectedRev);
-    if (result.conflict) {
-      await this._writeConflictCopy(song);
-      return;
-    }
-    this._updateCacheRow(result.row);
+  _pushOne(id, song, row, expectedRev) {
+    return this._whileBusy(id, async () => {
+      const result = await this.adapter.updateWithRevCheck(id, row, expectedRev);
+      if (result.conflict) {
+        await this._resolveConflict(id, song, expectedRev);
+        return;
+      }
+      this._updateCacheRow(result.row);
+    });
   }
 
   /**
@@ -516,19 +632,64 @@ export class CloudSongsRepository {
    * device's edit (the exact "two devices editing different verses means one
    * silently vanishes" bug this whole rev/tombstone scheme exists to fix), it's
    * written as a brand new song, title marked so it's immediately obvious what
-   * happened and where it came from.
+   * happened and where it came from -- and the original id goes back to showing
+   * the server's (winning) version.
+   *
+   * That second half matters as much as the copy: the cache still holds this
+   * device's optimistic row, whose rev the next update() builds on, so leaving
+   * it there made every later save of the song lose the same race again and
+   * write yet another copy. The winning row replaces it here, and listeners
+   * (the store) swap the song for it in the same synchronous step, so the next
+   * keystroke is an edit of the winner at its real rev.
    */
-  async _writeConflictCopy(song) {
+  async _resolveConflict(id, song, expectedRev) {
+    let current;
+    let currentSong;
+    try {
+      current = await this.adapter.getById(id);
+      currentSong = current ? await this._songFromRow(current) : null;
+    } catch (e) {
+      console.error('SongNotes: could not fetch the current version of conflicted song', id, e);
+    }
+
+    // Synchronous from here to the emit. Keystrokes made while the push was out
+    // were stacked on this device's losing version; they belong in the copy, not
+    // pushed over the winner.
+    const pending = this._debounce.get(id);
+    if (pending) {
+      clearTimeout(pending.timer);
+      this._debounce.delete(id);
+    }
+    const copy = this._conflictCopyOf(pending?.song ?? song);
+    this._conflicts.set(id, (this._conflicts.get(id) ?? 0) + 1);
+
+    if (current) {
+      this._updateCacheRow(current);
+    } else if (current === null) {
+      this._writeCache(this._readCache().filter((r) => r.id !== id));
+    } else {
+      // The fetch failed: roll the cached row back to the last rev the server
+      // confirmed, so the next list()/refresh() adopts whatever's there now.
+      const cached = this._readCache().find((r) => r.id === id);
+      if (cached) this._updateCacheRow({ ...cached, rev: expectedRev });
+    }
+
+    // `current`: the song as the server now has it; null if it's gone or
+    // tombstoned; undefined if that couldn't be found out.
+    this._emit({ type: 'conflict', songId: id, current: current === undefined ? undefined : currentSong, copy });
+
+    await this._insert(copy);
+  }
+
+  _conflictCopyOf(song) {
     const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const conflictSong = {
+    return {
       ...song,
       id: crypto.randomUUID(),
       title: `${song.title || 'Untitled'} (conflict copy — ${getDeviceLabel()}, ${timeLabel})`,
     };
-    const row = await this._buildRow(conflictSong, 1);
-    const created = await this.adapter.insert(row);
-    this._writeCache([...this._readCache(), created]);
   }
+
 
   /** Force any pending debounced writes out immediately (e.g. before logout/unload). */
   async flushPending() {

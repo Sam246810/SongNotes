@@ -332,11 +332,7 @@ and the web client know nothing about it.
 
 ```json
 {
-  "v": 2,
-  "id": "<uuid v4>",
-  "dekId": "<matches the wraps envelope that can decrypt this row>",
   "title": "Amazing Grace",
-  "meta": { "bpm": 82, "key": "G", "tuning": "EADGBE", "capo": 0 },
   "lines": [
     {
       "id": "<uuid v4>",
@@ -344,13 +340,44 @@ and the web client know nothing about it.
       "chords": [ { "i": 0, "c": "G" }, { "i": 14, "c": "C" } ]
     }
   ],
+  "bpm": 82,
+  "key": "G",
+  "tuning": "Standard",
+  "capo": 0,
   "customChords": {
     "G": { "frets": [3, 2, 0, 0, 0, 3], "baseFret": 1 }
   },
-  "createdAt": "<ISO 8601>",
-  "updatedAt": "<ISO 8601>"
+  "createdAt": "2026-10-01T09:15:00.000Z",
+  "updatedAt": "2026-10-02T18:40:12.345Z"
 }
 ```
+
+This is exactly what both apps write (web: `songToDocument` in
+`src/store/songDocument.js`; Android: `songToDocument` in `:core:data`'s
+`SongDocument.kt`, which `SyncEngine.buildRow` encrypts). Every field
+is top-level — there is **no `meta` object**, and the plaintext carries **no `v`,
+`id` or `dekId`**: the song's id is the row's `id` column, and the key it's
+encrypted under is the row's `dek_id` column (§1), which is what a reader compares
+against the DEK it holds before trying to decrypt (on mismatch, render the song as
+"from an older encryption key" — see §3). `customChords` is optional: Android omits
+it when empty, and the web app does too. `createdAt`/`updatedAt` are ISO 8601 UTC
+strings (`…Z`; Android's `Instant#toString` drops the milliseconds when they're
+zero, so readers must accept both `…:03Z` and `…:03.120Z`).
+
+**Readers must also accept these legacy shapes**, still present in rows older web
+versions wrote, and normalize them on read (the next save writes the current
+shape):
+
+- `lines[].chords` as v1's **padded string** (`"Am    G"`) instead of an anchor
+  list — convert with the padded-string → anchors rule below. Detect it by type
+  (string vs. array); there is no version marker.
+- a line with **no `id`** — give it `"legacy-<index>"` (its 0-based position in
+  `lines`), so the id is the same on every read and on both platforms.
+- `bpm`/`capo` as **strings** (`""`, `"92"`) — parse a whole number; `""` or
+  anything unparseable is `0`.
+- `customChords` missing — read as empty.
+
+`spec/song-documents.json` (§7) pins all of this down case by case.
 
 Field-by-field, and what changed from v1:
 
@@ -364,11 +391,11 @@ Field-by-field, and what changed from v1:
   paragraph's `lyrics`. Songs written by older web versions may have long lines
   already split into ~75-character lines; those simply read as separate paragraphs.
 
-- **`meta.bpm` / `meta.capo` are numbers, not strings.** v1 had them as `''`-default
+- **`bpm` / `capo` are numbers, not strings.** v1 had them as `''`-default
   strings for no real reason. `bpm: 0` and `capo: 0` both mean "unset" (there's no
   meaningful song at 0 BPM, so this is an unambiguous sentinel — don't use `null`,
-  keep the type a plain number everywhere). `meta.key`/`meta.tuning` stay strings,
-  empty string = unset.
+  keep the type a plain number everywhere; a UI shows 0 as an empty field).
+  `key`/`tuning` stay strings, empty string = unset.
 - **`chords` is a list of anchors `{i, c}`, not a parallel padded string
   (the single biggest change from v1).** `i` is the **character index into
   `lyrics`** (0-based, UTF-16 code unit index — both JS strings and Kotlin/Java
@@ -394,12 +421,9 @@ Field-by-field, and what changed from v1:
   the ported `normalizeChordName`). Value: `{ frets: [6 ints], baseFret: int }`.
   `frets` is `[lowE, A, D, G, B, highE]`; `-1` = muted, `0` = open, `1..24` = fret
   number. `baseFret` is the display window's starting fret (1 = open position).
-  Never carries a `barre` key (that's a built-in-chord-database-only field, not
-  user-authored).
-- **`dekId`** — stamped at encryption time from the currently-active `dekId`. A
-  reader compares this against the DEK it holds; on mismatch, render the song as
-  "from an older encryption key" rather than attempting to decrypt (it will fail
-  anyway, but the distinguishable error is better UX — see §3).
+  The web app's voicing editor never writes a `barre` key, but Android writes one
+  (`{ fret, fromString, toString }`, the built-in chord database's shape) when its
+  voicing has one, so readers must accept it.
 - Removed from v1 entirely, never sent: `isReadOnly` (was a local-only UI toggle),
   the per-song `encrypted` boolean (encryption is now unconditional — see §6, there
   is no plaintext-song mode in v2).
@@ -411,6 +435,14 @@ Field-by-field, and what changed from v1:
 **Offline-first on both platforms.** The UI reads only from local storage (Room on
 Android, the existing local cache pattern on web); network sync is a background
 process that reconciles local state with the server, never a read path.
+
+> **Phase 13 note (Android only, 2026-08-15):** nothing in this section's wire
+> protocol changed. What changed is *when* Android triggers it: push and pull
+> now only ever run in direct response to an explicit user action (a Sync
+> button press), never automatically on sign-in, on a local edit, or on a
+> schedule. An account is also now optional on Android — this whole section
+> only applies once a user has chosen to enable sync. See
+> `docs/handoff/PHASE-13-local-first.md`. The web app is unaffected.
 
 ### 5.1 Push (optimistic concurrency, "Tier 0")
 
@@ -430,7 +462,11 @@ statement is the `where ... and rev = $base_rev` optimistic-concurrency guard.)
   1. Leave the remote row as-is (it's now canonical for that `id`).
   2. Insert your local edit as a **new row** with a new `id`, titled
      `"<original title> (conflict copy — <device name>, <local time>)"`.
-  3. Surface both to the user. This is deliberately Dropbox's conflicted-copy model:
+  3. Replace your local copy of the original `id` with the remote row you fetched,
+     so your next edit of that song is based on the winner's `rev`. Keeping your
+     own optimistic copy instead makes every later save of the song lose the same
+     race and write yet another conflict copy.
+  4. Surface both to the user. This is deliberately Dropbox's conflicted-copy model:
      inelegant, but lossless and immediately understandable. Never silently drop
      either side.
 - **New song:** plain `insert`, client-generated `id` (uuid v4), `rev` defaults to 1
@@ -522,6 +558,16 @@ actually used by any implementation.
 - `chord-anchor-vectors.json` — v1 padded-string ↔ v2 anchor conversions for the
   tricky cases: overlapping chords, a chord past end-of-lyrics, an all-instrumental
   (empty-lyrics) line, adjacent chords with zero gap. **Not yet built.**
+- `song-documents.json` — song documents (§4's decrypted plaintext) → the song
+  each app's reader must produce from them: one as the web app writes it, one as
+  Android writes it (numeric `bpm`/`capo`, flat chord names, a chords-only line
+  with an anchor past its lyrics, an empty line, `customChords`), and the legacy
+  shapes (padded-string chords, a line with no `id`, `bpm: ""`). Each case is
+  `{ name, id, document, expected }`, `id` being the row id. **Delivered** —
+  generated by `generate-golden-fixtures.test.js`, checked by the web app's
+  `src/test/songDocument.test.js`; Android's `SongDocumentGoldenFixtureTest` runs
+  the same file (copied byte-identical into `core/data/src/test/resources/spec/`). Plaintext
+  only, so it doesn't replace `song-vectors.json` below.
 - `recovery-code-vectors.json` — raw pasted input (with stray casing/spacing/no
   hyphens) → normalized form, plus a few fixed-salt Argon2id (input, salt) → KEK
   vectors, so both platforms' `normalize()` **and** KDF derivation agree, not just

@@ -27,6 +27,7 @@ import {
 import { transposeChordToken, transposeChordsLine } from '../utils/transpose.js';
 import { looksLikeChordLine, parseLyricsText } from '../utils/lyricsImport.js';
 import { exportToText } from '../utils/export.js';
+import { songToDocument, songFromDocument } from '../store/songDocument.js';
 import { argon2id } from 'hash-wasm';
 import { createAccountKeys, unlockWithPassphrase, unlockWithRecoveryCode } from '../crypto/accountKeys.js';
 import { bufToBase64, base64ToBuf } from '../crypto/base64.js';
@@ -507,6 +508,109 @@ async function buildRecoveryCodeKekFixtures() {
   return results;
 }
 
+// Song documents (the plaintext inside a row's encrypted `content`, wire-format
+// v2 section 4) as each app writes them, plus the legacy shapes old rows still
+// hold. `expected` is whatever this app's reader makes of `document` under row
+// id `id`; the Android reader runs the same cases.
+function buildSongDocumentCases() {
+  const webSong = {
+    id: 'a1b2c3d4-0000-4000-8000-000000000001',
+    title: 'Amazing Grace',
+    lines: [
+      { id: 'b7e1f0aa-0000-4000-8000-000000000001', lyrics: 'Amazing grace, how sweet the sound', chords: [{ i: 0, c: 'G' }, { i: 15, c: 'C' }, { i: 26, c: 'G' }] },
+      { id: 'b7e1f0aa-0000-4000-8000-000000000002', lyrics: 'That saved a wretch like me', chords: [{ i: 5, c: 'Em' }, { i: 22, c: 'D' }] },
+    ],
+    isReadOnly: false,
+    bpm: 72,
+    key: 'G',
+    tuning: 'Standard',
+    capo: 0,
+    customChords: {},
+    createdAt: '2026-10-01T09:15:00.000Z',
+    updatedAt: '2026-10-02T18:40:12.345Z',
+  };
+
+  // Field order and date format as SyncEngine.kt's buildRow writes them
+  // (java.time.Instant#toString: millis only when non-zero).
+  const androidDocument = {
+    title: 'Hallelujah',
+    lines: [
+      { id: '6f1c2b3a-0000-4000-8000-000000000001', lyrics: 'I heard there was a secret chord', chords: [{ i: 0, c: 'Ab' }, { i: 18, c: 'Fm' }] },
+      { id: '6f1c2b3a-0000-4000-8000-000000000002', lyrics: 'Oh', chords: [{ i: 0, c: 'Db' }, { i: 8, c: 'Eb' }, { i: 14, c: 'Ab' }] },
+      { id: '6f1c2b3a-0000-4000-8000-000000000003', lyrics: '', chords: [] },
+      { id: '6f1c2b3a-0000-4000-8000-000000000004', lyrics: '', chords: [{ i: 0, c: 'Bbm7' }, { i: 6, c: 'Gb' }] },
+    ],
+    bpm: 56,
+    key: 'Ab',
+    tuning: 'Half Step Down',
+    capo: 1,
+    createdAt: '2026-09-30T21:04:55Z',
+    updatedAt: '2026-10-15T07:12:03.120Z',
+    customChords: {
+      Ab: { frets: [4, 6, 6, 5, 4, 4], baseFret: 4, barre: { fret: 4, fromString: 0, toString: 5 } },
+      Db: { frets: [-1, 4, 6, 6, 6, 4], baseFret: 4 },
+    },
+  };
+
+  const legacyBase = {
+    title: 'Old Song',
+    key: '',
+    tuning: '',
+    createdAt: '2026-01-05T12:00:00.000Z',
+    updatedAt: '2026-01-05T12:30:00.000Z',
+  };
+
+  const cases = [
+    {
+      name: 'web app, current writer',
+      id: webSong.id,
+      document: songToDocument(webSong),
+    },
+    {
+      name: 'Android app: numeric bpm/capo, flat chords, a chords-only line past the lyrics, an empty line, customChords',
+      id: '6f1c2b3a-0000-4000-8000-000000000000',
+      document: androidDocument,
+    },
+    {
+      name: 'legacy: chords as a v1 padded string',
+      id: 'legacy-padded-chords',
+      document: {
+        ...legacyBase,
+        lines: [
+          { id: 'line-a', lyrics: 'a lyric from before anchors', chords: 'Am    G       C' },
+          { id: 'line-b', lyrics: 'blank chords row', chords: '' },
+        ],
+        bpm: 0,
+        capo: 0,
+      },
+    },
+    {
+      name: 'legacy: a line with no id',
+      id: 'legacy-missing-line-id',
+      document: {
+        ...legacyBase,
+        lines: [
+          { id: 'line-a', lyrics: 'has an id', chords: [{ i: 0, c: 'D' }] },
+          { lyrics: 'has none', chords: [{ i: 4, c: 'A' }] },
+        ],
+        bpm: 0,
+        capo: 0,
+      },
+    },
+    {
+      name: 'legacy: bpm/capo as strings (bpm "")',
+      id: 'legacy-string-meta',
+      document: {
+        ...legacyBase,
+        lines: [{ id: 'line-a', lyrics: 'meta as typed', chords: [] }],
+        bpm: '',
+        capo: '3',
+      },
+    },
+  ];
+  return cases.map((c) => ({ ...c, expected: songFromDocument(c.id, c.document) }));
+}
+
 const specDir = path.resolve(import.meta.dirname, '../../spec');
 
 describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', () => {
@@ -589,6 +693,13 @@ describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', ()
     expect(fixtures.length).toBeGreaterThan(0);
     fs.mkdirSync(specDir, { recursive: true });
     fs.writeFileSync(path.join(specDir, 'parse-frets-input.json'), JSON.stringify(fixtures, null, 2) + '\n');
+  });
+
+  it('writes spec/song-documents.json from the real songToDocument/songFromDocument', () => {
+    const cases = buildSongDocumentCases();
+    expect(cases.length).toBeGreaterThan(0);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'song-documents.json'), JSON.stringify(cases, null, 2) + '\n');
   });
 
   it('writes spec/recovery-code-vectors.json from the real normalizeRecoveryCode + Argon2id (Phase 12 cross-repo test vector)', async () => {

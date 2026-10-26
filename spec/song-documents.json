@@ -1,0 +1,447 @@
+[
+  {
+    "name": "web app, current writer",
+    "id": "a1b2c3d4-0000-4000-8000-000000000001",
+    "document": {
+      "title": "Amazing Grace",
+      "lines": [
+        {
+          "id": "b7e1f0aa-0000-4000-8000-000000000001",
+          "lyrics": "Amazing grace, how sweet the sound",
+          "chords": [
+            {
+              "i": 0,
+              "c": "G"
+            },
+            {
+              "i": 15,
+              "c": "C"
+            },
+            {
+              "i": 26,
+              "c": "G"
+            }
+          ]
+        },
+        {
+          "id": "b7e1f0aa-0000-4000-8000-000000000002",
+          "lyrics": "That saved a wretch like me",
+          "chords": [
+            {
+              "i": 5,
+              "c": "Em"
+            },
+            {
+              "i": 22,
+              "c": "D"
+            }
+          ]
+        }
+      ],
+      "bpm": 72,
+      "key": "G",
+      "tuning": "Standard",
+      "capo": 0,
+      "createdAt": "2026-10-01T09:15:00.000Z",
+      "updatedAt": "2026-10-02T18:40:12.345Z"
+    },
+    "expected": {
+      "id": "a1b2c3d4-0000-4000-8000-000000000001",
+      "title": "Amazing Grace",
+      "lines": [
+        {
+          "id": "b7e1f0aa-0000-4000-8000-000000000001",
+          "lyrics": "Amazing grace, how sweet the sound",
+          "chords": [
+            {
+              "i": 0,
+              "c": "G"
+            },
+            {
+              "i": 15,
+              "c": "C"
+            },
+            {
+              "i": 26,
+              "c": "G"
+            }
+          ]
+        },
+        {
+          "id": "b7e1f0aa-0000-4000-8000-000000000002",
+          "lyrics": "That saved a wretch like me",
+          "chords": [
+            {
+              "i": 5,
+              "c": "Em"
+            },
+            {
+              "i": 22,
+              "c": "D"
+            }
+          ]
+        }
+      ],
+      "bpm": 72,
+      "key": "G",
+      "tuning": "Standard",
+      "capo": 0,
+      "customChords": {},
+      "createdAt": "2026-10-01T09:15:00.000Z",
+      "updatedAt": "2026-10-02T18:40:12.345Z"
+    }
+  },
+  {
+    "name": "Android app: numeric bpm/capo, flat chords, a chords-only line past the lyrics, an empty line, customChords",
+    "id": "6f1c2b3a-0000-4000-8000-000000000000",
+    "document": {
+      "title": "Hallelujah",
+      "lines": [
+        {
+          "id": "6f1c2b3a-0000-4000-8000-000000000001",
+          "lyrics": "I heard there was a secret chord",
+          "chords": [
+            {
+              "i": 0,
+              "c": "Ab"
+            },
+            {
+              "i": 18,
+              "c": "Fm"
+            }
+          ]
+        },
+        {
+          "id": "6f1c2b3a-0000-4000-8000-000000000002",
+          "lyrics": "Oh",
+          "chords": [
+            {
+              "i": 0,
+              "c": "Db"
+            },
+            {
+              "i": 8,
+              "c": "Eb"
+            },
+            {
+              "i": 14,
+              "c": "Ab"
+            }
+          ]
+        },
+        {
+          "id": "6f1c2b3a-0000-4000-8000-000000000003",
+          "lyrics": "",
+          "chords": []
+        },
+        {
+          "id": "6f1c2b3a-0000-4000-8000-000000000004",
+          "lyrics": "",
+          "chords": [
+            {
+              "i": 0,
+              "c": "Bbm7"
+            },
+            {
+              "i": 6,
+              "c": "Gb"
+            }
+          ]
+        }
+      ],
+      "bpm": 56,
+      "key": "Ab",
+      "tuning": "Half Step Down",
+      "capo": 1,
+      "createdAt": "2026-09-30T21:04:55Z",
+      "updatedAt": "2026-10-15T07:12:03.120Z",
+      "customChords": {
+        "Ab": {
+          "frets": [
+            4,
+            6,
+            6,
+            5,
+            4,
+            4
+          ],
+          "baseFret": 4,
+          "barre": {
+            "fret": 4,
+            "fromString": 0,
+            "toString": 5
+          }
+        },
+        "Db": {
+          "frets": [
+            -1,
+            4,
+            6,
+            6,
+            6,
+            4
+          ],
+          "baseFret": 4
+        }
+      }
+    },
+    "expected": {
+      "id": "6f1c2b3a-0000-4000-8000-000000000000",
+      "title": "Hallelujah",
+      "lines": [
+        {
+          "id": "6f1c2b3a-0000-4000-8000-000000000001",
+          "lyrics": "I heard there was a secret chord",
+          "chords": [
+            {
+              "i": 0,
+              "c": "Ab"
+            },
+            {
+              "i": 18,
+              "c": "Fm"
+            }
+          ]
+        },
+        {
+          "id": "6f1c2b3a-0000-4000-8000-000000000002",
+          "lyrics": "Oh",
+          "chords": [
+            {
+              "i": 0,
+              "c": "Db"
+            },
+            {
+              "i": 8,
+              "c": "Eb"
+            },
+            {
+              "i": 14,
+              "c": "Ab"
+            }
+          ]
+        },
+        {
+          "id": "6f1c2b3a-0000-4000-8000-000000000003",
+          "lyrics": "",
+          "chords": []
+        },
+        {
+          "id": "6f1c2b3a-0000-4000-8000-000000000004",
+          "lyrics": "",
+          "chords": [
+            {
+              "i": 0,
+              "c": "Bbm7"
+            },
+            {
+              "i": 6,
+              "c": "Gb"
+            }
+          ]
+        }
+      ],
+      "bpm": 56,
+      "key": "Ab",
+      "tuning": "Half Step Down",
+      "capo": 1,
+      "customChords": {
+        "Ab": {
+          "frets": [
+            4,
+            6,
+            6,
+            5,
+            4,
+            4
+          ],
+          "baseFret": 4,
+          "barre": {
+            "fret": 4,
+            "fromString": 0,
+            "toString": 5
+          }
+        },
+        "Db": {
+          "frets": [
+            -1,
+            4,
+            6,
+            6,
+            6,
+            4
+          ],
+          "baseFret": 4
+        }
+      },
+      "createdAt": "2026-09-30T21:04:55Z",
+      "updatedAt": "2026-10-15T07:12:03.120Z"
+    }
+  },
+  {
+    "name": "legacy: chords as a v1 padded string",
+    "id": "legacy-padded-chords",
+    "document": {
+      "title": "Old Song",
+      "key": "",
+      "tuning": "",
+      "createdAt": "2026-01-05T12:00:00.000Z",
+      "updatedAt": "2026-01-05T12:30:00.000Z",
+      "lines": [
+        {
+          "id": "line-a",
+          "lyrics": "a lyric from before anchors",
+          "chords": "Am    G       C"
+        },
+        {
+          "id": "line-b",
+          "lyrics": "blank chords row",
+          "chords": ""
+        }
+      ],
+      "bpm": 0,
+      "capo": 0
+    },
+    "expected": {
+      "id": "legacy-padded-chords",
+      "title": "Old Song",
+      "lines": [
+        {
+          "id": "line-a",
+          "lyrics": "a lyric from before anchors",
+          "chords": [
+            {
+              "i": 0,
+              "c": "Am"
+            },
+            {
+              "i": 6,
+              "c": "G"
+            },
+            {
+              "i": 14,
+              "c": "C"
+            }
+          ]
+        },
+        {
+          "id": "line-b",
+          "lyrics": "blank chords row",
+          "chords": []
+        }
+      ],
+      "bpm": 0,
+      "key": "",
+      "tuning": "",
+      "capo": 0,
+      "customChords": {},
+      "createdAt": "2026-01-05T12:00:00.000Z",
+      "updatedAt": "2026-01-05T12:30:00.000Z"
+    }
+  },
+  {
+    "name": "legacy: a line with no id",
+    "id": "legacy-missing-line-id",
+    "document": {
+      "title": "Old Song",
+      "key": "",
+      "tuning": "",
+      "createdAt": "2026-01-05T12:00:00.000Z",
+      "updatedAt": "2026-01-05T12:30:00.000Z",
+      "lines": [
+        {
+          "id": "line-a",
+          "lyrics": "has an id",
+          "chords": [
+            {
+              "i": 0,
+              "c": "D"
+            }
+          ]
+        },
+        {
+          "lyrics": "has none",
+          "chords": [
+            {
+              "i": 4,
+              "c": "A"
+            }
+          ]
+        }
+      ],
+      "bpm": 0,
+      "capo": 0
+    },
+    "expected": {
+      "id": "legacy-missing-line-id",
+      "title": "Old Song",
+      "lines": [
+        {
+          "id": "line-a",
+          "lyrics": "has an id",
+          "chords": [
+            {
+              "i": 0,
+              "c": "D"
+            }
+          ]
+        },
+        {
+          "id": "legacy-1",
+          "lyrics": "has none",
+          "chords": [
+            {
+              "i": 4,
+              "c": "A"
+            }
+          ]
+        }
+      ],
+      "bpm": 0,
+      "key": "",
+      "tuning": "",
+      "capo": 0,
+      "customChords": {},
+      "createdAt": "2026-01-05T12:00:00.000Z",
+      "updatedAt": "2026-01-05T12:30:00.000Z"
+    }
+  },
+  {
+    "name": "legacy: bpm/capo as strings (bpm \"\")",
+    "id": "legacy-string-meta",
+    "document": {
+      "title": "Old Song",
+      "key": "",
+      "tuning": "",
+      "createdAt": "2026-01-05T12:00:00.000Z",
+      "updatedAt": "2026-01-05T12:30:00.000Z",
+      "lines": [
+        {
+          "id": "line-a",
+          "lyrics": "meta as typed",
+          "chords": []
+        }
+      ],
+      "bpm": "",
+      "capo": "3"
+    },
+    "expected": {
+      "id": "legacy-string-meta",
+      "title": "Old Song",
+      "lines": [
+        {
+          "id": "line-a",
+          "lyrics": "meta as typed",
+          "chords": []
+        }
+      ],
+      "bpm": 0,
+      "key": "",
+      "tuning": "",
+      "capo": 3,
+      "customChords": {},
+      "createdAt": "2026-01-05T12:00:00.000Z",
+      "updatedAt": "2026-01-05T12:30:00.000Z"
+    }
+  }
+]
