@@ -1,3 +1,13 @@
+# SongNotes (web)
+
+Project docs:
+
+- [docs/SYNC-MERGE.md](docs/SYNC-MERGE.md) — how edits from two devices to the same song are merged (shared with the Android repo)
+- [docs/WIRE-FORMAT-v2.md](docs/WIRE-FORMAT-v2.md) — encrypted row format and sync protocol (shared with the Android repo)
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Vercel, domain and Supabase setup
+
+---
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
