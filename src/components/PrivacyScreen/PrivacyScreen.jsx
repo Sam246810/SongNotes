@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import useAuth from '../../auth/useAuth';
 import styles from '../../auth/AuthPage.module.css';
+import PasswordInput from '../PasswordInput/PasswordInput';
 
 /**
  * Whole-app privacy cover — a manual "someone might see my screen" toggle, not a new
@@ -49,9 +50,8 @@ export default function PrivacyScreen({ onUnlock }) {
           Enter your account password to reveal your songs again.
         </p>
         <form className={styles.form} onSubmit={handleSubmit}>
-          <input
+          <PasswordInput
             className={styles.input}
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Account password"

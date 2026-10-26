@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import useAuth from './useAuth';
 import { deleteAccount } from './accountRecovery';
 import styles from './AuthPage.module.css';
+import PasswordInput from '../components/PasswordInput/PasswordInput';
 
 const DELETE_CONFIRM_PHRASE = 'DELETE MY ACCOUNT';
 
@@ -104,9 +105,8 @@ export default function DeleteAccountPage() {
               </label>
               <label className={styles.label}>
                 Password
-                <input
+                <PasswordInput
                   className={styles.input}
-                  type="password"
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

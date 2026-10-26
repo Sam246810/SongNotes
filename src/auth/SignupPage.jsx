@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import useAuth from './useAuth';
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP_TEXT, validateNewPassword } from './passwordPolicy';
 import styles from './AuthPage.module.css';
+import PasswordInput from '../components/PasswordInput/PasswordInput';
 
 export default function SignupPage() {
   const { configured, user, signUp, signOut } = useAuth();
@@ -203,9 +204,8 @@ export default function SignupPage() {
             </label>
             <label className={styles.label}>
               Password
-              <input
+              <PasswordInput
                 className={styles.input}
-                type="password"
                 autoComplete="new-password"
                 minLength={MIN_PASSWORD_LENGTH}
                 value={password}

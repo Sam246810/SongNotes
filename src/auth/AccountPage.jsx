@@ -8,6 +8,7 @@ import { unlockWithPassphrase } from '../crypto/accountKeys';
 import { SupabaseUserKeysAdapter } from '../lib/userKeysAdapter';
 import { supabase } from '../lib/supabaseClient';
 import styles from './AuthPage.module.css';
+import PasswordInput from '../components/PasswordInput/PasswordInput';
 
 /**
  * Account settings — the one settings surface in the app. Two actions, both
@@ -118,9 +119,8 @@ export default function AccountPage() {
           <>
             <p className={styles.infoText}>Enter your account password to manage encryption settings.</p>
             <form className={styles.form} onSubmit={handleUnlock}>
-              <input
+              <PasswordInput
                 className={styles.input}
-                type="password"
                 value={unlockPassword}
                 onChange={(e) => setUnlockPassword(e.target.value)}
                 placeholder="Account password"
@@ -162,9 +162,8 @@ export default function AccountPage() {
                 <form className={styles.form} onSubmit={handleChangePassword}>
                   <label className={styles.label}>
                     New Password
-                    <input
+                    <PasswordInput
                       className={styles.input}
-                      type="password"
                       autoComplete="new-password"
                       minLength={MIN_PASSWORD_LENGTH}
                       value={newPassword}
@@ -174,9 +173,8 @@ export default function AccountPage() {
                   </label>
                   <label className={styles.label}>
                     Confirm New Password
-                    <input
+                    <PasswordInput
                       className={styles.input}
-                      type="password"
                       autoComplete="new-password"
                       minLength={MIN_PASSWORD_LENGTH}
                       value={confirmPassword}

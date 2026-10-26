@@ -10,6 +10,7 @@ import Toolbar from '../Toolbar/Toolbar';
 import PianoPanel from '../PianoPanel/PianoPanel';
 import DAWPanel from '../DAWPanel/DAWPanel';
 import styles from './Editor.module.css';
+import PasswordInput from '../PasswordInput/PasswordInput';
 
 /**
  * Shown instead of the editor for an encrypted song when the account encryption key
@@ -45,8 +46,7 @@ function AccountKeyGate() {
       <div className={styles.emptyIcon}>🔒</div>
       <p>Enter your password to view this song.</p>
       <form className={styles.unlockForm} onSubmit={handleSubmit}>
-        <input
-          type="password"
+        <PasswordInput
           className={styles.unlockInput}
           value={password}
           onChange={(e) => setPassword(e.target.value)}

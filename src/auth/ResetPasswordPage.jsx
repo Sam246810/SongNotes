@@ -4,6 +4,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { hasAccountKeys, recoverWithRecoveryCode, rotateAndPurge } from './accountRecovery';
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP_TEXT, validateNewPassword } from './passwordPolicy';
 import styles from './AuthPage.module.css';
+import PasswordInput from '../components/PasswordInput/PasswordInput';
 
 const RESET_CONFIRM_PHRASE = 'DELETE MY SONGS';
 
@@ -225,9 +226,8 @@ export default function ResetPasswordPage() {
               )}
               <label className={styles.label}>
                 New Password
-                <input
+                <PasswordInput
                   className={styles.input}
-                  type="password"
                   autoComplete="new-password"
                   minLength={MIN_PASSWORD_LENGTH}
                   value={newPassword}
@@ -237,9 +237,8 @@ export default function ResetPasswordPage() {
               </label>
               <label className={styles.label}>
                 Confirm New Password
-                <input
+                <PasswordInput
                   className={styles.input}
-                  type="password"
                   autoComplete="new-password"
                   minLength={MIN_PASSWORD_LENGTH}
                   value={confirmPassword}
@@ -275,9 +274,8 @@ export default function ResetPasswordPage() {
             <form className={styles.form} onSubmit={handleRotateAndPurge}>
               <label className={styles.label}>
                 New Password
-                <input
+                <PasswordInput
                   className={styles.input}
-                  type="password"
                   autoComplete="new-password"
                   minLength={MIN_PASSWORD_LENGTH}
                   value={newPassword}
@@ -287,9 +285,8 @@ export default function ResetPasswordPage() {
               </label>
               <label className={styles.label}>
                 Confirm New Password
-                <input
+                <PasswordInput
                   className={styles.input}
-                  type="password"
                   autoComplete="new-password"
                   minLength={MIN_PASSWORD_LENGTH}
                   value={confirmPassword}
