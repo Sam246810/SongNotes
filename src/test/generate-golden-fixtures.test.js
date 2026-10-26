@@ -28,6 +28,9 @@ import { transposeChordToken, transposeChordsLine } from '../utils/transpose.js'
 import { looksLikeChordLine, parseLyricsText } from '../utils/lyricsImport.js';
 import { exportToText } from '../utils/export.js';
 import { songToDocument, songFromDocument } from '../store/songDocument.js';
+import { mergeSongs } from '../sync/songMerge.js';
+import { tokenize } from '../sync/tokenDiff3.js';
+import { cases as songMergeCases, tokenizeVectors } from './fixtures/songMergeCases.js';
 import { argon2id } from 'hash-wasm';
 import { createAccountKeys, unlockWithPassphrase, unlockWithRecoveryCode } from '../crypto/accountKeys.js';
 import { bufToBase64, base64ToBuf } from '../crypto/base64.js';
@@ -607,8 +610,55 @@ function buildSongDocumentCases() {
         capo: '3',
       },
     },
+    {
+      // Per-line and per-field edit stamps (src/sync/editStamps.js): integer
+      // epoch ms. Invalid ones (negative, non-integer, unknown field) are
+      // dropped on read, as if never written.
+      name: 'edit stamps: per line, per field, per custom chord',
+      id: 'stamped-song',
+      document: {
+        title: 'Stamped',
+        lines: [
+          { id: 'line-a', lyrics: 'edited at nine', chords: [{ i: 0, c: 'G' }], editedAt: 1790931600000 },
+          { id: 'line-b', lyrics: 'never stamped', chords: [] },
+          { id: 'line-c', lyrics: 'bad stamp', chords: [], editedAt: -5 },
+        ],
+        bpm: 120,
+        key: 'G',
+        tuning: '',
+        capo: 0,
+        customChords: { G: { frets: [3, 2, 0, 0, 0, 3], baseFret: 1 } },
+        fieldEditedAt: { title: 1790935200000, bpm: 1790931600000, key: 1.5, colour: 1 },
+        customChordsEditedAt: { G: 1790931600000, D: 1790928000000 },
+        createdAt: '2026-10-01T12:00:00.000Z',
+        updatedAt: '2026-10-02T10:00:00.000Z',
+      },
+    },
   ];
   return cases.map((c) => ({ ...c, expected: songFromDocument(c.id, c.document) }));
+}
+
+/**
+ * spec/song-merge.json: tokenizer vectors and three-way merge cases (inputs in
+ * src/test/fixtures/songMergeCases.js, each with a hand-checked expectation in
+ * songMerge.test.js) with the real mergeSongs result. Android's
+ * SongMergeGoldenFixtureTest reads every case's documents with its own
+ * songFromDocument, merges, writes with songToDocument and compares.
+ */
+function buildSongMergeFixture() {
+  const read = (id, d) => (d ? songFromDocument(id, d) : null);
+  return {
+    tokenize: tokenizeVectors.map((text) => ({ text, tokens: tokenize(text) })),
+    cases: songMergeCases.map(({ name, id, base, local, remote, symmetric }) => ({
+      name,
+      id,
+      base,
+      local,
+      remote,
+      symmetric,
+      expected: songToDocument(mergeSongs(read(id, base), read(id, local), read(id, remote))),
+    })),
+  };
 }
 
 const specDir = path.resolve(import.meta.dirname, '../../spec');
@@ -700,6 +750,13 @@ describe('golden fixture generation (SongNotes-Android Phase 5 cross-check)', ()
     expect(cases.length).toBeGreaterThan(0);
     fs.mkdirSync(specDir, { recursive: true });
     fs.writeFileSync(path.join(specDir, 'song-documents.json'), JSON.stringify(cases, null, 2) + '\n');
+  });
+
+  it('writes spec/song-merge.json from the real mergeSongs/tokenize', () => {
+    const fixture = buildSongMergeFixture();
+    expect(fixture.cases.length).toBeGreaterThan(30);
+    fs.mkdirSync(specDir, { recursive: true });
+    fs.writeFileSync(path.join(specDir, 'song-merge.json'), JSON.stringify(fixture, null, 2) + '\n');
   });
 
   it('writes spec/recovery-code-vectors.json from the real normalizeRecoveryCode + Argon2id (Phase 12 cross-repo test vector)', async () => {

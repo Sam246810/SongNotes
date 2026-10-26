@@ -1,4 +1,5 @@
 import { chordsLineToAnchors } from '../utils/chordAnchors';
+import { STAMPED_FIELDS, validStamp } from '../sync/editStamps';
 
 /**
  * The song document: the plaintext JSON both apps encrypt into a row's
@@ -18,11 +19,29 @@ export function toMetaNumber(value) {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
 }
 
+/**
+ * Valid edit stamps from `stamps` (keys limited to `allowed` when given),
+ * sorted by key; undefined when there are none. See src/sync/editStamps.js.
+ */
+function stampMap(stamps, allowed) {
+  if (!stamps || typeof stamps !== 'object') return undefined;
+  const entries = Object.entries(stamps)
+    .filter(([k, v]) => (!allowed || allowed.includes(k)) && validStamp(v) !== undefined)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
+function lineToDocument(l) {
+  const line = { id: l.id, lyrics: l.lyrics, chords: l.chords };
+  if (validStamp(l.editedAt) !== undefined) line.editedAt = l.editedAt;
+  return line;
+}
+
 /** The document for `song`, exactly as it's encrypted. */
 export function songToDocument(song) {
   const doc = {
     title: song.title,
-    lines: song.lines.map((l) => ({ id: l.id, lyrics: l.lyrics, chords: l.chords })),
+    lines: song.lines.map(lineToDocument),
     bpm: toMetaNumber(song.bpm),
     key: song.key || '',
     tuning: song.tuning || '',
@@ -31,6 +50,10 @@ export function songToDocument(song) {
     updatedAt: song.updatedAt,
   };
   if (song.customChords && Object.keys(song.customChords).length > 0) doc.customChords = song.customChords;
+  const fieldEditedAt = stampMap(song.fieldEditedAt, STAMPED_FIELDS);
+  if (fieldEditedAt) doc.fieldEditedAt = fieldEditedAt;
+  const customChordsEditedAt = stampMap(song.customChordsEditedAt);
+  if (customChordsEditedAt) doc.customChordsEditedAt = customChordsEditedAt;
   return doc;
 }
 
@@ -42,14 +65,18 @@ export function songToDocument(song) {
  * as strings.
  */
 export function songFromDocument(id, doc) {
-  return {
+  const song = {
     id,
     title: doc.title ?? '',
-    lines: (doc.lines ?? []).map((l, index) => ({
-      id: l.id || `legacy-${index}`,
-      lyrics: l.lyrics ?? '',
-      chords: Array.isArray(l.chords) ? l.chords.map(({ i, c }) => ({ i, c })) : chordsLineToAnchors(l.chords),
-    })),
+    lines: (doc.lines ?? []).map((l, index) => {
+      const line = {
+        id: l.id || `legacy-${index}`,
+        lyrics: l.lyrics ?? '',
+        chords: Array.isArray(l.chords) ? l.chords.map(({ i, c }) => ({ i, c })) : chordsLineToAnchors(l.chords),
+      };
+      if (validStamp(l.editedAt) !== undefined) line.editedAt = l.editedAt;
+      return line;
+    }),
     bpm: toMetaNumber(doc.bpm),
     key: doc.key ?? '',
     tuning: doc.tuning ?? '',
@@ -58,4 +85,9 @@ export function songFromDocument(id, doc) {
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };
+  const fieldEditedAt = stampMap(doc.fieldEditedAt, STAMPED_FIELDS);
+  if (fieldEditedAt) song.fieldEditedAt = fieldEditedAt;
+  const customChordsEditedAt = stampMap(doc.customChordsEditedAt);
+  if (customChordsEditedAt) song.customChordsEditedAt = customChordsEditedAt;
+  return song;
 }

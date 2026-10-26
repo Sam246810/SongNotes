@@ -2,6 +2,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import useSongsStore from '../store/songsStore';
 import { LocalSongsRepository } from '../store/songsRepository';
 
+const unstamped = (line) => {
+  const copy = { ...line };
+  delete copy.editedAt;
+  return copy;
+};
+
 describe('songsStore actions', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -21,18 +27,35 @@ describe('songsStore actions', () => {
     // One line becoming two, as Enter does: the first keeps its id.
     const before = { ...first, lyrics: 'The quick ', chords: [{ i: 4, c: 'Am' }] };
     const after = { id: 'new-line', lyrics: 'brown fox', chords: [{ i: 0, c: 'G' }] };
+    const t0 = Date.now();
     useSongsStore.getState().replaceLines(songId, 0, 1, [before, after]);
-    expect(useSongsStore.getState().songs.find((s) => s.id === songId).lines).toEqual([before, after]);
+    const split = useSongsStore.getState().songs.find((s) => s.id === songId).lines;
+    expect(split.map(unstamped)).toEqual([before, after]);
+    // Both lines changed, so both carry a fresh edit stamp.
+    expect(split.every((l) => l.editedAt >= t0)).toBe(true);
 
     // Two lines becoming one, as backspace at the start of a line does.
     const joined = { ...before, lyrics: 'The quick brown fox', chords: [{ i: 4, c: 'Am' }, { i: 10, c: 'G' }] };
     useSongsStore.getState().replaceLines(songId, 0, 2, [joined]);
-    expect(useSongsStore.getState().songs.find((s) => s.id === songId).lines).toEqual([joined]);
+    expect(useSongsStore.getState().songs.find((s) => s.id === songId).lines.map(unstamped)).toEqual([joined]);
 
     await Promise.resolve();
     await Promise.resolve();
     const stored = JSON.parse(localStorage.getItem('songnotes_songs')).find((s) => s.id === songId);
-    expect(stored.lines).toEqual([joined]);
+    expect(stored.lines.map(unstamped)).toEqual([joined]);
+  });
+
+  it('stamps only what an edit changed', () => {
+    const songId = useSongsStore.getState().addSong('Stamps');
+    useSongsStore.getState().renameSong(songId, 'Renamed');
+    const renamed = useSongsStore.getState().songs.find((s) => s.id === songId);
+    expect(Object.keys(renamed.fieldEditedAt)).toEqual(['title']);
+    expect(renamed.lines[0].editedAt).toBeUndefined();
+
+    useSongsStore.getState().updateSongMeta(songId, { bpm: '96' });
+    const withBpm = useSongsStore.getState().songs.find((s) => s.id === songId);
+    expect(withBpm.bpm).toBe(96);
+    expect(Object.keys(withBpm.fieldEditedAt).sort()).toEqual(['bpm', 'title']);
   });
 
   it('turns imported padded chord rows into chord anchors', () => {

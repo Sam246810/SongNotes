@@ -21,8 +21,14 @@ function lyricRows() {
   return screen.getAllByLabelText('Lyric input').map((el) => el.value);
 }
 
+// The saved lines without their edit stamps (src/sync/editStamps.js), which
+// are wall-clock times.
 function savedLines() {
-  return useSongsStore.getState().songs[0].lines;
+  return useSongsStore.getState().songs[0].lines.map((line) => {
+    const copy = { ...line };
+    delete copy.editedAt;
+    return copy;
+  });
 }
 
 function caret() {

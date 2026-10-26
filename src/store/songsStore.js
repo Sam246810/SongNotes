@@ -4,6 +4,7 @@ import { chordsLineToAnchors } from '../utils/chordAnchors';
 import { transposeChordsLine } from '../utils/transpose';
 import { LocalSongsRepository } from './songsRepository';
 import { toMetaNumber } from './songDocument';
+import { stampEdits } from '../sync/editStamps';
 import useDawSession from '../audio/dawSession';
 
 // -- Factory helpers --
@@ -185,18 +186,25 @@ const useSongsStore = create((set, get) => ({
     useDawSession.getState().clearSong(id); // drop this song's in-memory DAW audio too
   },
 
-  renameSong: (id, title) => {
+  // Every edit to an existing song goes through here: `mutate` returns the
+  // changed song, which gets a fresh updatedAt and a per-line / per-field edit
+  // stamp on whatever actually changed (src/sync/editStamps.js -- what a sync
+  // merge uses to tell which device's edit is newer), then is persisted.
+  commitSong: (id, mutate) => {
     let updatedSong = null;
     set((state) => {
       const songs = state.songs.map((s) => {
         if (s.id !== id) return s;
-        updatedSong = { ...s, title, updatedAt: new Date().toISOString() };
+        const now = Date.now();
+        updatedSong = stampEdits(s, { ...mutate(s), updatedAt: new Date(now).toISOString() }, now);
         return updatedSong;
       });
       return { songs };
     });
     if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
   },
+
+  renameSong: (id, title) => get().commitSong(id, (s) => ({ ...s, title })),
 
   // Reference info only (bpm/key/tuning/capo) — `changes` is a partial patch,
   // merged over the song. bpm/capo may arrive as typed or imported text and
@@ -205,73 +213,35 @@ const useSongsStore = create((set, get) => ({
     changes = { ...changes };
     if ('bpm' in changes) changes.bpm = toMetaNumber(changes.bpm);
     if ('capo' in changes) changes.capo = toMetaNumber(changes.capo);
-    let updatedSong = null;
-    set((state) => {
-      const songs = state.songs.map((s) => {
-        if (s.id !== id) return s;
-        updatedSong = { ...s, ...changes, updatedAt: new Date().toISOString() };
-        return updatedSong;
-      });
-      return { songs };
-    });
-    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
+    get().commitSong(id, (s) => ({ ...s, ...changes }));
   },
 
   // User-entered fretboard voicing for one chord name, scoped to this song —
   // fills a gap in CHORD_DB, or overrides a built-in voicing the user thinks
   // is wrong. `voicing` is a { frets, baseFret } object (see parseFretsInput).
-  setCustomChord: (id, chordName, voicing) => {
-    let updatedSong = null;
-    set((state) => {
-      const songs = state.songs.map((s) => {
-        if (s.id !== id) return s;
-        updatedSong = {
-          ...s,
-          customChords: { ...(s.customChords || {}), [chordName]: voicing },
-          updatedAt: new Date().toISOString(),
-        };
-        return updatedSong;
-      });
-      return { songs };
-    });
-    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
-  },
+  setCustomChord: (id, chordName, voicing) =>
+    get().commitSong(id, (s) => ({ ...s, customChords: { ...(s.customChords || {}), [chordName]: voicing } })),
 
   // Removes a custom voicing, reverting to CHORD_DB's built-in one (if any).
-  removeCustomChord: (id, chordName) => {
-    let updatedSong = null;
-    set((state) => {
-      const songs = state.songs.map((s) => {
-        if (s.id !== id) return s;
-        const customChords = { ...(s.customChords || {}) };
-        delete customChords[chordName];
-        updatedSong = { ...s, customChords, updatedAt: new Date().toISOString() };
-        return updatedSong;
-      });
-      return { songs };
-    });
-    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
-  },
+  removeCustomChord: (id, chordName) =>
+    get().commitSong(id, (s) => {
+      const customChords = { ...(s.customChords || {}) };
+      delete customChords[chordName];
+      return { ...s, customChords };
+    }),
 
   // Rewrites every recognized chord in the song by `semitones` (+/-), in one
   // batched update. Done per anchor, so a chord name getting longer (F -> F#)
   // never shifts the chords after it.
   transposeSong: (id, semitones) => {
     if (!semitones) return;
-    let updatedSong = null;
-    set((state) => {
-      const songs = state.songs.map((s) => {
-        if (s.id !== id) return s;
-        const lines = s.lines.map((l) => ({
-          ...l,
-          chords: l.chords.map((a) => ({ ...a, c: transposeChordsLine(a.c, semitones) })),
-        }));
-        updatedSong = { ...s, lines, updatedAt: new Date().toISOString() };
-        return updatedSong;
-      });
-      return { songs };
-    });
-    if (updatedSong) get().repo.update(id, updatedSong).catch(logPersistError);
+    get().commitSong(id, (s) => ({
+      ...s,
+      lines: s.lines.map((l) => ({
+        ...l,
+        chords: l.chords.map((a) => ({ ...a, c: transposeChordsLine(a.c, semitones) })),
+      })),
+    }));
   },
 
   setActiveSong: (id) => set({ activeSongId: id }),
@@ -281,20 +251,12 @@ const useSongsStore = create((set, get) => ({
   // from `start` with `newLines`. The editor works out the paragraphs an edit
   // produces (typing, Enter, joining two lines, a multi-line paste) and hands
   // them over here, so the store never needs to know about wrapping.
-  replaceLines: (songId, start, deleteCount, newLines) => {
-    let updatedSong = null;
-    set((state) => {
-      const songs = state.songs.map((s) => {
-        if (s.id !== songId) return s;
-        const lines = [...s.lines];
-        lines.splice(start, deleteCount, ...newLines);
-        updatedSong = { ...s, lines, updatedAt: new Date().toISOString() };
-        return updatedSong;
-      });
-      return { songs };
-    });
-    if (updatedSong) get().repo.update(songId, updatedSong).catch(logPersistError);
-  },
+  replaceLines: (songId, start, deleteCount, newLines) =>
+    get().commitSong(songId, (s) => {
+      const lines = [...s.lines];
+      lines.splice(start, deleteCount, ...newLines);
+      return { ...s, lines };
+    }),
 
   // --- Selectors ---
   getActiveSong: () => {

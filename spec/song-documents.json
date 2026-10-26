@@ -443,5 +443,119 @@
       "createdAt": "2026-01-05T12:00:00.000Z",
       "updatedAt": "2026-01-05T12:30:00.000Z"
     }
+  },
+  {
+    "name": "edit stamps: per line, per field, per custom chord",
+    "id": "stamped-song",
+    "document": {
+      "title": "Stamped",
+      "lines": [
+        {
+          "id": "line-a",
+          "lyrics": "edited at nine",
+          "chords": [
+            {
+              "i": 0,
+              "c": "G"
+            }
+          ],
+          "editedAt": 1790931600000
+        },
+        {
+          "id": "line-b",
+          "lyrics": "never stamped",
+          "chords": []
+        },
+        {
+          "id": "line-c",
+          "lyrics": "bad stamp",
+          "chords": [],
+          "editedAt": -5
+        }
+      ],
+      "bpm": 120,
+      "key": "G",
+      "tuning": "",
+      "capo": 0,
+      "customChords": {
+        "G": {
+          "frets": [
+            3,
+            2,
+            0,
+            0,
+            0,
+            3
+          ],
+          "baseFret": 1
+        }
+      },
+      "fieldEditedAt": {
+        "title": 1790935200000,
+        "bpm": 1790931600000,
+        "key": 1.5,
+        "colour": 1
+      },
+      "customChordsEditedAt": {
+        "G": 1790931600000,
+        "D": 1790928000000
+      },
+      "createdAt": "2026-10-01T12:00:00.000Z",
+      "updatedAt": "2026-10-02T10:00:00.000Z"
+    },
+    "expected": {
+      "id": "stamped-song",
+      "title": "Stamped",
+      "lines": [
+        {
+          "id": "line-a",
+          "lyrics": "edited at nine",
+          "chords": [
+            {
+              "i": 0,
+              "c": "G"
+            }
+          ],
+          "editedAt": 1790931600000
+        },
+        {
+          "id": "line-b",
+          "lyrics": "never stamped",
+          "chords": []
+        },
+        {
+          "id": "line-c",
+          "lyrics": "bad stamp",
+          "chords": []
+        }
+      ],
+      "bpm": 120,
+      "key": "G",
+      "tuning": "",
+      "capo": 0,
+      "customChords": {
+        "G": {
+          "frets": [
+            3,
+            2,
+            0,
+            0,
+            0,
+            3
+          ],
+          "baseFret": 1
+        }
+      },
+      "createdAt": "2026-10-01T12:00:00.000Z",
+      "updatedAt": "2026-10-02T10:00:00.000Z",
+      "fieldEditedAt": {
+        "bpm": 1790931600000,
+        "title": 1790935200000
+      },
+      "customChordsEditedAt": {
+        "D": 1790928000000,
+        "G": 1790931600000
+      }
+    }
   }
 ]

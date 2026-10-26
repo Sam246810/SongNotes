@@ -19,7 +19,15 @@ describe('spec/song-documents.json', () => {
       expect.stringMatching(/^legacy: chords as a v1 padded string/),
       expect.stringMatching(/^legacy: a line with no id/),
       expect.stringMatching(/^legacy: bpm\/capo as strings/),
+      expect.stringMatching(/^edit stamps/),
     ]);
+  });
+
+  it('keeps valid edit stamps and drops invalid ones', () => {
+    const { expected } = cases.find((c) => c.name.startsWith('edit stamps'));
+    expect(expected.lines.map((l) => l.editedAt)).toEqual([1790931600000, undefined, undefined]);
+    expect(expected.fieldEditedAt).toEqual({ bpm: 1790931600000, title: 1790935200000 });
+    expect(expected.customChordsEditedAt).toEqual({ D: 1790928000000, G: 1790931600000 });
   });
 
   it.each(cases.map((c) => [c.name, c]))('reads %s', (_name, { id, document, expected }) => {
