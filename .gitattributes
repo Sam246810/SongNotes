@@ -1,0 +1,4 @@
+# Golden fixtures: generate-golden-fixtures.test.js writes LF and the Android app
+# copies them byte-identical, so keep them LF on every checkout (core.autocrlf
+# would otherwise flag them modified after every test run).
+spec/*.json text eol=lf

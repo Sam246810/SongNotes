@@ -81,7 +81,7 @@ function getOrCreateGuestId() {
 /**
  * A short, friendly label for "which device/browser wrote this" -- used only to
  * make a sync conflict copy's title immediately understandable (see
- * `_writeConflictCopy` below), never for anything security- or identity-relevant.
+ * `_conflictCopyOf` below), never for anything security- or identity-relevant.
  */
 function getDeviceLabel() {
   const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
@@ -100,6 +100,25 @@ function getDeviceLabel() {
   else if (/Safari/i.test(ua)) browser = 'Safari';
 
   return `${browser} on ${os}`;
+}
+
+// Anchored on the LAST suffix: a conflict copy of a conflict copy has two.
+const CONFLICT_TITLE = /^(.*) \(conflict copy — ([^()]+)\)$/s;
+
+/** A conflict copy's title for `title`: "<title> (conflict copy — <device>, <time>)". */
+function conflictCopyTitle(title, origin) {
+  return `${title || 'Untitled'} (conflict copy — ${origin})`;
+}
+
+/**
+ * Splits a conflict copy's title back into the song's own title and where/when the
+ * copy came from (`origin`, e.g. "Chrome on Windows, 03:25 PM"), so a list can show
+ * them apart instead of truncating both copies to the same text. `origin` is null
+ * for an ordinary title.
+ */
+export function splitConflictTitle(title) {
+  const match = CONFLICT_TITLE.exec(title ?? '');
+  return match ? { title: match[1], origin: match[2] } : { title, origin: null };
 }
 
 /**
@@ -686,10 +705,9 @@ export class CloudSongsRepository {
     return {
       ...song,
       id: crypto.randomUUID(),
-      title: `${song.title || 'Untitled'} (conflict copy — ${getDeviceLabel()}, ${timeLabel})`,
+      title: conflictCopyTitle(song.title, `${getDeviceLabel()}, ${timeLabel}`),
     };
   }
-
 
   /** Force any pending debounced writes out immediately (e.g. before logout/unload). */
   async flushPending() {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { CloudSongsRepository } from '../store/songsRepository';
+import { CloudSongsRepository, splitConflictTitle } from '../store/songsRepository';
 import { generateContentKey, decryptJSON, encryptJSON } from '../crypto/envelope';
 import { establishDEK, clearSession, getDEK } from '../crypto/keyManager';
 
@@ -529,5 +529,22 @@ describe('CloudSongsRepository', () => {
       expect(listed.bpm).toBe(120);
       expect(listed.capo).toBe(0);
     });
+  });
+});
+
+describe('splitConflictTitle', () => {
+  it('splits a conflict copy title into the song title and where it came from', () => {
+    expect(splitConflictTitle('Wonderwall (conflict copy — Chrome on Windows, 03:25 PM)'))
+      .toEqual({ title: 'Wonderwall', origin: 'Chrome on Windows, 03:25 PM' });
+  });
+
+  it('splits only the last suffix of a copy of a copy', () => {
+    expect(splitConflictTitle('Song (conflict copy — Edge on Mac, 09:00) (conflict copy — Chrome on Windows, 10:15)'))
+      .toEqual({ title: 'Song (conflict copy — Edge on Mac, 09:00)', origin: 'Chrome on Windows, 10:15' });
+  });
+
+  it('leaves ordinary titles alone, parentheses included', () => {
+    expect(splitConflictTitle('Hallelujah (live)')).toEqual({ title: 'Hallelujah (live)', origin: null });
+    expect(splitConflictTitle('')).toEqual({ title: '', origin: null });
   });
 });
