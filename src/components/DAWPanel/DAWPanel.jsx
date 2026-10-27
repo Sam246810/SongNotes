@@ -1213,6 +1213,12 @@ export default function DAWPanel({ songId, showPiano, onTogglePiano, showDaw, on
         title="Drag to resize DAW panel width"
       />
 
+      {/* Demos recorded in the Android app's Scratchpad are stored on that
+          phone only and don't sync (yet); say so where people would look for them. */}
+      <div className={styles.phoneDemoNote}>
+        Demos recorded in the SongNotes Android app stay on your phone for now. Seeing them here is coming soon.
+      </div>
+
       {/* Transport Header */}
       <div className={styles.transportBar}>
         {/* Row 1: Actions, Playback, Sub-Toggles and Track management */}

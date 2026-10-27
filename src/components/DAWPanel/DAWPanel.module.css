@@ -75,6 +75,14 @@
   border: 1px solid var(--border-default);
 }
 
+.phoneDemoNote {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-default);
+  padding: 6px 12px;
+}
+
 .panelTitle {
   font-size: 12px;
   font-weight: 700;
