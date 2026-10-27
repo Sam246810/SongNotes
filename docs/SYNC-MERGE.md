@@ -19,9 +19,12 @@
 | Auto-sync on app open/resume | n/a (tabs refresh on focus) | done |
 | Split/join-aware merge (rough edges 1–2) | later | later |
 
-Verified: web unit + fixture tests; Android unit + the same fixture; two browsers
-against the live backend (different lines, same line different words, same words,
-delete vs edit both ways); Room v3 -> v4 upgrade on a device with existing songs.
+Verified: web unit + fixture tests; Android unit + the same fixture; a 300-line
+song edited throughout merges in under 50 ms on both; two browsers against the
+live backend (different lines, same line different words, same words, delete vs
+edit both ways, typing through a merge with the caret staying on its word, a
+title/meta race, a custom-chord race); Room v3 -> v4 upgrade on a device with
+existing songs.
 Not yet verified live: web + Android together, and auto-sync on the phone.
 
 ## The problem this replaces
