@@ -24,8 +24,14 @@ song edited throughout merges in under 50 ms on both; two browsers against the
 live backend (different lines, same line different words, same words, delete vs
 edit both ways, typing through a merge with the caret staying on its word, a
 title/meta race, a custom-chord race); Room v3 -> v4 upgrade on a device with
-existing songs.
-Not yet verified live: web + Android together, and auto-sync on the phone.
+existing songs; web + Android against the live backend (2026-10-26, Galaxy Z Fold6):
+- edits to different lines and different words of one line on each side, with the
+  phone's editor open on the stale version: auto-sync on resume merged them, the open
+  editor updated in place, and the next phone edit didn't overwrite the web's;
+- a delete on the phone vs an edit on the web: the song came back on the phone with
+  the edit;
+- auto-sync after a force-stop pulled a web rename with no password prompt;
+- signing out emptied the stored key and stopped auto-sync, keeping the phone's songs.
 
 ## The problem this replaces
 
