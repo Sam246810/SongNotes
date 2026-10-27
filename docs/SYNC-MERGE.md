@@ -32,6 +32,13 @@ existing songs; web + Android against the live backend (2026-10-26, Galaxy Z Fol
   the edit;
 - auto-sync after a force-stop pulled a web rename with no password prompt;
 - signing out emptied the stored key and stopped auto-sync, keeping the phone's songs.
+- with "Sync when the app opens" off: the stored key was emptied, reopening the app
+  didn't sync, Sync asked for the password and then synced without storing the key;
+  turning it back on stored the key on the next sync.
+- signing out with no network (airplane mode and Wi-Fi off): the app used to crash
+  and stay signed in, key and all; it now signs out on the phone, clears the key,
+  and stays signed out after a restart. A stored key that can no longer be decrypted
+  falls back to asking for the password.
 
 ## The problem this replaces
 
