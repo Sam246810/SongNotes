@@ -122,3 +122,58 @@ describe('stampEdits', () => {
     expect(next.lines[0].editedAt).toBe(101);
   });
 });
+
+describe('mergeSongs: scale and convergence', () => {
+  const song = (lines, updatedAt) => ({
+    id: 's', title: 'Long song', bpm: 0, key: '', tuning: '', capo: 0, customChords: {},
+    lines, createdAt: '2026-10-01T00:00:00.000Z', updatedAt,
+  });
+  const words = (k) => Array.from({ length: 100 }, (_, w) => `word${k}x${w}`).join(' ');
+
+  it('merges a 300-line song edited throughout on both sides in well under 50 ms', () => {
+    const baseLines = Array.from({ length: 300 }, (_, k) => ({ id: `l${k}`, lyrics: words(k), chords: [{ i: 0, c: 'G' }] }));
+    const base = song(baseLines, '2026-10-01T00:00:00.000Z');
+    // Every line edited on both sides, at different words: the worst case, since
+    // each one goes through tokenizing, LCS and diff3.
+    const edit = (tag, at) => song(baseLines.map((l) => {
+      const t = l.lyrics.split(' ');
+      t[at] = `${tag}${at}`;
+      return { ...l, lyrics: t.join(' '), editedAt: Date.parse('2026-10-02T00:00:00.000Z') };
+    }), '2026-10-02T00:00:00.000Z');
+    const local = edit('L', 10);
+    const remote = edit('R', 90);
+
+    mergeSongs(base, local, remote); // warm up the JIT
+    const runs = 5;
+    const start = performance.now();
+    let merged;
+    for (let k = 0; k < runs; k++) merged = mergeSongs(base, local, remote);
+    const perMerge = (performance.now() - start) / runs;
+
+    expect(merged.lines).toHaveLength(300);
+    expect(merged.lines[0].lyrics.split(' ')[10]).toBe('L10');
+    expect(merged.lines[0].lyrics.split(' ')[90]).toBe('R90');
+    expect(perMerge).toBeLessThan(50);
+  });
+
+  it('two devices taking turns pushing converge instead of merging back and forth', () => {
+    // Each round: one device merges the server's version into its own and
+    // "pushes"; the other then merges that. After a round trip neither has
+    // anything left to change, and both agree.
+    for (const c of cases.filter((x) => x.base)) {
+      const base = read(c.id, c.base);
+      const a = read(c.id, c.local);
+      const b = read(c.id, c.remote);
+      const server1 = mergeSongs(base, a, b); // A lost to B's push, merged, pushed
+      const bAfter = mergeSongs(b, b, server1); // B pulls: nothing of its own unsent
+      const aAfter = mergeSongs(server1, server1, server1);
+      expect(contentEquals(bAfter, server1), c.name).toBe(true);
+      expect(contentEquals(aAfter, server1), c.name).toBe(true);
+      // And if B had kept editing meanwhile, its next merge settles in one step.
+      const bEdited = { ...b, title: `${b.title}!`, fieldEditedAt: { ...b.fieldEditedAt, title: Date.parse('2027-01-01T00:00:00.000Z') } };
+      const server2 = mergeSongs(b, bEdited, server1);
+      expect(contentEquals(mergeSongs(server2, server2, server2), server2), c.name).toBe(true);
+      expect(server2.title, c.name).toBe(`${b.title}!`);
+    }
+  });
+});
