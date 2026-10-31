@@ -1,0 +1,62 @@
+/* The app's html/body don't scroll (global.css), so the page does. */
+.page {
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  padding: 40px 20px 64px;
+}
+
+.article {
+  max-width: 720px;
+  margin: 0 auto;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.article h1 {
+  color: var(--text-primary);
+  font-size: 30px;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.article h2 {
+  color: var(--text-primary);
+  font-size: 21px;
+  margin: 32px 0 8px;
+}
+
+.article h3 {
+  color: var(--text-primary);
+  font-size: 17px;
+  margin: 20px 0 6px;
+}
+
+.article p,
+.article ul {
+  margin-bottom: 12px;
+}
+
+.article ul {
+  padding-left: 22px;
+}
+
+.article li {
+  margin-bottom: 6px;
+}
+
+.article strong {
+  color: var(--text-primary);
+}
+
+.article a {
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+
+.updated {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
