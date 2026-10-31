@@ -14,8 +14,12 @@ import SettingsPage from './components/SettingsPage/SettingsPage.jsx';
 import PrivacyPage from './pages/PrivacyPage.jsx';
 import MobileAppPromo from './components/MobileAppPromo/MobileAppPromo.jsx';
 import isMobileDevice from './utils/isMobileDevice.js';
+import { followSystemTheme } from './utils/theme.js';
 
 const root = createRoot(document.getElementById('root'));
+
+// On 'Match system', switch light/dark when the OS does, whatever page is open.
+followSystemTheme();
 
 // Password-reset emails are opened on phones far more often than not — a
 // Supabase recovery link carries a one-time token in the URL that gets

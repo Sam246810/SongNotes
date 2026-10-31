@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { getThemePreference, resolveTheme, setThemePreference } from '../utils/theme';
+import { followSystemTheme, getThemePreference, resolveTheme, setThemePreference } from '../utils/theme';
 import SettingsPage from '../components/SettingsPage/SettingsPage';
 
 vi.mock('../auth/useAuth', () => ({ default: () => ({ configured: false, user: null }) }));
@@ -55,6 +55,20 @@ describe('theme preference', () => {
     expect(localStorage.getItem('songnotes-theme')).toBe('dark');
     expect(document.body.classList.contains('cozy-dark')).toBe(true);
     setThemePreference('light');
+    expect(document.body.classList.contains('cozy-dark')).toBe(false);
+  });
+});
+
+describe('following the system setting', () => {
+  it("switches on an OS flip with no theme UI on screen, only on 'system'", () => {
+    followSystemTheme();
+    setOsDark(true);
+    expect(document.body.classList.contains('cozy-dark')).toBe(true);
+    setOsDark(false);
+    expect(document.body.classList.contains('cozy-dark')).toBe(false);
+
+    setThemePreference('light');
+    setOsDark(true);
     expect(document.body.classList.contains('cozy-dark')).toBe(false);
   });
 });

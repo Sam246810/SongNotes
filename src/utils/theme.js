@@ -49,6 +49,21 @@ export function setThemePreference(preference) {
   applyTheme();
 }
 
+let followingSystem = false;
+
+/**
+ * Follows the OS flipping light/dark under an open tab, on every page: called
+ * once at startup (main.jsx). The hook's own listener below only runs while a
+ * component using it (Settings, the DAW panel) is on screen, so on its own the
+ * song list and editor stayed on the old theme until a reload. Only matters
+ * on 'system'; resolveTheme ignores the OS for an explicit choice.
+ */
+export function followSystemTheme() {
+  if (followingSystem || typeof window.matchMedia !== 'function') return;
+  followingSystem = true;
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+}
+
 function subscribe(listener) {
   listeners.add(listener);
   // While on 'system', follow the OS flipping light/dark under an open tab.
