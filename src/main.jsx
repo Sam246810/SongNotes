@@ -10,6 +10,7 @@ import ForgotPasswordPage from './auth/ForgotPasswordPage.jsx';
 import ResetPasswordPage from './auth/ResetPasswordPage.jsx';
 import AccountPage from './auth/AccountPage.jsx';
 import DeleteAccountPage from './auth/DeleteAccountPage.jsx';
+import SettingsPage from './components/SettingsPage/SettingsPage.jsx';
 import MobileAppPromo from './components/MobileAppPromo/MobileAppPromo.jsx';
 import isMobileDevice from './utils/isMobileDevice.js';
 
@@ -47,6 +48,7 @@ if (isMobileDevice() && !isExemptPath) {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/delete-account" element={<DeleteAccountPage />} />
             {/* Accounts are optional — '/' works for guests and signed-in users alike. */}

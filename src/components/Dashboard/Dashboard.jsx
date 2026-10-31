@@ -76,9 +76,14 @@ export default function Dashboard({ onPrivacyLock }) {
           <span className={styles.logoIcon}>♪</span>
           <span className={styles.logoText}>SongNotes</span>
         </div>
-        <button className={styles.newBtn} onClick={handleNew} id="new-song-btn">
-          + New Song
-        </button>
+        <div className={styles.headerActions}>
+          <Link className={styles.settingsBtn} to="/settings" title="Settings" aria-label="Settings" id="settings-link">
+            ⚙
+          </Link>
+          <button className={styles.newBtn} onClick={handleNew} id="new-song-btn">
+            + New Song
+          </button>
+        </div>
       </div>
 
       {/* Account status */}
@@ -94,7 +99,7 @@ export default function Dashboard({ onPrivacyLock }) {
                   title="Recovery code, password"
                   id="account-settings-link"
                 >
-                  ⚙ Account
+                  Account
                 </Link>
                 <button
                   className={styles.accountLinkBtn}

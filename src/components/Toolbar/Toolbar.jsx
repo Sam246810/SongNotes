@@ -21,19 +21,6 @@ export default function Toolbar({ song, showScratchpad, onToggleScratchpad }) {
   const titleRef = useRef(null);
   const exportRef = useRef(null);
 
-  const [isDark, setIsDark] = useState(() => {
-    return localStorage.getItem('songnotes-theme') === 'dark';
-  });
-
-  useEffect(() => {
-    if (isDark) {
-      document.body.classList.add('cozy-dark');
-      localStorage.setItem('songnotes-theme', 'dark');
-    } else {
-      document.body.classList.remove('cozy-dark');
-      localStorage.setItem('songnotes-theme', 'light');
-    }
-  }, [isDark]);
 
   // Sync title if song changes externally
   useEffect(() => {
@@ -98,16 +85,6 @@ export default function Toolbar({ song, showScratchpad, onToggleScratchpad }) {
 
       {/* Actions */}
       <div className={styles.actions}>
-        {/* Theme Toggle */}
-        <button
-          className={`${styles.btn} ${isDark ? styles.btnActive : ''}`}
-          onClick={() => setIsDark(d => !d)}
-          title={isDark ? 'Switch to Warm Light Theme' : 'Switch to Cozy Dark Theme'}
-          id="theme-toggle-btn"
-        >
-          {isDark ? '🌅 Warm Light' : '🕯️ Cozy Dark'}
-        </button>
-
         {/* Scratchpad Toggle */}
         <button
           className={`${styles.btn} ${showScratchpad ? styles.btnActive : ''}`}

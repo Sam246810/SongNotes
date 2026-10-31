@@ -16,6 +16,7 @@ import {
 } from '../../audio/recorderEngine';
 import { computeAudibleSegments, renderTrackClips, insertClipNonOverlapping, clipDuration, MIN_CLIP_DURATION_SEC } from '../../audio/clipEngine';
 import PianoPanel from '../PianoPanel/PianoPanel';
+import { useTheme } from '../../utils/theme';
 import LatencyTrimHelper from '../LatencyTrimHelper/LatencyTrimHelper';
 
 /**
@@ -24,6 +25,8 @@ import LatencyTrimHelper from '../LatencyTrimHelper/LatencyTrimHelper';
  */
 function WaveformCanvas({ audioBuffer, trimStart = 0, trimEnd = 0, width, height, isRecording }) {
   const canvasRef = useRef(null);
+  // The canvas bakes in the theme colors at draw time, so redraw when the theme flips.
+  const { theme } = useTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -91,7 +94,7 @@ function WaveformCanvas({ audioBuffer, trimStart = 0, trimEnd = 0, width, height
       render();
       return () => cancelAnimationFrame(animationFrameId);
     }
-  }, [audioBuffer, trimStart, trimEnd, width, height, isRecording]);
+  }, [audioBuffer, trimStart, trimEnd, width, height, isRecording, theme]);
 
   return <canvas ref={canvasRef} width={Math.max(10, Math.floor(width))} height={height} className={styles.clipCanvas} />;
 }

@@ -12,13 +12,16 @@
   </head>
   <body>
     <script>
-      // Applied before first paint, and before the Toolbar (which owns the toggle) ever
-      // mounts — otherwise the page always paints light first and only flips to the
-      // saved theme once a song is open and Toolbar's effect runs. Must run here (start
-      // of body), not in <head>, since document.body doesn't exist yet up there.
-      if (localStorage.getItem('songnotes-theme') === 'dark') {
-        document.body.classList.add('cozy-dark');
-      }
+      // Applied before first paint, before React loads src/utils/theme.js (which owns the
+      // preference) — otherwise the page paints light first and flips once the app runs.
+      // Mirrors theme.js: nothing saved means 'system'. Must run here (start of body),
+      // not in <head>, since document.body doesn't exist yet up there.
+      try {
+        var t = localStorage.getItem('songnotes-theme');
+        if (t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.body.classList.add('cozy-dark');
+        }
+      } catch (e) {}
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

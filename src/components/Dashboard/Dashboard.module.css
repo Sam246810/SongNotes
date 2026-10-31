@@ -39,6 +39,30 @@
   background-clip: text;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settingsBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 16px;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.settingsBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 .newBtn {
   background: var(--accent);
   border: none;
