@@ -10,6 +10,7 @@ import ForgotPasswordPage from './auth/ForgotPasswordPage.jsx';
 import ResetPasswordPage from './auth/ResetPasswordPage.jsx';
 import AccountPage from './auth/AccountPage.jsx';
 import DeleteAccountPage from './auth/DeleteAccountPage.jsx';
+import PrivacyPage from './pages/PrivacyPage.jsx';
 import MobileAppPromo from './components/MobileAppPromo/MobileAppPromo.jsx';
 import isMobileDevice from './utils/isMobileDevice.js';
 
@@ -27,8 +28,9 @@ const root = createRoot(document.getElementById('root'));
 // the Android app itself links out to for account deletion (Google Play
 // requires an actual deletion flow, not just an in-app "contact support"),
 // so it's opened almost exclusively FROM a phone and must never bounce back
-// to the "install the app" promo.
-const MOBILE_GATE_EXEMPT_PATHS = ['/reset-password', '/forgot-password', '/delete-account'];
+// to the "install the app" promo. '/privacy' too: it's the Android app's
+// privacy policy, linked from its Google Play listing.
+const MOBILE_GATE_EXEMPT_PATHS = ['/reset-password', '/forgot-password', '/delete-account', '/privacy'];
 const isExemptPath = MOBILE_GATE_EXEMPT_PATHS.includes(window.location.pathname);
 
 if (isMobileDevice() && !isExemptPath) {
@@ -49,6 +51,7 @@ if (isMobileDevice() && !isExemptPath) {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/delete-account" element={<DeleteAccountPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
             {/* Accounts are optional — '/' works for guests and signed-in users alike. */}
             <Route path="/*" element={<App />} />
           </Routes>
